@@ -1,0 +1,26 @@
+.input-control,
+.input-control:focus,
+.input-control:focus-visible {
+  width: 100%;
+  min-width: 0;
+
+  border: 0;
+  outline: none;
+  box-shadow: none;
+  background: transparent;
+
+  color: inherit;
+  font: inherit;
+}
+
+.input-control::placeholder {
+  color: var(--color-text-muted);
+}
+
+.input-control:disabled {
+  cursor: not-allowed;
+}
+
+.input-control:read-only:not(:disabled) {
+  cursor: default;
+}

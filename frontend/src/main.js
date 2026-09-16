@@ -1,20 +1,27 @@
-import { createApp } from 'vue';
-import App from './App.vue';
-import router from './router';
-import store from './store';
+import { createApp } from "vue";
+import { createPinia } from "pinia";
 
-import 'bootstrap/dist/css/bootstrap.min.css'
-import "bootstrap-icons/font/bootstrap-icons.css";
-import 'bootstrap'
+import App from "./App.vue";
+import router from "./router";
 
-import GlobalLoader from "@/components/loaders/global-loader.vue";
+import "./assets/styles/app.css";
+
+import AppIcon from "@/components/ui/AppIcon/index.vue";
+import { useAuthStore } from "@/state/auth.js";
 
 const app = createApp(App);
+const pinia = createPinia();
 
-app.component('GlobalLoader', GlobalLoader);
+app.use(pinia);
 
-app.use(store);
+const authStore = useAuthStore(pinia);
+
+await authStore.hydrate();
+
 app.use(router);
 
-app.mount('#app');
+app.component("AppIcon", AppIcon);
 
+await router.isReady();
+
+app.mount("#app");

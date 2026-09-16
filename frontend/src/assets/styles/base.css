@@ -1,0 +1,55 @@
+body {
+  background:
+    radial-gradient(
+      circle at top right,
+      rgb(243 223 138 / 0.1),
+      transparent 28rem
+    ),
+    var(--color-page);
+}
+
+h1,
+h2,
+h3,
+h4 {
+  color: var(--color-brand);
+  line-height: var(--line-height-tight);
+}
+
+h1 {
+  font-size: var(--font-size-4xl);
+}
+h2 {
+  font-size: var(--font-size-3xl);
+}
+h3 {
+  font-size: var(--font-size-2xl);
+}
+h4 {
+  font-size: var(--font-size-xl);
+}
+
+p {
+  color: var(--color-text-soft);
+}
+
+a {
+  color: var(--color-highlight);
+  transition: color var(--duration-fast) var(--ease-standard);
+}
+
+a:hover {
+  color: var(--color-highlight-hover);
+}
+
+.container {
+  width: min(100% - 2rem, var(--container-xl));
+  margin-inline: auto;
+}
+
+.surface {
+  background: var(--color-surface);
+  border: var(--border-width) solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--surface-shadow);
+}

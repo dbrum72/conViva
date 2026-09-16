@@ -1,0 +1,60 @@
+/* ==========================================================================
+   APP CHECKBOX
+   ========================================================================== */
+
+.app-checkbox {
+  display: grid;
+  gap: var(--space-2);
+
+  width: 100%;
+}
+
+.app-checkbox__label {
+  display: inline-flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+
+  width: fit-content;
+
+  color: var(--color-text);
+  cursor: pointer;
+}
+
+.app-checkbox__content {
+  display: grid;
+  gap: var(--space-1);
+
+  padding-top: 1px;
+}
+
+.app-checkbox__text {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  line-height: var(--line-height-normal);
+}
+
+.app-checkbox__required {
+  color: var(--color-danger);
+}
+
+.app-checkbox__hint,
+.app-checkbox__error {
+  font-size: var(--font-size-xs);
+  line-height: var(--line-height-normal);
+}
+
+.app-checkbox__hint {
+  color: var(--color-text-muted);
+}
+
+.app-checkbox__error {
+  color: var(--color-danger);
+}
+
+.app-checkbox--disabled {
+  opacity: 0.65;
+}
+
+.app-checkbox--disabled .app-checkbox__label {
+  cursor: not-allowed;
+}

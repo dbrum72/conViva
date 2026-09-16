@@ -1,0 +1,26 @@
+/* ==========================================================================
+   RADIO CONTROL
+   ========================================================================== */
+
+.radio-control {
+  width: var(--selection-size, 1.125rem);
+  height: var(--selection-size, 1.125rem);
+
+  flex: 0 0 auto;
+
+  margin: 0.125rem 0 0;
+
+  accent-color: var(--color-accent);
+
+  cursor: pointer;
+}
+
+.radio-control:focus,
+.radio-control:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+}
+
+.radio-control:disabled {
+  cursor: not-allowed;
+}

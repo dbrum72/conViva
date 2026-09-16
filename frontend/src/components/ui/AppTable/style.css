@@ -1,0 +1,71 @@
+.app-table-container {
+  width: 100%;
+  overflow-x: auto;
+
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-xs);
+}
+
+.app-table {
+  width: 100%;
+  border-collapse: collapse;
+  color: var(--color-text);
+}
+
+.app-table__caption {
+  padding: var(--space-4);
+  text-align: start;
+  font-weight: var(--font-weight-semibold);
+}
+
+.app-table__header {
+  padding: var(--space-3) var(--space-4);
+
+  border-bottom: 1px solid var(--color-border);
+
+  background: var(--color-surface-muted);
+  color: var(--color-text-soft);
+
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  text-align: start;
+  white-space: nowrap;
+}
+
+.app-table__cell {
+  padding: var(--space-4) var(--space-4);
+
+  border-bottom: 1px solid var(--color-divider);
+
+  font-size: var(--font-size-sm);
+  vertical-align: middle;
+}
+
+.app-table__row:last-child .app-table__cell {
+  border-bottom: 0;
+}
+
+.app-table__row:hover {
+  background: var(--color-surface-soft);
+}
+
+.app-table__empty {
+  padding: var(--space-10);
+  color: var(--color-text-muted);
+  font-size: var(--font-size-sm);
+  text-align: center;
+}
+
+.app-table--align-start {
+  text-align: start;
+}
+
+.app-table--align-center {
+  text-align: center;
+}
+
+.app-table--align-end {
+  text-align: end;
+}

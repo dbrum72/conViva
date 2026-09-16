@@ -1,0 +1,29 @@
+.textarea-control,
+.textarea-control:focus,
+.textarea-control:focus-visible {
+  width: 100%;
+  min-width: 0;
+
+  border: 0;
+  outline: 0;
+  box-shadow: none;
+  background: transparent;
+
+  color: inherit;
+  font: inherit;
+  line-height: inherit;
+
+  resize: vertical;
+}
+
+.textarea-control::placeholder {
+  color: var(--color-text-muted);
+}
+
+.textarea-control:disabled {
+  cursor: not-allowed;
+}
+
+.textarea-control:read-only:not(:disabled) {
+  cursor: default;
+}

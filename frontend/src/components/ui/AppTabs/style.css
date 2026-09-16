@@ -1,0 +1,123 @@
+/* ==========================================================================
+   APP TABS
+   ========================================================================== */
+
+.app-tabs {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+
+  min-width: 0;
+
+  overflow-x: auto;
+
+  padding: var(--space-1);
+
+  border: 1px solid var(--color-border);
+
+  border-radius: var(--radius-md);
+
+  background: var(--color-surface-muted);
+
+  scrollbar-width: thin;
+}
+
+.app-tabs__tab {
+  position: relative;
+
+  flex: 0 0 auto;
+
+  min-height: 2.5rem;
+
+  padding: 0 var(--space-4);
+
+  border: 1px solid transparent;
+
+  border-radius: var(--radius-sm);
+
+  background: transparent;
+
+  color: var(--color-text-muted);
+
+  font: inherit;
+
+  font-size: var(--font-size-sm);
+
+  font-weight: var(--font-weight-semibold);
+
+  white-space: nowrap;
+
+  cursor: pointer;
+
+  transition:
+    color var(--duration-fast) var(--ease-standard),
+    background var(--duration-fast) var(--ease-standard),
+    border-color var(--duration-fast) var(--ease-standard),
+    box-shadow var(--duration-fast) var(--ease-standard);
+}
+
+.app-tabs__tab:hover {
+  color: var(--color-brand-secondary-active);
+
+  background: color-mix(
+    in srgb,
+    var(--color-surface-secondary-soft) 55%,
+    transparent
+  );
+}
+
+.app-tabs__tab--active {
+  border-color: color-mix(
+    in srgb,
+    var(--color-brand-secondary) 18%,
+    var(--color-border)
+  );
+
+  background: var(--color-surface);
+
+  color: var(--color-brand-secondary-active);
+
+  box-shadow: var(--shadow-xs);
+}
+
+.app-tabs__tab--active::after {
+  content: "";
+
+  position: absolute;
+
+  right: var(--space-3);
+
+  bottom: 0.28rem;
+
+  left: var(--space-3);
+
+  height: 2px;
+
+  border-radius: var(--radius-pill);
+
+  background: var(--color-highlight);
+}
+
+.app-tabs__tab:focus-visible {
+  outline: none;
+
+  box-shadow: var(--focus-ring);
+}
+
+@media (max-width: 640px) {
+  .app-tabs {
+    align-items: stretch;
+  }
+
+  .app-tabs__tab {
+    min-height: 2.75rem;
+
+    padding-inline: var(--space-3);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .app-tabs__tab {
+    transition: none;
+  }
+}

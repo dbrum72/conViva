@@ -1,0 +1,1402 @@
+[
+  {
+    "source": "backend/artisan",
+    "target": "backend/artisan",
+    "sha256": "f91a517c0c5d3a904c3f390933964a5e08ec1fc68146882730daac4aca4ffcec"
+  },
+  {
+    "source": "backend/composer.json",
+    "target": "backend/composer.json",
+    "sha256": "2d1e74574d3ad29466cdc2ce7b808630367f7b6269431c3130b16e98bfa20cc1"
+  },
+  {
+    "source": "backend/composer.lock",
+    "target": "backend/composer.lock",
+    "sha256": "9d4a491d2af5b6063289949e03142f4d991ed53d1d776ec4481f008b73dc790b"
+  },
+  {
+    "source": "backend/phpunit.xml",
+    "target": "backend/phpunit.xml",
+    "sha256": "e874c4100f66a3fac5022501fed53e6182e821314f1f2988d525c5f505f9f1a1"
+  },
+  {
+    "source": "backend/bootstrap/app.php",
+    "target": "backend/bootstrap/app.php",
+    "sha256": "1e589ef4f385a55c62cbe944da80bfccb18ee9c670711a40ef047aae0147764b"
+  },
+  {
+    "source": "backend/bootstrap/providers.php",
+    "target": "backend/bootstrap/providers.php",
+    "sha256": "f720e185207a343d4c19fc99dbb317a4187efbcd7d38a303a695bbdd77ffb943"
+  },
+  {
+    "source": "backend/config/app.php",
+    "target": "backend/config/app.php",
+    "sha256": "78dcd36b226fd7b24057cb95f567cb6e96561c2406653892d8aef6dcea8461e4"
+  },
+  {
+    "source": "backend/config/auth.php",
+    "target": "backend/config/auth.php",
+    "sha256": "b90dc797e213f51429213378f41a41e98adebb281a5cc327fa3617f4cc076352"
+  },
+  {
+    "source": "backend/config/cache.php",
+    "target": "backend/config/cache.php",
+    "sha256": "ee4ad2bba1edfcff52e9599f37371f2370d0b167cc226ce72d46cdf6edf2dc55"
+  },
+  {
+    "source": "backend/config/cors.php",
+    "target": "backend/config/cors.php",
+    "sha256": "5a09686b0f77058d28fa1e50a695c15b7fd38c9c077b55af37316d0f665f9254"
+  },
+  {
+    "source": "backend/config/database.php",
+    "target": "backend/config/database.php",
+    "sha256": "8c3c237cca5b38c952a9618b58151177dc51076aa584515006b1f2a56933496e"
+  },
+  {
+    "source": "backend/config/filesystems.php",
+    "target": "backend/config/filesystems.php",
+    "sha256": "ba7060d7a23e490c3ce830656f6d24ad3ccf5b868e3293f2a12e411959dc5635"
+  },
+  {
+    "source": "backend/config/jwt.php",
+    "target": "backend/config/jwt.php",
+    "sha256": "aaa4856c706ed8deb004150c7b076d19df7bd46444e97bdc3d3301a3e7f6692e"
+  },
+  {
+    "source": "backend/config/legalis.php",
+    "target": "backend/config/legalis.php",
+    "sha256": "6b6d3d9e283b5b6f51c65427e685057b39891add00cf4636e1aab51a1ba4f132"
+  },
+  {
+    "source": "backend/config/logging.php",
+    "target": "backend/config/logging.php",
+    "sha256": "299ec1ba5b5a803c8e20f666ae7628e442e856cc2ff7ac9e2adb17b97e8ad63b"
+  },
+  {
+    "source": "backend/config/mail.php",
+    "target": "backend/config/mail.php",
+    "sha256": "c43ff49a31c5f32ce21eb7159f2a4b3cd2f4074eaed5838d265646dbfedd3474"
+  },
+  {
+    "source": "backend/config/permission.php",
+    "target": "backend/config/permission.php",
+    "sha256": "a4ffa1553d5eb41ab1351dbedf19148980481b607363edfb7108c937e08bc6b2"
+  },
+  {
+    "source": "backend/config/queue.php",
+    "target": "backend/config/queue.php",
+    "sha256": "6101774da7c8b79af46d0028f2b8b31a484c3f7eda10b76e5b27b6093ad364a4"
+  },
+  {
+    "source": "backend/config/services.php",
+    "target": "backend/config/services.php",
+    "sha256": "f81110e2ced004e74caf6bcc0aa76470efa0956ca599fe12cb55a842c23d5e20"
+  },
+  {
+    "source": "backend/config/session.php",
+    "target": "backend/config/session.php",
+    "sha256": "64272cfbef6f47c65bf857f1c5b1e853700c0d0278de46b86663fd83ef4aeed8"
+  },
+  {
+    "source": "backend/public/index.php",
+    "target": "backend/public/index.php",
+    "sha256": "eba77cba39695b6bd091fe5211d481f7ebb2ce2d8d26230b5a609465d0a4aff9"
+  },
+  {
+    "source": "backend/routes/web.php",
+    "target": "backend/routes/web.php",
+    "sha256": "248c7eeeb43bb61ee4fb6603e52b44843c64f72a841d671bcd41871aab23f970"
+  },
+  {
+    "source": "backend/tests/TestCase.php",
+    "target": "backend/tests/TestCase.php",
+    "sha256": "c7c209f5579c42647c1f7b2a79ac828e8b54ac62a98442045a6e94fa2c0d0ebc"
+  },
+  {
+    "source": "backend/app/Http/Controllers/Controller.php",
+    "target": "backend/app/Http/Controllers/Controller.php",
+    "sha256": "25d1c1ef8e6cc8a376553faacfba2b07d9dfaee9bdbb84f14f77517580e9deb1"
+  },
+  {
+    "source": "backend/app/Http/Controllers/AuthController.php",
+    "target": "backend/app/Http/Controllers/AuthController.php",
+    "sha256": "874fe3d9a0c7644a3b121b0ce159b57194c4fc70d3256c5326848ccbce4c17da"
+  },
+  {
+    "source": "backend/app/Http/Controllers/OrganizationInvitationController.php",
+    "target": "backend/app/Http/Controllers/OrganizationInvitationController.php",
+    "sha256": "fda9e6337dab725b14c2b9d1f8fc26ad3e01ded94fcfbdfc7a541ee44db2af51"
+  },
+  {
+    "source": "backend/app/Http/Controllers/OrganizationMemberController.php",
+    "target": "backend/app/Http/Controllers/OrganizationMemberController.php",
+    "sha256": "889c6b0d54ee7ad5f7fc66b2c1782d6a9c8d9d5e67622e470efcb05dba128467"
+  },
+  {
+    "source": "backend/app/Http/Controllers/OrganizationRoleController.php",
+    "target": "backend/app/Http/Controllers/OrganizationRoleController.php",
+    "sha256": "e7190eb798fd89d9e89b33d9ded7d41e788d07c3f84ea0d3e5e7aab02b52279c"
+  },
+  {
+    "source": "backend/app/Http/Middleware/ResolveOrganization.php",
+    "target": "backend/app/Http/Middleware/ResolveOrganization.php",
+    "sha256": "56d9788865b0e4ba9ac3449dace4871db6f97704cff6fe16d9d41d351807b6e3"
+  },
+  {
+    "source": "backend/app/Http/Requests/Auth/LoginRequest.php",
+    "target": "backend/app/Http/Requests/Auth/LoginRequest.php",
+    "sha256": "a087a5381170f1c5cc8357418b8942824d89e32f7ae9ae6973131f527537732d"
+  },
+  {
+    "source": "backend/app/Http/Requests/Auth/RegisterRequest.php",
+    "target": "backend/app/Http/Requests/Auth/RegisterRequest.php",
+    "sha256": "5f4686902325e96c70a83fefec05363d3014b0b6f0482933937f0881ab8ee93c"
+  },
+  {
+    "source": "backend/app/Models/OrganizationInvitation.php",
+    "target": "backend/app/Models/OrganizationInvitation.php",
+    "sha256": "4a56177d477ffc966092003c9d8dae1fe79acf17a721689b13768500a60ef2ed"
+  },
+  {
+    "source": "backend/app/Models/Concerns/BelongsToOrganization.php",
+    "target": "backend/app/Models/Concerns/BelongsToOrganization.php",
+    "sha256": "206f4ce47223e0aab76c2d71d62a8be4a978f800f98d7ebd657ad87f175a3885"
+  },
+  {
+    "source": "backend/app/Models/Scopes/OrganizationScope.php",
+    "target": "backend/app/Models/Scopes/OrganizationScope.php",
+    "sha256": "a23145b4caca7d12309baa1297ed5886ca4e1b659e5ff91fe5c55b9ed125ebdb"
+  },
+  {
+    "source": "backend/app/Support/Tenancy/CurrentOrganization.php",
+    "target": "backend/app/Support/Tenancy/CurrentOrganization.php",
+    "sha256": "be5412b0d70b3b8cbf8c8f366014af1bd693f71dfb9fe3a6e58d103b158a9ba8"
+  },
+  {
+    "source": "backend/app/Services/Registration/RegisterOrganization.php",
+    "target": "backend/app/Services/Registration/RegisterOrganization.php",
+    "sha256": "065859b0335af345f216865cce8178412258bb030d8fb97a4f5ccafb0c8aa28e"
+  },
+  {
+    "source": "backend/app/Services/Organizations/ProvisionOrganizationRoles.php",
+    "target": "backend/app/Services/Organizations/ProvisionOrganizationRoles.php",
+    "sha256": "30f690471af39142f97269fd070998b3704e0ad6f9d4ea2d6def23e53d1fbef1"
+  },
+  {
+    "source": "backend/app/Services/OrganizationInvitations/AcceptOrganizationInvitation.php",
+    "target": "backend/app/Services/OrganizationInvitations/AcceptOrganizationInvitation.php",
+    "sha256": "616f92104422f545cbb6f01255d47594708d5f11e8cd1fd569bf0df6a49d6317"
+  },
+  {
+    "source": "backend/app/Services/OrganizationInvitations/IssueOrganizationInvitation.php",
+    "target": "backend/app/Services/OrganizationInvitations/IssueOrganizationInvitation.php",
+    "sha256": "bdbc543e31d8d32b820e352af5057f78b646ddf859dd903ea20829549cc566d0"
+  },
+  {
+    "source": "backend/app/Services/OrganizationInvitations/ResendOrganizationInvitation.php",
+    "target": "backend/app/Services/OrganizationInvitations/ResendOrganizationInvitation.php",
+    "sha256": "b26d297d4d7ebc0be11e5607fa43194117c8d6f53da8fb454556d99dd11ca521"
+  },
+  {
+    "source": "backend/app/Services/OrganizationInvitations/RevokeOrganizationInvitation.php",
+    "target": "backend/app/Services/OrganizationInvitations/RevokeOrganizationInvitation.php",
+    "sha256": "d580dbc047f42ffa2679ed87b16e460575027e550bf32fb2a4d667074c57bfb8"
+  },
+  {
+    "source": "backend/app/Services/OrganizationMembers/UpdateOrganizationMemberRole.php",
+    "target": "backend/app/Services/OrganizationMembers/UpdateOrganizationMemberRole.php",
+    "sha256": "945b2e62d45d197c026dd2b54c0e4b749a899aa812b64939f9df657ad9cc0d85"
+  },
+  {
+    "source": "backend/app/Services/OrganizationMembers/UpdateOrganizationMemberStatus.php",
+    "target": "backend/app/Services/OrganizationMembers/UpdateOrganizationMemberStatus.php",
+    "sha256": "54e54e3f6a1f6aa4c41140a6c6890e5153902cdd28e80dd1cc50705400db006d"
+  },
+  {
+    "source": "backend/app/Mail/OrganizationInvitationMail.php",
+    "target": "backend/app/Mail/OrganizationInvitationMail.php",
+    "sha256": "8c8fa847b496056f167b4d059fafb8bd7993a637b47c58893c258b97d432d8b2"
+  },
+  {
+    "source": "backend/resources/views/emails/organization-invitation.blade.php",
+    "target": "backend/resources/views/emails/organization-invitation.blade.php",
+    "sha256": "784521e3299d8c8ee2b3d742c61180195bee3b27b03a6bfc16083c52e68c4eca"
+  },
+  {
+    "source": "backend/resources/views/financial/payment-receipt.blade.php",
+    "target": "backend/resources/views/financial/payment-receipt.blade.php",
+    "sha256": "4fc856d65d56d836f47df0af0e232882e59911f928d0eb726be2c6153eef5e7f"
+  },
+  {
+    "source": "backend/resources/views/mail/invoice-reminder.blade.php",
+    "target": "backend/resources/views/mail/invoice-reminder.blade.php",
+    "sha256": "b58b807ee6dafae6f32f5a471b915f47605c1c55fda3d089a680924a267c42bf"
+  },
+  {
+    "source": "backend/resources/views/mail/payment-receipt.blade.php",
+    "target": "backend/resources/views/mail/payment-receipt.blade.php",
+    "sha256": "6120695128bcd2f33f018512f800b603aa9d0067813b08071500e1a9836a8317"
+  },
+  {
+    "source": "backend/resources/views/welcome.blade.php",
+    "target": "backend/resources/views/welcome.blade.php",
+    "sha256": "bdb9bb7d2eecceb3581e429545b6ec96014ccab6d0ae83d4c52930e9a15f7d65"
+  },
+  {
+    "source": "backend/database/factories/UserFactory.php",
+    "target": "backend/database/factories/UserFactory.php",
+    "sha256": "3b955ef87ec7259445582ff594c60d7c27ee4faa4deb4ba7cd853395253ca4f4"
+  },
+  {
+    "source": "backend/app/Http/Requests/OrganizationInvitationAcceptRequest.php",
+    "target": "backend/app/Http/Requests/OrganizationInvitationAcceptRequest.php",
+    "sha256": "684c1b886f85063ca34a48bb28e9e72ac1901eef429fa14ed1b372f80d8f2579"
+  },
+  {
+    "source": "backend/app/Http/Requests/OrganizationInvitationStoreRequest.php",
+    "target": "backend/app/Http/Requests/OrganizationInvitationStoreRequest.php",
+    "sha256": "edad101963987bb656b374aecc01ddb30bf838968234909273bd86b0b6911ee4"
+  },
+  {
+    "source": "backend/app/Http/Requests/OrganizationMemberRoleUpdateRequest.php",
+    "target": "backend/app/Http/Requests/OrganizationMemberRoleUpdateRequest.php",
+    "sha256": "ac9f3acc7c2ef8cfed479e21f23961637c8181ad042878f4bfe1e82f3662f418"
+  },
+  {
+    "source": "backend/app/Http/Requests/OrganizationMemberStatusUpdateRequest.php",
+    "target": "backend/app/Http/Requests/OrganizationMemberStatusUpdateRequest.php",
+    "sha256": "3038392da1181719d42abfbfecd2a4d76bbd6a420a963aaaa06a2fea092ca895"
+  },
+  {
+    "source": "backend/app/Http/Requests/OrganizationRolePermissionsUpdateRequest.php",
+    "target": "backend/app/Http/Requests/OrganizationRolePermissionsUpdateRequest.php",
+    "sha256": "ca8c6121ebd5850d1d0c158c45709a2051e09994426f8d9063adf5250d77d046"
+  },
+  {
+    "source": "backend/database/migrations/0001_01_01_000000_create_users_table.php",
+    "target": "backend/database/migrations/0001_01_01_000000_create_users_table.php",
+    "sha256": "13f09dc677b109ccf506e63923a42c17fd6744fe77ef28b0c365de133b252de7"
+  },
+  {
+    "source": "backend/database/migrations/0001_01_01_000001_create_cache_table.php",
+    "target": "backend/database/migrations/0001_01_01_000001_create_cache_table.php",
+    "sha256": "fbb4665e5a977e71df4e74ec75b3c06ca4f17ad0de7138fe9786639189978e77"
+  },
+  {
+    "source": "backend/database/migrations/0001_01_01_000002_create_jobs_table.php",
+    "target": "backend/database/migrations/0001_01_01_000002_create_jobs_table.php",
+    "sha256": "df4910687180313a14a3f96a8bddd808ae145ed1b107cd772caf865c0dc2b746"
+  },
+  {
+    "source": "backend/database/migrations/2026_08_11_190000_create_organizations_table.php",
+    "target": "backend/database/migrations/2026_08_11_190000_create_organizations_table.php",
+    "sha256": "7be6dfcb31331518712fd12a72e7c219b9a137fd48b327b41e548dbb1491324b"
+  },
+  {
+    "source": "backend/database/migrations/2026_08_11_190001_create_organization_user_table.php",
+    "target": "backend/database/migrations/2026_08_11_190001_create_organization_user_table.php",
+    "sha256": "2729ee632a57686d82ac06cb10067c631f36be29d109603fa6362560fdb449cf"
+  },
+  {
+    "source": "backend/database/migrations/2026_08_11_200122_create_permission_tables.php",
+    "target": "backend/database/migrations/2026_08_11_200122_create_permission_tables.php",
+    "sha256": "c4d5027317bf1379f950bb3e74d088ecd365353857b4f0f16afe5f0bf2550a1a"
+  },
+  {
+    "source": "backend/database/migrations/2026_08_14_202606_create_organization_invitations_table.php",
+    "target": "backend/database/migrations/2026_08_14_202606_create_organization_invitations_table.php",
+    "sha256": "4c37c9c9405ea32e1cb01e30e195487336a4b76af862d98bc70b61419e68a270"
+  },
+  {
+    "source": "frontend/package.json",
+    "target": "frontend/package.json",
+    "sha256": "d322258b2775ea0550078a3feb2d4cdc5f7af55f934dc4a41bde1e0d6174a632"
+  },
+  {
+    "source": "frontend/package-lock.json",
+    "target": "frontend/package-lock.json",
+    "sha256": "6896f5940cdb449800971f50aa00e715b2b52979a2b30b62d757b17c373eeb1a"
+  },
+  {
+    "source": "frontend/index.html",
+    "target": "frontend/index.html",
+    "sha256": "a19efec21abaaf4da48eba1af22e9424e040f6c43b837207be0409b7f37d4a39"
+  },
+  {
+    "source": "frontend/jsconfig.json",
+    "target": "frontend/jsconfig.json",
+    "sha256": "79fd4027bf8390af45cb910b7590050e49b024779a55d9dcd1959d9516324c05"
+  },
+  {
+    "source": "frontend/vite.config.js",
+    "target": "frontend/vite.config.js",
+    "sha256": "9c49228bb1c6fa3c31da6626e8876ad6c282145a751fca3880148c0d0987bb41"
+  },
+  {
+    "source": "frontend/vitest.config.js",
+    "target": "frontend/vitest.config.js",
+    "sha256": "8d0c8b70f28530f6e3813bbee1595de9eb60841dc32f940b12185b447a93c646"
+  },
+  {
+    "source": "frontend/src/App.vue",
+    "target": "frontend/src/App.vue",
+    "sha256": "55e71bc67e7f5d6f1fdcfcbedd7e466ff4847d3d85bac039ea48b81029f76229"
+  },
+  {
+    "source": "frontend/src/main.js",
+    "target": "frontend/src/main.js",
+    "sha256": "ada372507ffadc4b6d0a3478bd81a1353976f74a26dadf40cf14af1803962d12"
+  },
+  {
+    "source": "frontend/src/assets/styles/app.css",
+    "target": "frontend/src/assets/styles/app.css",
+    "sha256": "14bdb7ed65e42dd9fe0a0c8ea99ce38e3c8c432d6159bb411df8f88b2785b302"
+  },
+  {
+    "source": "frontend/src/assets/styles/base.css",
+    "target": "frontend/src/assets/styles/base.css",
+    "sha256": "bdd12b616cfcf34ea06460fffe1184ce3a531848d0c9bf12458cd29e3c4030b9"
+  },
+  {
+    "source": "frontend/src/assets/styles/components/breadcrumb.css",
+    "target": "frontend/src/assets/styles/components/breadcrumb.css",
+    "sha256": "7d92d999c0fc3a4c3bb5dc290dd9527df1e2bf04beed848355d4e72d9cc39706"
+  },
+  {
+    "source": "frontend/src/assets/styles/components/button.css",
+    "target": "frontend/src/assets/styles/components/button.css",
+    "sha256": "bd63c0063c767f83dabda3fb95f3076008bb169e511029cdab6d915afcddc66e"
+  },
+  {
+    "source": "frontend/src/assets/styles/components/card.css",
+    "target": "frontend/src/assets/styles/components/card.css",
+    "sha256": "779509c50033aa9ebc6abd937403ae3dfffceb108140c494d6487149f4ab8e27"
+  },
+  {
+    "source": "frontend/src/assets/styles/components/field.css",
+    "target": "frontend/src/assets/styles/components/field.css",
+    "sha256": "53825c217c2de69ca15d827b7119ce51014f1dd711ec293bacb402dcd37c3a26"
+  },
+  {
+    "source": "frontend/src/assets/styles/components/header.css",
+    "target": "frontend/src/assets/styles/components/header.css",
+    "sha256": "6fec5c05191f510e919f4228d70a1b8693d1968762510da620cd6c60e0a7d590"
+  },
+  {
+    "source": "frontend/src/assets/styles/components/logo.css",
+    "target": "frontend/src/assets/styles/components/logo.css",
+    "sha256": "df4130e1bdf37642db7541a5499be6302ffbbc8fb3f81bc4cb7f667ee1995ea8"
+  },
+  {
+    "source": "frontend/src/assets/styles/components/sidebar.css",
+    "target": "frontend/src/assets/styles/components/sidebar.css",
+    "sha256": "36e94b98af8a58665ef6919c1d83577a55d2093426f9300428a2835197111d93"
+  },
+  {
+    "source": "frontend/src/assets/styles/layouts/app-layout.css",
+    "target": "frontend/src/assets/styles/layouts/app-layout.css",
+    "sha256": "87155d2775467f7b839680023c485dc0b0c0ff28e7ffc34604607bbcfc06b8c3"
+  },
+  {
+    "source": "frontend/src/assets/styles/layouts/page-layout.css",
+    "target": "frontend/src/assets/styles/layouts/page-layout.css",
+    "sha256": "c69c1fd2ce90db0ac6387ee4a89f4ec2939a7f665ef02b3e29c8abede706a725"
+  },
+  {
+    "source": "frontend/src/assets/styles/reset.css",
+    "target": "frontend/src/assets/styles/reset.css",
+    "sha256": "973bdbe133e0aa6279d2f4d63f6e46827290e2c8d4ad035d952bba99f53402cf"
+  },
+  {
+    "source": "frontend/src/assets/styles/themes/terra-solar.css",
+    "target": "frontend/src/assets/styles/themes/terra-solar.css",
+    "sha256": "781930743e4d11cdbecb168584e168848e4e9fc722dd61946f8c6b09ab3bbd4d"
+  },
+  {
+    "source": "frontend/src/assets/styles/tokens.css",
+    "target": "frontend/src/assets/styles/tokens.css",
+    "sha256": "d9bda278a63b7f60ded212a52b0f6d39587c0a295e3cae972b9faaa4efcab48b"
+  },
+  {
+    "source": "frontend/src/assets/styles/utilities.css",
+    "target": "frontend/src/assets/styles/utilities.css",
+    "sha256": "d900b556c37161a5c7c7e50e7d6f4da87b78819e0d2573f08c6ed2dcf4c9d6f4"
+  },
+  {
+    "source": "frontend/src/components/forms/controls/AutocompleteControl/index.vue",
+    "target": "frontend/src/components/forms/controls/AutocompleteControl/index.vue",
+    "sha256": "36422dced09e51e1417e042d5ee10b03915bea762325e66584ac148a17e0623f"
+  },
+  {
+    "source": "frontend/src/components/forms/controls/AutocompleteControl/props.js",
+    "target": "frontend/src/components/forms/controls/AutocompleteControl/props.js",
+    "sha256": "e106ef17a5a4be6a7c7fb033dcf268ab079a7265a01c069475653d86afbedd85"
+  },
+  {
+    "source": "frontend/src/components/forms/controls/AutocompleteControl/README.md",
+    "target": "frontend/src/components/forms/controls/AutocompleteControl/README.md",
+    "sha256": "5469c0b675da31d7bd4a55ccacb425be950450cda49a5d65460e68f4a393085a"
+  },
+  {
+    "source": "frontend/src/components/forms/controls/AutocompleteControl/style.css",
+    "target": "frontend/src/components/forms/controls/AutocompleteControl/style.css",
+    "sha256": "5f06266967c7124df37ecccc0c53b1c04c83db00aaaf4a402b33296e05c1a837"
+  },
+  {
+    "source": "frontend/src/components/forms/controls/CheckboxControl/index.vue",
+    "target": "frontend/src/components/forms/controls/CheckboxControl/index.vue",
+    "sha256": "5ec4c8d7a6b78b921e87de13ebaddc902c83e520f19e0f6a52399acd110c8fb9"
+  },
+  {
+    "source": "frontend/src/components/forms/controls/CheckboxControl/props.js",
+    "target": "frontend/src/components/forms/controls/CheckboxControl/props.js",
+    "sha256": "d93b9d5e76a135a8562ccba2d30e393a870c12f5a65e0dabc825d5f528441598"
+  },
+  {
+    "source": "frontend/src/components/forms/controls/CheckboxControl/README.md",
+    "target": "frontend/src/components/forms/controls/CheckboxControl/README.md",
+    "sha256": "e6d5923ca203d86c0a2ade9fb497c95a90f23b03f7fb8fb521a98012babf3b10"
+  },
+  {
+    "source": "frontend/src/components/forms/controls/CheckboxControl/style.css",
+    "target": "frontend/src/components/forms/controls/CheckboxControl/style.css",
+    "sha256": "46bcc29522218ab3833a842ded4d925abf1ea7e8d221b88307ee82e5d114658c"
+  },
+  {
+    "source": "frontend/src/components/forms/controls/InputControl/index.vue",
+    "target": "frontend/src/components/forms/controls/InputControl/index.vue",
+    "sha256": "e8035bf99dc319a3b47488988e240ecfd0d4674b871a7bf33d6e2a65758f408a"
+  },
+  {
+    "source": "frontend/src/components/forms/controls/InputControl/props.js",
+    "target": "frontend/src/components/forms/controls/InputControl/props.js",
+    "sha256": "ca5bbdf2c4383cac5a8c14118703c2703eb433bd60a2f519e46dd49812025005"
+  },
+  {
+    "source": "frontend/src/components/forms/controls/InputControl/README.md",
+    "target": "frontend/src/components/forms/controls/InputControl/README.md",
+    "sha256": "edc12b0ccdd13c5882e8bd0b0eb3b421ea653f0bd1b430526ced508247438864"
+  },
+  {
+    "source": "frontend/src/components/forms/controls/InputControl/style.css",
+    "target": "frontend/src/components/forms/controls/InputControl/style.css",
+    "sha256": "c16e35a3fbebb13c7fc3fde9d27cf0e9e435751421518e1961f864a7c014baee"
+  },
+  {
+    "source": "frontend/src/components/forms/controls/RadioControl/index.vue",
+    "target": "frontend/src/components/forms/controls/RadioControl/index.vue",
+    "sha256": "f8a46c6ae8f6fd93e3cb1dbe90a504fba3f85ee8c6aa420e4dbfbd1fc76c918d"
+  },
+  {
+    "source": "frontend/src/components/forms/controls/RadioControl/props.js",
+    "target": "frontend/src/components/forms/controls/RadioControl/props.js",
+    "sha256": "0ce8b99501efe2e005c3732eb1710a4bfdf3f47928bfac152bab5a4a4addc42a"
+  },
+  {
+    "source": "frontend/src/components/forms/controls/RadioControl/README.md",
+    "target": "frontend/src/components/forms/controls/RadioControl/README.md",
+    "sha256": "c4fb7b10fd9ed15168944a4f7ce891cd24e1054fbbbf205a8e0b457df5bd6bba"
+  },
+  {
+    "source": "frontend/src/components/forms/controls/RadioControl/style.css",
+    "target": "frontend/src/components/forms/controls/RadioControl/style.css",
+    "sha256": "b5bd450850cce3604d390aa5a684395b528fa9496f50a0d2338195c371e71567"
+  },
+  {
+    "source": "frontend/src/components/forms/controls/SelectControl/index.vue",
+    "target": "frontend/src/components/forms/controls/SelectControl/index.vue",
+    "sha256": "b5e0ffc08856cdee6c689cbb12abc6286c22ddfea7e269559e0fcccb430d6597"
+  },
+  {
+    "source": "frontend/src/components/forms/controls/SelectControl/props.js",
+    "target": "frontend/src/components/forms/controls/SelectControl/props.js",
+    "sha256": "b6cffa5a1ebe21e2225693acab626164dc69cc8e2db79c040d9861d9ca8e5345"
+  },
+  {
+    "source": "frontend/src/components/forms/controls/SelectControl/README.md",
+    "target": "frontend/src/components/forms/controls/SelectControl/README.md",
+    "sha256": "46bf8d7a693a4f70c433605eb767aac78d20a910c85bc3ab96a7f5d138f2d5a9"
+  },
+  {
+    "source": "frontend/src/components/forms/controls/SelectControl/style.css",
+    "target": "frontend/src/components/forms/controls/SelectControl/style.css",
+    "sha256": "4e31061d2eaafdcb68b390adcd8ddc036528ec99277def2d8ad711dfd3284990"
+  },
+  {
+    "source": "frontend/src/components/forms/controls/SwitchControl/index.vue",
+    "target": "frontend/src/components/forms/controls/SwitchControl/index.vue",
+    "sha256": "7a108087b9dc3b3c90243163e3de91842d7e7761eca95ea18cff69e204363516"
+  },
+  {
+    "source": "frontend/src/components/forms/controls/SwitchControl/props.js",
+    "target": "frontend/src/components/forms/controls/SwitchControl/props.js",
+    "sha256": "05114fd55e704a7411366b71d1bcf92e41ba4ae868f1a5707b2d8aabfaa09ff6"
+  },
+  {
+    "source": "frontend/src/components/forms/controls/SwitchControl/README.md",
+    "target": "frontend/src/components/forms/controls/SwitchControl/README.md",
+    "sha256": "ba4e6ad5d9f43b9445730389df0f8c804f58fa931d11162fd3fd226bead693be"
+  },
+  {
+    "source": "frontend/src/components/forms/controls/SwitchControl/style.css",
+    "target": "frontend/src/components/forms/controls/SwitchControl/style.css",
+    "sha256": "065a077cb69fac72196ed66ac792bc0475c4c9fcbccc7972991ca1aa28e1729f"
+  },
+  {
+    "source": "frontend/src/components/forms/controls/TextareaControl/index.vue",
+    "target": "frontend/src/components/forms/controls/TextareaControl/index.vue",
+    "sha256": "bf1d1466d848b1a2e3b3b9fd4572b2d09ae0819967b3f8420ced21f80fcadb38"
+  },
+  {
+    "source": "frontend/src/components/forms/controls/TextareaControl/props.js",
+    "target": "frontend/src/components/forms/controls/TextareaControl/props.js",
+    "sha256": "a53c77cb2345cb4b7b5516662af43a25277a5c2cc28e4aa044878d0f215db487"
+  },
+  {
+    "source": "frontend/src/components/forms/controls/TextareaControl/README.md",
+    "target": "frontend/src/components/forms/controls/TextareaControl/README.md",
+    "sha256": "444e4e8c578b3c3448bd3097edb2ead795265810de029e9598c71c73d0da4772"
+  },
+  {
+    "source": "frontend/src/components/forms/controls/TextareaControl/style.css",
+    "target": "frontend/src/components/forms/controls/TextareaControl/style.css",
+    "sha256": "e9d5c8a36e08d750e8c9b5ca3280a5f2c1b9836ec303bb924c68c6aa6c321e08"
+  },
+  {
+    "source": "frontend/src/components/forms/fields/AppAutocomplete/index.vue",
+    "target": "frontend/src/components/forms/fields/AppAutocomplete/index.vue",
+    "sha256": "e80152430318a6e4e9acfd64029acd552dec9efe5b0a9357ba35ef168eadeb29"
+  },
+  {
+    "source": "frontend/src/components/forms/fields/AppAutocomplete/props.js",
+    "target": "frontend/src/components/forms/fields/AppAutocomplete/props.js",
+    "sha256": "79c50aafaa7775ca0bf316b0d4e2a46d616bd3baacb963e9041e91f694b4daff"
+  },
+  {
+    "source": "frontend/src/components/forms/fields/AppAutocomplete/README.md",
+    "target": "frontend/src/components/forms/fields/AppAutocomplete/README.md",
+    "sha256": "a87732f4ed2b761f097a38aae797dd46ba87c9a7a15ffd0acf891ca6b3727a7a"
+  },
+  {
+    "source": "frontend/src/components/forms/fields/AppField/index.vue",
+    "target": "frontend/src/components/forms/fields/AppField/index.vue",
+    "sha256": "f4935dfaf4d48c750fa7e6f170d02fcda1d16d1020858d3d65fd3d4ebc9c00df"
+  },
+  {
+    "source": "frontend/src/components/forms/fields/AppField/props.js",
+    "target": "frontend/src/components/forms/fields/AppField/props.js",
+    "sha256": "e10f48fb7a5088d53390683017b14849302bd92f095d0ac6ed9e1661a3090b4e"
+  },
+  {
+    "source": "frontend/src/components/forms/fields/AppField/README.md",
+    "target": "frontend/src/components/forms/fields/AppField/README.md",
+    "sha256": "cbb604f0b29d0b4c95c98c117c29370187ba420dbed39e8925dac0554dd79aca"
+  },
+  {
+    "source": "frontend/src/components/forms/fields/AppInput/index.vue",
+    "target": "frontend/src/components/forms/fields/AppInput/index.vue",
+    "sha256": "f064739b3bc11c318c15bd5046c33c493b00239c2fd45f466f91649b48e85e45"
+  },
+  {
+    "source": "frontend/src/components/forms/fields/AppInput/props.js",
+    "target": "frontend/src/components/forms/fields/AppInput/props.js",
+    "sha256": "4122adbe45475df9a4d6e6d3e3a1c4c1163e8b43c1edb5e8e95b989f917d4546"
+  },
+  {
+    "source": "frontend/src/components/forms/fields/AppInput/README.md",
+    "target": "frontend/src/components/forms/fields/AppInput/README.md",
+    "sha256": "772297013d8d0330c0d1f70124a9e46dfc32d542b2a50779b5050a3681f41069"
+  },
+  {
+    "source": "frontend/src/components/forms/fields/AppSelect/index.vue",
+    "target": "frontend/src/components/forms/fields/AppSelect/index.vue",
+    "sha256": "045a7eeaa14df9caeccf5d0cf224f22a59eaeede0c7f414834f9b4dbad0cf13d"
+  },
+  {
+    "source": "frontend/src/components/forms/fields/AppSelect/props.js",
+    "target": "frontend/src/components/forms/fields/AppSelect/props.js",
+    "sha256": "142c85992e8635fa40bd7db7e1d7c17cc6b1e6b570a4d0b00eece5b5612a68de"
+  },
+  {
+    "source": "frontend/src/components/forms/fields/AppSelect/README.md",
+    "target": "frontend/src/components/forms/fields/AppSelect/README.md",
+    "sha256": "d60105103af2bbbbf059aa3cb77734d806c493cbf053c039d230272aa1d32704"
+  },
+  {
+    "source": "frontend/src/components/forms/fields/AppTextarea/index.vue",
+    "target": "frontend/src/components/forms/fields/AppTextarea/index.vue",
+    "sha256": "819df0e121d3106a3a3a5ca6f09d6ce613030e12b95a58a066f918858ac75de5"
+  },
+  {
+    "source": "frontend/src/components/forms/fields/AppTextarea/props.js",
+    "target": "frontend/src/components/forms/fields/AppTextarea/props.js",
+    "sha256": "a821e605a0758cd6b85a4c5c0a1fdc490e7c25762d72d23b1ab0b768d64776ef"
+  },
+  {
+    "source": "frontend/src/components/forms/fields/AppTextarea/README.md",
+    "target": "frontend/src/components/forms/fields/AppTextarea/README.md",
+    "sha256": "c69e74ff54222f803d3d7af952a02b579a390dd0885bb8bbe6fa3dd7c33cbaca"
+  },
+  {
+    "source": "frontend/src/components/forms/fields/BaseField/index.vue",
+    "target": "frontend/src/components/forms/fields/BaseField/index.vue",
+    "sha256": "2092248e63222453e414dac8eded8cd7a32c02e7e241b49245720bdc1bb517e6"
+  },
+  {
+    "source": "frontend/src/components/forms/fields/BaseField/README.md",
+    "target": "frontend/src/components/forms/fields/BaseField/README.md",
+    "sha256": "723b2742d9224d3310eb124e7b2df37a893a4ad4b96885d815bef1f17ea4a626"
+  },
+  {
+    "source": "frontend/src/components/forms/files/AppFileUpload/index.vue",
+    "target": "frontend/src/components/forms/files/AppFileUpload/index.vue",
+    "sha256": "b6a410030de537a7177474d5def783c3b539d856ffc652fff142143f580489b4"
+  },
+  {
+    "source": "frontend/src/components/forms/files/AppFileUpload/props.js",
+    "target": "frontend/src/components/forms/files/AppFileUpload/props.js",
+    "sha256": "ea81697871ac65ebb9a5c49b3d6f5dbe1f285c36847bae7b430fda56f1079107"
+  },
+  {
+    "source": "frontend/src/components/forms/files/AppFileUpload/README.md",
+    "target": "frontend/src/components/forms/files/AppFileUpload/README.md",
+    "sha256": "33c74a85096ce7160866bbcc342fff7523f48a8d75bfc5e02f1e59a9da8b58d7"
+  },
+  {
+    "source": "frontend/src/components/forms/files/AppFileUpload/style.css",
+    "target": "frontend/src/components/forms/files/AppFileUpload/style.css",
+    "sha256": "c29bce01ba74d3ae93195707c8071f244f4ec52b6a8b50b006f12285a03df557"
+  },
+  {
+    "source": "frontend/src/components/forms/groups/CheckboxGroup/index.vue",
+    "target": "frontend/src/components/forms/groups/CheckboxGroup/index.vue",
+    "sha256": "7b78a3f27ee326ede8683ba4b6aea8950d52ad3e58380a3ebb0a4506b8f62d0f"
+  },
+  {
+    "source": "frontend/src/components/forms/groups/CheckboxGroup/props.js",
+    "target": "frontend/src/components/forms/groups/CheckboxGroup/props.js",
+    "sha256": "1332c8e6a3e91e3971846629838eebf883fb1364514b900732d77db198482f0e"
+  },
+  {
+    "source": "frontend/src/components/forms/groups/CheckboxGroup/README.md",
+    "target": "frontend/src/components/forms/groups/CheckboxGroup/README.md",
+    "sha256": "b3f4711207e06a4c4d5f0d9ef55b482bf167fd0312d3f87c4bd1f15f005784ef"
+  },
+  {
+    "source": "frontend/src/components/forms/groups/CheckboxGroup/style.css",
+    "target": "frontend/src/components/forms/groups/CheckboxGroup/style.css",
+    "sha256": "8764acc2d5d798a26a9b143d8ac7fab29d3dfb31a8f716fa64c711560780ba5f"
+  },
+  {
+    "source": "frontend/src/components/forms/groups/RadioGroup/index.vue",
+    "target": "frontend/src/components/forms/groups/RadioGroup/index.vue",
+    "sha256": "210179164096f9b2a84303e4c92350aaefd7c505be620e45c18b2fd9673face8"
+  },
+  {
+    "source": "frontend/src/components/forms/groups/RadioGroup/props.js",
+    "target": "frontend/src/components/forms/groups/RadioGroup/props.js",
+    "sha256": "ec62a34e413cdea680e955ae05341bb74b5b9da048b9fc45407568f848df07a8"
+  },
+  {
+    "source": "frontend/src/components/forms/groups/RadioGroup/README.md",
+    "target": "frontend/src/components/forms/groups/RadioGroup/README.md",
+    "sha256": "dcea03b3956fced6366261832cdd72e3523254db665afcb9d1c280e74a106724"
+  },
+  {
+    "source": "frontend/src/components/forms/groups/RadioGroup/style.css",
+    "target": "frontend/src/components/forms/groups/RadioGroup/style.css",
+    "sha256": "f8a54688c0a372180430749c7741851f7a00e73b9ffb2bd7cf4bbdbcabb51fe7"
+  },
+  {
+    "source": "frontend/src/components/forms/index.js",
+    "target": "frontend/src/components/forms/index.js",
+    "sha256": "aae79074a5500eb9559c0e16d13c6c971f32e9f7e0845837cd90162cbe4c4f97"
+  },
+  {
+    "source": "frontend/src/components/forms/internal/index.js",
+    "target": "frontend/src/components/forms/internal/index.js",
+    "sha256": "489f61cfb2690069783037dcb5940acc697ae7d4d2a5716694c994c4f3726b6f"
+  },
+  {
+    "source": "frontend/src/components/forms/internal/InputIcon/index.vue",
+    "target": "frontend/src/components/forms/internal/InputIcon/index.vue",
+    "sha256": "db23896656107a949b668042ad32a89e5a8441ca38a67278698d8482ee6359e3"
+  },
+  {
+    "source": "frontend/src/components/forms/internal/InputIcon/README.md",
+    "target": "frontend/src/components/forms/internal/InputIcon/README.md",
+    "sha256": "006512bd82d37c50c0aeb9c688dd1862891150f05c210fbdd28db3efc283c448"
+  },
+  {
+    "source": "frontend/src/components/forms/internal/InputIconButton/index.vue",
+    "target": "frontend/src/components/forms/internal/InputIconButton/index.vue",
+    "sha256": "4708118a9a272cc49999d79857fb6eae431cd5f053421dfdfdf7258e12d71e74"
+  },
+  {
+    "source": "frontend/src/components/forms/internal/InputIconButton/README.md",
+    "target": "frontend/src/components/forms/internal/InputIconButton/README.md",
+    "sha256": "f073a882e3f9454f6caf2d1bdfc7d2a193cf4b7df382c733c0ebb103aef1d86f"
+  },
+  {
+    "source": "frontend/src/components/forms/internal/InputVariant/index.vue",
+    "target": "frontend/src/components/forms/internal/InputVariant/index.vue",
+    "sha256": "43369bd013edcdf0ecbd7b4a7da8c47435143238738343775c9e1b2bee4cfca1"
+  },
+  {
+    "source": "frontend/src/components/forms/internal/InputVariant/props.js",
+    "target": "frontend/src/components/forms/internal/InputVariant/props.js",
+    "sha256": "09990a44562fd4cfcad28e9dbea02e2904bff9d651f239d504470fc30d1c7974"
+  },
+  {
+    "source": "frontend/src/components/forms/selection/AppCheckbox/index.vue",
+    "target": "frontend/src/components/forms/selection/AppCheckbox/index.vue",
+    "sha256": "9d5017e9db4c92b1044a28c4488e9f7bd81a691af1724ffdbfca944ba6c90ff2"
+  },
+  {
+    "source": "frontend/src/components/forms/selection/AppCheckbox/props.js",
+    "target": "frontend/src/components/forms/selection/AppCheckbox/props.js",
+    "sha256": "d3747c57063037ee58d7cb8f0deb6456a0a4bb612daae29ffa5797e4853ea7cb"
+  },
+  {
+    "source": "frontend/src/components/forms/selection/AppCheckbox/README.md",
+    "target": "frontend/src/components/forms/selection/AppCheckbox/README.md",
+    "sha256": "02b42a6f73904089f4935e33a51ce45e6977d0696b627f993749195d0afb8f88"
+  },
+  {
+    "source": "frontend/src/components/forms/selection/AppCheckbox/style.css",
+    "target": "frontend/src/components/forms/selection/AppCheckbox/style.css",
+    "sha256": "1ff969115cd291ef6c06955fb31dc7f673ac8177a56d52770a38402ef9a81228"
+  },
+  {
+    "source": "frontend/src/components/forms/selection/AppRadio/index.vue",
+    "target": "frontend/src/components/forms/selection/AppRadio/index.vue",
+    "sha256": "7dffec534da4092af72a5a4f105c4ba7b3c4bfdbae6dcc17339cf9a76f819607"
+  },
+  {
+    "source": "frontend/src/components/forms/selection/AppRadio/props.js",
+    "target": "frontend/src/components/forms/selection/AppRadio/props.js",
+    "sha256": "a8f96f535df1672f5350c7df62dfcf0c976e37079b270cc75e90d274dc096d56"
+  },
+  {
+    "source": "frontend/src/components/forms/selection/AppRadio/README.md",
+    "target": "frontend/src/components/forms/selection/AppRadio/README.md",
+    "sha256": "c76d6cc09104f4e0b18e053463600c8916ca54b2294276992e9c2c58c1f1c588"
+  },
+  {
+    "source": "frontend/src/components/forms/selection/AppRadio/style.css",
+    "target": "frontend/src/components/forms/selection/AppRadio/style.css",
+    "sha256": "4d26e2a1739a5fccd9e6af9b7b612c6f2bd389208e55457ad3fa47945353cdfe"
+  },
+  {
+    "source": "frontend/src/components/forms/selection/AppSwitch/index.vue",
+    "target": "frontend/src/components/forms/selection/AppSwitch/index.vue",
+    "sha256": "e3543b888bef9f994eb57f6aca554f4047ded54fe52c7f791b8284cb81e6b228"
+  },
+  {
+    "source": "frontend/src/components/forms/selection/AppSwitch/props.js",
+    "target": "frontend/src/components/forms/selection/AppSwitch/props.js",
+    "sha256": "c5eb4311d12a379096f062d99f49c3d9aa34236c04e77d5f806b5f4a3b096a8d"
+  },
+  {
+    "source": "frontend/src/components/forms/selection/AppSwitch/README.md",
+    "target": "frontend/src/components/forms/selection/AppSwitch/README.md",
+    "sha256": "01010729ceed3f8a59e2119b0676628fdc8a3515ab229c4138eb939b853a2e77"
+  },
+  {
+    "source": "frontend/src/components/forms/selection/AppSwitch/style.css",
+    "target": "frontend/src/components/forms/selection/AppSwitch/style.css",
+    "sha256": "4fd7c974ca96d82c92642da4d1c9910bea07b0947512f28a34ad729b0faa4041"
+  },
+  {
+    "source": "frontend/src/components/forms/shared/constants/control-keys.js",
+    "target": "frontend/src/components/forms/shared/constants/control-keys.js",
+    "sha256": "b333b9ede958be4c5ff9ffa1bd34f13c2446e03a3c1297a03a082c38b32c9f79"
+  },
+  {
+    "source": "frontend/src/components/forms/shared/constants/defaults.js",
+    "target": "frontend/src/components/forms/shared/constants/defaults.js",
+    "sha256": "37bc88469d9b9284161bd9c7ae1124570b799e6abfb875e129772b97479b3098"
+  },
+  {
+    "source": "frontend/src/components/forms/shared/number/constants.js",
+    "target": "frontend/src/components/forms/shared/number/constants.js",
+    "sha256": "d102cbcef4825b5e0e7cefc8617652000bd347ecacfb735c0359b285eb4de310"
+  },
+  {
+    "source": "frontend/src/components/forms/shared/number/formatter.js",
+    "target": "frontend/src/components/forms/shared/number/formatter.js",
+    "sha256": "7461c9665244f066b63e253acd3dbe72d7a9db25a915f655220dece8e1e5c68b"
+  },
+  {
+    "source": "frontend/src/components/forms/shared/number/index.js",
+    "target": "frontend/src/components/forms/shared/number/index.js",
+    "sha256": "fcaa3acffadcc0b7789f8f3b165269d031c650e99f6ca1290398166b13f5c550"
+  },
+  {
+    "source": "frontend/src/components/forms/shared/number/parser.js",
+    "target": "frontend/src/components/forms/shared/number/parser.js",
+    "sha256": "5d39ae912d8b38ee30fbe7c044f2f4f86e127102738f311745a1271c4c834104"
+  },
+  {
+    "source": "frontend/src/components/forms/shared/number/pipeline.js",
+    "target": "frontend/src/components/forms/shared/number/pipeline.js",
+    "sha256": "3941d8e74b568f1c5f94b9d7e6c4b7ae886015e39294ed2c23ce4ea068b76261"
+  },
+  {
+    "source": "frontend/src/components/forms/shared/number/sanitizer.js",
+    "target": "frontend/src/components/forms/shared/number/sanitizer.js",
+    "sha256": "17215346871ca73f1f65c65a2ab879a20bf66f16d52fbb122fc79536709b05fd"
+  },
+  {
+    "source": "frontend/src/components/forms/shared/number/validators.js",
+    "target": "frontend/src/components/forms/shared/number/validators.js",
+    "sha256": "c5f0fc2b196cad23c68dc4a209c42a879fe73a2a742aec837b614273f5ba6dbf"
+  },
+  {
+    "source": "frontend/src/components/forms/shared/props/common.js",
+    "target": "frontend/src/components/forms/shared/props/common.js",
+    "sha256": "b909a9001b46983dfc2a1fdab53af9984a98b692e061b838cba15c5a951849a0"
+  },
+  {
+    "source": "frontend/src/components/forms/shared/props/control.js",
+    "target": "frontend/src/components/forms/shared/props/control.js",
+    "sha256": "1855f29e13f668a1164e9cc334f0f0332a44d56ceb54467549e3ced291991daa"
+  },
+  {
+    "source": "frontend/src/components/forms/shared/props/field.js",
+    "target": "frontend/src/components/forms/shared/props/field.js",
+    "sha256": "6ddf207c2050b8db638bcd8d5c9007415e63b322443c4442e2ee39e78ee3c8b6"
+  },
+  {
+    "source": "frontend/src/components/forms/shared/utils/pick.js",
+    "target": "frontend/src/components/forms/shared/utils/pick.js",
+    "sha256": "03d8f51b6dfb9e24fb54c9b809988c8ba00df1a96cd46e16da73f213484623a6"
+  },
+  {
+    "source": "frontend/src/components/forms/variants/AppCurrency/index.vue",
+    "target": "frontend/src/components/forms/variants/AppCurrency/index.vue",
+    "sha256": "c55e05d229ca9309635727037204a8d108f6b74c541c24c6afbb3059ac01b9a0"
+  },
+  {
+    "source": "frontend/src/components/forms/variants/AppCurrency/props.js",
+    "target": "frontend/src/components/forms/variants/AppCurrency/props.js",
+    "sha256": "0f18802956a9c174681ec5d8fdb3d5417e914384bed7086164eab4b9fe33c44c"
+  },
+  {
+    "source": "frontend/src/components/forms/variants/AppCurrency/README.md",
+    "target": "frontend/src/components/forms/variants/AppCurrency/README.md",
+    "sha256": "3f8bb83ee7081fb4c24840b07ce030016f139bc8c5b4a95214358de3cf36e047"
+  },
+  {
+    "source": "frontend/src/components/forms/variants/AppCurrency/style.css",
+    "target": "frontend/src/components/forms/variants/AppCurrency/style.css",
+    "sha256": "bf6bac87972975548bd3142a800b595a2520cc1e6002808161a37a6f337d6cf5"
+  },
+  {
+    "source": "frontend/src/components/forms/variants/AppDate/index.vue",
+    "target": "frontend/src/components/forms/variants/AppDate/index.vue",
+    "sha256": "e27993847091412d46f5c29f2f6482dfc9c9926ad6c38bbcb141f4d068368c3b"
+  },
+  {
+    "source": "frontend/src/components/forms/variants/AppDate/props.js",
+    "target": "frontend/src/components/forms/variants/AppDate/props.js",
+    "sha256": "009285ae2fa4e82182916ad7510b7367ce1e76c6efabe9eaa0f54d90fe7c742b"
+  },
+  {
+    "source": "frontend/src/components/forms/variants/AppDate/README.md",
+    "target": "frontend/src/components/forms/variants/AppDate/README.md",
+    "sha256": "9262cb55ffff4b2a1dc48af0d75cdb82893314d48cdb3fc816dffff67c039aa0"
+  },
+  {
+    "source": "frontend/src/components/forms/variants/AppDate/style.css",
+    "target": "frontend/src/components/forms/variants/AppDate/style.css",
+    "sha256": "1cb9e6ca22e7aaa4cb0452eab8c0f35a0056cd4b4493897efd1d8e1a99887778"
+  },
+  {
+    "source": "frontend/src/components/forms/variants/AppEmail/index.vue",
+    "target": "frontend/src/components/forms/variants/AppEmail/index.vue",
+    "sha256": "fe9cd12169f0da0a8dd82abdcf17304c475ef93ec7ad31d0884eb8324887ebf6"
+  },
+  {
+    "source": "frontend/src/components/forms/variants/AppEmail/props.js",
+    "target": "frontend/src/components/forms/variants/AppEmail/props.js",
+    "sha256": "a51527f1fa2f6c040c776cce5151052d6bdd2afd2356d584746cb35265fdfb11"
+  },
+  {
+    "source": "frontend/src/components/forms/variants/AppEmail/README.md",
+    "target": "frontend/src/components/forms/variants/AppEmail/README.md",
+    "sha256": "26ffe92decc838e6ca52692bb0af46bcaac3759cc030042bd0cc4397d23f0bd3"
+  },
+  {
+    "source": "frontend/src/components/forms/variants/AppEmail/style.css",
+    "target": "frontend/src/components/forms/variants/AppEmail/style.css",
+    "sha256": "53826607c7ea5b435596d446141722dc6478cb6895fb63d71e44d429bbd951c2"
+  },
+  {
+    "source": "frontend/src/components/forms/variants/AppNumber/index.vue",
+    "target": "frontend/src/components/forms/variants/AppNumber/index.vue",
+    "sha256": "a4f91b32a41bf9f51f2f68c316fec21d3a1d428eff223e357157fc2c1c5b87fc"
+  },
+  {
+    "source": "frontend/src/components/forms/variants/AppNumber/props.js",
+    "target": "frontend/src/components/forms/variants/AppNumber/props.js",
+    "sha256": "b81e55535aa51e3abb35f08ab4ee95fe8ab2a09d530d11a36b6d8938b543b389"
+  },
+  {
+    "source": "frontend/src/components/forms/variants/AppNumber/README.md",
+    "target": "frontend/src/components/forms/variants/AppNumber/README.md",
+    "sha256": "137df2a98dacd428f4593ec46d53136470193f4f2612f4b4334e0cd4bed4cb75"
+  },
+  {
+    "source": "frontend/src/components/forms/variants/AppNumber/style.css",
+    "target": "frontend/src/components/forms/variants/AppNumber/style.css",
+    "sha256": "d47cec822f76f538a0377f9716df72cd9f77589e2c4f545a60f8ab4505c1cc95"
+  },
+  {
+    "source": "frontend/src/components/forms/variants/AppPassword/index.vue",
+    "target": "frontend/src/components/forms/variants/AppPassword/index.vue",
+    "sha256": "40a72b82a2815da324e2fd8a1967e0193f14dd082d975e11a7a087e2b8865d83"
+  },
+  {
+    "source": "frontend/src/components/forms/variants/AppPassword/props.js",
+    "target": "frontend/src/components/forms/variants/AppPassword/props.js",
+    "sha256": "f452738b63470392bcd1580d05bd45738e61bc6e01d1e78ced8ee86f07315c51"
+  },
+  {
+    "source": "frontend/src/components/forms/variants/AppPassword/README.md",
+    "target": "frontend/src/components/forms/variants/AppPassword/README.md",
+    "sha256": "21a5a3e5f34b90ae221142b4cdfd32af5cdfe2603b5c9dbab30dc01a01da693c"
+  },
+  {
+    "source": "frontend/src/components/forms/variants/AppPassword/style.css",
+    "target": "frontend/src/components/forms/variants/AppPassword/style.css",
+    "sha256": "ade4eed86b07150786d572eb0e99494ddec8e94680519b3ef489827519c79a47"
+  },
+  {
+    "source": "frontend/src/components/forms/variants/AppPhone/index.vue",
+    "target": "frontend/src/components/forms/variants/AppPhone/index.vue",
+    "sha256": "6b6798aa38e7a6c64fea6e896f3b2d8ae818d6593779e24b19511a4f1044b252"
+  },
+  {
+    "source": "frontend/src/components/forms/variants/AppPhone/props.js",
+    "target": "frontend/src/components/forms/variants/AppPhone/props.js",
+    "sha256": "7c4ac8c958c88d7299509a4a9855708d8f5e0403a96e7b25bf6caba3cec42bc1"
+  },
+  {
+    "source": "frontend/src/components/forms/variants/AppPhone/README.md",
+    "target": "frontend/src/components/forms/variants/AppPhone/README.md",
+    "sha256": "21358d924fc381e24453ea0ef6a41cda0f0af161d21b956bf9a465cd3686685c"
+  },
+  {
+    "source": "frontend/src/components/forms/variants/AppPhone/style.css",
+    "target": "frontend/src/components/forms/variants/AppPhone/style.css",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "source": "frontend/src/components/forms/variants/AppSearch/index.vue",
+    "target": "frontend/src/components/forms/variants/AppSearch/index.vue",
+    "sha256": "cb86904111d299f8a319a2a38bef83fe30b4b223f3d77b0549f096cdb5a34d35"
+  },
+  {
+    "source": "frontend/src/components/forms/variants/AppSearch/props.js",
+    "target": "frontend/src/components/forms/variants/AppSearch/props.js",
+    "sha256": "a9dcaa80871696005c116872184e550934b2f4e63649302b2e4f486376033e1c"
+  },
+  {
+    "source": "frontend/src/components/forms/variants/AppSearch/README.md",
+    "target": "frontend/src/components/forms/variants/AppSearch/README.md",
+    "sha256": "920651f9faaa340395a2e8582b8ccd68b7c98f5eefb2385055bae162056420e9"
+  },
+  {
+    "source": "frontend/src/components/forms/variants/AppSearch/style.css",
+    "target": "frontend/src/components/forms/variants/AppSearch/style.css",
+    "sha256": "de47d30d4a867465299f80a7ff6b9c77f230aa5314c33ca14d468074c5902a51"
+  },
+  {
+    "source": "frontend/src/components/forms/variants/AppURL/index.vue",
+    "target": "frontend/src/components/forms/variants/AppURL/index.vue",
+    "sha256": "8620287dd987e36889f69b8695ad7ae1d1177b0d79bbdf86257fff47d559a1fb"
+  },
+  {
+    "source": "frontend/src/components/forms/variants/AppURL/props.js",
+    "target": "frontend/src/components/forms/variants/AppURL/props.js",
+    "sha256": "aecc00e56e015fb220368877947c47d4d2f53372eddaf6bc9cec80d8fdfa25f7"
+  },
+  {
+    "source": "frontend/src/components/forms/variants/AppURL/README.md",
+    "target": "frontend/src/components/forms/variants/AppURL/README.md",
+    "sha256": "9417728225e3844998a5d12fd98fc9c8997138d3a1f397755db9aa1211bce26f"
+  },
+  {
+    "source": "frontend/src/components/forms/variants/AppURL/style.css",
+    "target": "frontend/src/components/forms/variants/AppURL/style.css",
+    "sha256": "d4bae4ae0ec3818415c0e79fa2f2824ae02c97818ad42f85c584dc1d54cca9bc"
+  },
+  {
+    "source": "frontend/src/components/layout/HeaderBar/index.vue",
+    "target": "frontend/src/components/layout/HeaderBar/index.vue",
+    "sha256": "1263ea863e04421b22ed9935da23481eb9f72082be62534a5caa2cf20fde9c52"
+  },
+  {
+    "source": "frontend/src/components/layout/HeaderBar/README.md",
+    "target": "frontend/src/components/layout/HeaderBar/README.md",
+    "sha256": "484bd7c29edfad7b0bce381f7c2fa88c039a30c4ee50025afd3a91845fda8fae"
+  },
+  {
+    "source": "frontend/src/components/layout/index.js",
+    "target": "frontend/src/components/layout/index.js",
+    "sha256": "37eca795363bbcce497aa39bae0af08574d10d53af6f9db3d62d3a875a245214"
+  },
+  {
+    "source": "frontend/src/components/layout/PageContainer/index.vue",
+    "target": "frontend/src/components/layout/PageContainer/index.vue",
+    "sha256": "e9dec8b3c4c35859f95c4ecb0ace297c84cd5468accfa62da4de6eeb5f958d43"
+  },
+  {
+    "source": "frontend/src/components/layout/PageContainer/README.md",
+    "target": "frontend/src/components/layout/PageContainer/README.md",
+    "sha256": "4281aa55fa20101733bb720de52eaadeb99f452d732f59c15d075338ed3214ee"
+  },
+  {
+    "source": "frontend/src/components/layout/SideBar/index.vue",
+    "target": "frontend/src/components/layout/SideBar/index.vue",
+    "sha256": "814efdb46ba5a5d03081b502588e0315c5f2a4331c44d207e3d3f5933b5e8617"
+  },
+  {
+    "source": "frontend/src/components/layout/SideBar/README.md",
+    "target": "frontend/src/components/layout/SideBar/README.md",
+    "sha256": "d1539aca203e09c00e1b9bb82815fa8c8f96aafa9a7b07b4cd72f5e7b2511788"
+  },
+  {
+    "source": "frontend/src/components/navigation/AppBreadcrumb/index.vue",
+    "target": "frontend/src/components/navigation/AppBreadcrumb/index.vue",
+    "sha256": "198b8e88cd0d85c8aa9c510e74b7eb3c4e22a7ed17cedbebae57bdd561a22eab"
+  },
+  {
+    "source": "frontend/src/components/navigation/AppBreadcrumb/README.md",
+    "target": "frontend/src/components/navigation/AppBreadcrumb/README.md",
+    "sha256": "3e5ed4b5608e3ddecc2b977e1dd8d7c9d9479c7b44b5e6ebd7682336f0974296"
+  },
+  {
+    "source": "frontend/src/components/navigation/index.js",
+    "target": "frontend/src/components/navigation/index.js",
+    "sha256": "4d35d4bd2c9816825869bd50319c2328fd8edd02aab099c94f794bf5e58d7275"
+  },
+  {
+    "source": "frontend/src/components/navigation/SideBarItem/index.vue",
+    "target": "frontend/src/components/navigation/SideBarItem/index.vue",
+    "sha256": "bd0501e09c278fd526c1e4cb28c8eb05ad2d94b4e083fe7145e9e043de9362e6"
+  },
+  {
+    "source": "frontend/src/components/navigation/SideBarItem/props.js",
+    "target": "frontend/src/components/navigation/SideBarItem/props.js",
+    "sha256": "22c88a39ac92e247ecccde37ba2ef74fa27c43e29655496659156544574e6488"
+  },
+  {
+    "source": "frontend/src/components/navigation/SideBarItem/README.md",
+    "target": "frontend/src/components/navigation/SideBarItem/README.md",
+    "sha256": "cc262cb54c1f5a73663a28162fd4dbfed1092bc44a6a2d2c87cd13d8b145c3a9"
+  },
+  {
+    "source": "frontend/src/components/navigation/SideBarNav/index.vue",
+    "target": "frontend/src/components/navigation/SideBarNav/index.vue",
+    "sha256": "6e6d36d40c3899c251555c59798d5092d2ced10988439290ea6e8faa5b399f47"
+  },
+  {
+    "source": "frontend/src/components/navigation/SideBarNav/README.md",
+    "target": "frontend/src/components/navigation/SideBarNav/README.md",
+    "sha256": "676745de4e71f184d768fdc51301d13a071522beb7bdfe9bc786e0ec85710c80"
+  },
+  {
+    "source": "frontend/src/components/public/AuthShell.vue",
+    "target": "frontend/src/components/public/AuthShell.vue",
+    "sha256": "3b9e4ed2e7676af31329789bb02871353e4f6ad36fe31060fb76fbf0d723b9fe"
+  },
+  {
+    "source": "frontend/src/components/public/PublicFooter.vue",
+    "target": "frontend/src/components/public/PublicFooter.vue",
+    "sha256": "30052258b336d7b5f682f6fe57afb647ec295daee462e42e32b75f62aefd914e"
+  },
+  {
+    "source": "frontend/src/components/public/PublicHeader.vue",
+    "target": "frontend/src/components/public/PublicHeader.vue",
+    "sha256": "2b4f8c49190cf5e5cf52bae330a4ae8c18f411450dc19485a1a833d5a54ba6c5"
+  },
+  {
+    "source": "frontend/src/components/ui/AppButton/index.vue",
+    "target": "frontend/src/components/ui/AppButton/index.vue",
+    "sha256": "994e4c4328e97fb36532b7f5d806a19912e06a3dde1fe36ae9bb6ea3ba419ba3"
+  },
+  {
+    "source": "frontend/src/components/ui/AppButton/props.js",
+    "target": "frontend/src/components/ui/AppButton/props.js",
+    "sha256": "b662e86abba9d1ee39d0e9e69170ac87753706096bb4ffe1535ab84e9d93e0fe"
+  },
+  {
+    "source": "frontend/src/components/ui/AppButton/README.md",
+    "target": "frontend/src/components/ui/AppButton/README.md",
+    "sha256": "0bd78d16929714129b76c9704ce9a58b3aed7f72a2e80bb7f593167776963150"
+  },
+  {
+    "source": "frontend/src/components/ui/AppButton/style.css",
+    "target": "frontend/src/components/ui/AppButton/style.css",
+    "sha256": "1c0bdecf85f653235bc8f75b0880c726f61b58d2b0617b67dcc0fa4433e3e22d"
+  },
+  {
+    "source": "frontend/src/components/ui/AppCard/index.vue",
+    "target": "frontend/src/components/ui/AppCard/index.vue",
+    "sha256": "68323d39e2580e582dfa75846f7005e8d3db604d0855f913ddf1042ba2ca9e2a"
+  },
+  {
+    "source": "frontend/src/components/ui/AppCard/props.js",
+    "target": "frontend/src/components/ui/AppCard/props.js",
+    "sha256": "dd96e62aa8663513c9c56652e2c0d54ec5b8f0b70d459c639db8007595bb9c10"
+  },
+  {
+    "source": "frontend/src/components/ui/AppCard/README.md",
+    "target": "frontend/src/components/ui/AppCard/README.md",
+    "sha256": "e57b1047e359016148a8c06281a4398ed378779181f35f405b0a3ca4f3091352"
+  },
+  {
+    "source": "frontend/src/components/ui/AppConfirmDialog/index.vue",
+    "target": "frontend/src/components/ui/AppConfirmDialog/index.vue",
+    "sha256": "295cbb574409fecafc60a4551987ad9e9c8b0ad81a18ebd7901728369b75a145"
+  },
+  {
+    "source": "frontend/src/components/ui/AppConfirmDialog/props.js",
+    "target": "frontend/src/components/ui/AppConfirmDialog/props.js",
+    "sha256": "1fc87fe82591c56bd817087a941ea41ac4538e3065cf73cfaf9e47c5ef0ed204"
+  },
+  {
+    "source": "frontend/src/components/ui/AppConfirmDialog/style.css",
+    "target": "frontend/src/components/ui/AppConfirmDialog/style.css",
+    "sha256": "19f9f1c31343490b5ff433007971e4ad03f721879dc7bfe77166a21d08d3d67c"
+  },
+  {
+    "source": "frontend/src/components/ui/AppDialog/index.vue",
+    "target": "frontend/src/components/ui/AppDialog/index.vue",
+    "sha256": "203e831b0dbceb1f76ca8c64c77113c5fe4fb6a009d36fe66159b43dec0d0282"
+  },
+  {
+    "source": "frontend/src/components/ui/AppDialog/props.js",
+    "target": "frontend/src/components/ui/AppDialog/props.js",
+    "sha256": "ddf127c091ea0d27f3023ca0d467c560adfe2c2c3e56f6d1bcefbe26bad1233b"
+  },
+  {
+    "source": "frontend/src/components/ui/AppDialog/style.css",
+    "target": "frontend/src/components/ui/AppDialog/style.css",
+    "sha256": "f951d5df3a409f2d54578f07ee826895e5f83a3663ea0a27e9d6f0c27a5260e6"
+  },
+  {
+    "source": "frontend/src/components/ui/AppIcon/index.vue",
+    "target": "frontend/src/components/ui/AppIcon/index.vue",
+    "sha256": "075c2318d668d5eb2b087814ecd20915834597845e806bd46c6ede1af33e399c"
+  },
+  {
+    "source": "frontend/src/components/ui/AppIcon/props.js",
+    "target": "frontend/src/components/ui/AppIcon/props.js",
+    "sha256": "51f5d091a3200d2856432015873059b3204f124daebfbfc3aa6f9c833d6f5bd3"
+  },
+  {
+    "source": "frontend/src/components/ui/AppIcon/README.md",
+    "target": "frontend/src/components/ui/AppIcon/README.md",
+    "sha256": "29d20f13f92f4e9bf70c5106c6a56c05d81011c03912e4fdc543005ea82d5888"
+  },
+  {
+    "source": "frontend/src/components/ui/AppLogo/index.vue",
+    "target": "frontend/src/components/ui/AppLogo/index.vue",
+    "sha256": "bf6425ce6ede6faa38e24d52cb0ee4ccbdbcd27ab6b8754d3fa1b9cd881d95e3"
+  },
+  {
+    "source": "frontend/src/components/ui/AppLogo/props.js",
+    "target": "frontend/src/components/ui/AppLogo/props.js",
+    "sha256": "3dcdf0c18d0c22a39c223b0ebc203b411b8fa866fb64f657f2423239d5cd987f"
+  },
+  {
+    "source": "frontend/src/components/ui/AppLogo/README.md",
+    "target": "frontend/src/components/ui/AppLogo/README.md",
+    "sha256": "a640c4b57f745459e579275b33309709fd543327e85b57fa040bbbd1ce500d80"
+  },
+  {
+    "source": "frontend/src/components/ui/AppTable/index.vue",
+    "target": "frontend/src/components/ui/AppTable/index.vue",
+    "sha256": "d35cfa05613c4d5f87f855b4fa3bbedff5a879e585ef9d9dc07dd8a0c1d30cae"
+  },
+  {
+    "source": "frontend/src/components/ui/AppTable/props.js",
+    "target": "frontend/src/components/ui/AppTable/props.js",
+    "sha256": "f1a490550ac5b4fe2263c4ee8d2e92445d8b3f1089a68e09739e10215d66b3f9"
+  },
+  {
+    "source": "frontend/src/components/ui/AppTable/style.css",
+    "target": "frontend/src/components/ui/AppTable/style.css",
+    "sha256": "6946091c973ca251f38582c6c3a63bad05ea4d18959d1de6ea3c406b5486bc34"
+  },
+  {
+    "source": "frontend/src/components/ui/AppTabs/index.vue",
+    "target": "frontend/src/components/ui/AppTabs/index.vue",
+    "sha256": "7633a4b254cba4e298e044bf3cd80bb463c03474f877c1248edef1bd87129ec5"
+  },
+  {
+    "source": "frontend/src/components/ui/AppTabs/props.js",
+    "target": "frontend/src/components/ui/AppTabs/props.js",
+    "sha256": "cb152ce71b522e78c925dd384f5e2920f464d0e6f18aa4f19ae91fd4b50e2ef9"
+  },
+  {
+    "source": "frontend/src/components/ui/AppTabs/style.css",
+    "target": "frontend/src/components/ui/AppTabs/style.css",
+    "sha256": "6ff6246513cecf26e13e995d4111c861f19929fd572b08ea9994287668cbd9ab"
+  },
+  {
+    "source": "frontend/src/components/ui/index.js",
+    "target": "frontend/src/components/ui/index.js",
+    "sha256": "19a935d0a65a4828a5a8c0b2b9ffc2df058ee7b5c5224cac4db6d3fc6687f11f"
+  },
+  {
+    "source": "frontend/src/layouts/DefaultLayout.vue",
+    "target": "frontend/src/layouts/DefaultLayout.vue",
+    "sha256": "522650ca3e67a8e681dc51fd90d4c926c2053fae16aa470382d6230bba3d27a6"
+  },
+  {
+    "source": "frontend/src/layouts/PublicLayout.vue",
+    "target": "frontend/src/layouts/PublicLayout.vue",
+    "sha256": "7cebede5efa5e9c41c756fe172d4f92d17b3110ea8a600666e6941053e5d1929"
+  },
+  {
+    "source": "frontend/src/icons/index.js",
+    "target": "frontend/src/icons/index.js",
+    "sha256": "6baedbd43d1216eff5ea864365d1840fca1f95ba36fe89cb8850e76d732af8b2"
+  },
+  {
+    "source": "frontend/src/composables/field-context.js",
+    "target": "frontend/src/composables/field-context.js",
+    "sha256": "c34f71aac3ce9a5887f1dc6bc2829649b1af8f7d455319d2d6ee0429f7cf76f1"
+  },
+  {
+    "source": "frontend/src/composables/useFieldContext.js",
+    "target": "frontend/src/composables/useFieldContext.js",
+    "sha256": "5cfc6b99d13b23573ea8bdca695ddb7defdd5f3952189d4b9faf6286796ab97d"
+  },
+  {
+    "source": "frontend/src/composables/useDeleteConfirmation.js",
+    "target": "frontend/src/composables/useDeleteConfirmation.js",
+    "sha256": "ce1a6a76e6964bd323ddab7e430f6f57c6b138b643d2c4cacd601fdc041a38e1"
+  },
+  {
+    "source": "frontend/src/composables/useRetryCountdown.js",
+    "target": "frontend/src/composables/useRetryCountdown.js",
+    "sha256": "b567fe30c136e26c13dd16b1746019b6d57a2b0619e1ce86c5f2b37895cb8780"
+  },
+  {
+    "source": "frontend/src/views/auth/InvitationAcceptPage.vue",
+    "target": "frontend/src/views/auth/InvitationAcceptPage.vue",
+    "sha256": "d4187adca61808e9effe7d32f9e641cfe41405b5b07f1b896260c83285575b73"
+  },
+  {
+    "source": "frontend/src/views/auth/LoginPage.vue",
+    "target": "frontend/src/views/auth/LoginPage.vue",
+    "sha256": "8ca8e7208a4896ec354e09218d5a253e932b77c33e18e88b23689f5c890876f7"
+  },
+  {
+    "source": "frontend/src/views/auth/OrganizationSelectPage.vue",
+    "target": "frontend/src/views/auth/OrganizationSelectPage.vue",
+    "sha256": "2efff9077dd363acab361b6f670832080db6beea4c98eb55b48321ecfeea4622"
+  },
+  {
+    "source": "frontend/src/views/auth/RegisterPage.vue",
+    "target": "frontend/src/views/auth/RegisterPage.vue",
+    "sha256": "ab9cbb0248c57fc0cdaa64dc003995a72cd3f866d055db13ee31f92056658248"
+  },
+  {
+    "source": "frontend/src/views/auth/style.css",
+    "target": "frontend/src/views/auth/style.css",
+    "sha256": "b075368f8a0062168823db0695de006512db2fe89b72c82b330dfd9164e5b4f8"
+  },
+  {
+    "source": "frontend/src/utils/cpf.js",
+    "target": "frontend/src/utils/cpf.js",
+    "sha256": "5191865fdef16817631f8385d50afbc7198aa0d138f55cd81b62d6ffe316105f"
+  },
+  {
+    "source": "frontend/src/utils/date.js",
+    "target": "frontend/src/utils/date.js",
+    "sha256": "46be48c568131550dbf5bc17037b85e7aa118b6ee936aac671d042876d6950ad"
+  },
+  {
+    "source": "frontend/src/utils/validationErrors.js",
+    "target": "frontend/src/utils/validationErrors.js",
+    "sha256": "44b208779fdcfe5fffdd86fac3d2d76a3f0fad3ed67c326c6a7b8e6c49fc3dd0"
+  },
+  {
+    "source": "frontend/src/router/guards/auth.js",
+    "target": "frontend/src/router/guards/auth.js",
+    "sha256": "8b0e02e1d7c45ca7ab064d870c54f9ad4a0f227d1bb9777355b3673db2c01eb7"
+  },
+  {
+    "source": "frontend/src/router/guards/permission.js",
+    "target": "frontend/src/router/guards/permission.js",
+    "sha256": "7264fa1f313e48cf8b67b8edf1db9c18f5f134ee5458a847503a2a986b39e8f0"
+  },
+  {
+    "source": "frontend/src/stores/auth.js",
+    "target": "frontend/src/state/auth.js",
+    "sha256": "e1bc2421ad0e2729ceda9c1fd63c32a74954736645d76af650026c56a92f3fc8"
+  },
+  {
+    "source": "frontend/src/stores/organization-members.js",
+    "target": "frontend/src/state/organization-members.js",
+    "sha256": "a4f351e673686b1ff6c500004b39bd94738d19325c28d05d5836ae4e98e158bc"
+  },
+  {
+    "source": "frontend/src/stores/organization-invitations.js",
+    "target": "frontend/src/state/organization-invitations.js",
+    "sha256": "49ae9bbd3d30717833117ccbfe6b6c3549d4aa8e3f97d149a61cfb9c8decc071"
+  },
+  {
+    "source": "frontend/src/stores/organization-roles.js",
+    "target": "frontend/src/state/organization-roles.js",
+    "sha256": "4488ea365dfcb9da893c89b6d196c4ab857f00ed84baccb47486ea28a964640d"
+  },
+  {
+    "source": "frontend/src/api/auth.js",
+    "target": "frontend/src/services/auth.js",
+    "sha256": "e15140768f941fc51af24a23ba4587c1be626cfe8faa07a847eaf5117bb9d445"
+  },
+  {
+    "source": "frontend/src/api/auth-token.js",
+    "target": "frontend/src/services/auth-token.js",
+    "sha256": "a197fc27f9ffb8037ff357e9070bbce8a061d6ccf7b60990498dfd580c950f79"
+  },
+  {
+    "source": "frontend/src/api/tenant.js",
+    "target": "frontend/src/services/tenant.js",
+    "sha256": "caea6ff5044a1dd1aa14f324f90ec77299d707dc6f5e87f743af2fd143a97183"
+  },
+  {
+    "source": "frontend/src/api/client.js",
+    "target": "frontend/src/services/client.js",
+    "sha256": "c86182634f35d9cc4dc7ad336de853401f818703c4df810115797c5eabf965b1"
+  },
+  {
+    "source": "frontend/src/api/public-client.js",
+    "target": "frontend/src/services/public-client.js",
+    "sha256": "ff1130c21c3925a2be74032d2df0ece1da7dfea88c1d30f426c649041d7a02d5"
+  },
+  {
+    "source": "frontend/src/api/organization-members.js",
+    "target": "frontend/src/services/organization-members.js",
+    "sha256": "76ba06f3f65a6e577c65a5cabc5fa290c328caacbd1a2176ab625d101626aaff"
+  },
+  {
+    "source": "frontend/src/api/organization-invitations.js",
+    "target": "frontend/src/services/organization-invitations.js",
+    "sha256": "811d63f7c4201c90829098802524a265a985d9037be7976f157d92cba6cc29c9"
+  },
+  {
+    "source": "frontend/src/api/organization-roles.js",
+    "target": "frontend/src/services/organization-roles.js",
+    "sha256": "9dd3ee69ebfddb8fbd1357f39055222b3130a2d7fd13cd657bb2b02af08fd81e"
+  }
+]

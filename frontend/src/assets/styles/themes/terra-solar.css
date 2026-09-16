@@ -1,0 +1,55 @@
+:root,
+[data-theme="terra-solar"] {
+  /* Paleta conViva: verde #CAE7B9, amarelo #F3DF8A,
+     coral #EB9486 e lavanda #7E7F9A. Tons escuros garantem contraste. */
+  --palette-care-green: #cae7b9;
+  --palette-care-yellow: #f3df8a;
+  --palette-care-coral: #eb9486;
+  --palette-care-lavender: #7e7f9a;
+  --palette-baby-blue: #cde7f5;
+  --palette-baby-pink: #f5d6e2;
+  --palette-baby-green: #d8edcf;
+  --color-brand: #565873;
+  --color-brand-hover: #474961;
+  --color-brand-active: #383a50;
+  --color-on-brand: #ffffff;
+  --color-brand-secondary: #46613a;
+  --color-brand-secondary-hover: #354b2c;
+  --color-brand-secondary-active: #293d22;
+  --color-on-brand-secondary: #ffffff;
+  --color-accent: var(--palette-care-green);
+  --color-accent-hover: #b8d8a5;
+  --color-on-accent: #293d22;
+  --color-highlight: var(--palette-care-coral);
+  --color-highlight-hover: #e18070;
+  --color-on-highlight: #432723;
+  --color-warning: var(--palette-care-yellow);
+  --color-warning-hover: #e8d079;
+  --color-on-warning: #51431d;
+  --color-page: #f5f2ee;
+  --color-surface: #ffffff;
+  --color-surface-soft: #f0f0f6;
+  --color-surface-muted: #eeebf0;
+  --color-surface-accent: #edf5e8;
+  --color-surface-secondary-soft: #edf5e8;
+  --color-surface-highlight-soft: #fbeae6;
+  --color-surface-warning-soft: #fcf5da;
+  --color-text: #303140;
+  --color-text-soft: #55566b;
+  --color-text-muted: #656577;
+  --color-text-inverse: #ffffff;
+  --color-border: #dedde6;
+  --color-border-strong: #9293a6;
+  --color-divider: #e9e6ec;
+  --color-success: #46613a;
+  --color-success-soft: #edf5e8;
+  --color-danger: #a34236;
+  --color-danger-soft: #fbeae6;
+  --color-info: #565873;
+  --color-info-soft: #eeedf5;
+  --focus-ring: 0 0 0 3px rgb(86 88 115 / 0.35);
+  --surface-shadow: var(--shadow-sm);
+  --overlay-shadow: var(--shadow-lg);
+  --sidebar-brand-title-color: #ffffff;
+  --sidebar-brand-subtitle-color: #f3df8a;
+}

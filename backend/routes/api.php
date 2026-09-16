@@ -1,63 +1,55 @@
 <?php
 
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
-use App\Http\Controllers\UserController;
-use App\Http\Controllers\TutorInviteController;
-use App\Http\Controllers\DependentController;
-use App\Http\Controllers\AppointmentController;
-use App\Http\Controllers\AppointmentFileController;
-use App\Http\Controllers\RelationshipController;
-use App\Http\Controllers\TransactionController;
-use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\CareDocumentController;
+use App\Http\Controllers\CareEntryController;
+use App\Http\Controllers\CareGroupController;
+use App\Http\Controllers\CareOverviewController;
+use App\Http\Controllers\CareRecipientController;
+use App\Http\Controllers\OrganizationInvitationController;
+use App\Http\Controllers\OrganizationMemberController;
+use App\Http\Controllers\OrganizationRoleController;
+use Illuminate\Support\Facades\Route;
 
-// ROTAS DE AUTENTICAÇÃO
-Route::group([
-    'middleware' => 'api',
-    'prefix' => 'auth'
-], function () {
-    Route::post('register', [UserController::class, 'store']);
-    Route::post('login', [AuthController::class, 'login']);
-    Route::post('logout', [AuthController::class, 'logout']);
-    Route::post('refresh', [AuthController::class, 'refresh']);
-    Route::post('me', [AuthController::class, 'me']);
+Route::post('auth/login', [AuthController::class, 'login'])->middleware('throttle:auth-login');
+Route::post('auth/register', [AuthController::class, 'register'])->middleware('throttle:auth-register');
+Route::get('organization-invitations/accept/{token}', [OrganizationInvitationController::class, 'showAcceptance']);
+Route::post('organization-invitations/accept/{token}', [OrganizationInvitationController::class, 'accept'])->middleware('throttle:auth-register');
+Route::middleware('auth:api')->group(function () {
+    Route::get('groups', [CareGroupController::class, 'index']);
+    Route::post('groups', [CareGroupController::class, 'store']);
+    Route::get('auth/me', [AuthController::class, 'me']);
+    Route::post('auth/logout', [AuthController::class, 'logout']);
+    Route::post('auth/refresh', [AuthController::class, 'refresh']);
 });
-
-// ROTAS PROTEGIDAS (jwt.auth)
-Route::group(['middleware' => ['api', 'jwt.auth']], function () {
-    
-    // Tutor - Convite
-    Route::get('invite', [TutorInviteController::class, 'index'])/*->middleware('role:tutor|admin')*/;
-    Route::post('invite', [TutorInviteController::class, 'store'])/*->middleware('role:tutor|admin')*/;
-    Route::post('invite/{id}/resend', [TutorInviteController::class, 'resend'])->middleware('role:tutor|admin');
-    Route::delete('invite/{id}', [TutorInviteController::class, 'destroy'])->middleware('role:admin');
-
-    // Dependente
-    Route::apiResource('dependent', DependentController::class);
-
-    // Agendamento
-    Route::apiResource('appointment', AppointmentController::class);
-
-    // Agendamento - Arquivos
-    Route::apiResource('appointment/file', AppointmentFileController::class)->only(['store', 'destroy']);
-
-    // Relacionamento
-    Route::apiResource('relationship', RelationshipController::class)->only(['store', 'update', 'show', 'destroy']);
-    Route::get('relationship/getTutors/{dependentId}', [RelationshipController::class, 'getTutorsByDependent']);
-    
-    // Transações financeiras
-    
-    Route::apiResource('transactions', TransactionController::class);
-
-    // Notificações
-    Route::get('notifications', [NotificationController::class, 'index']);
-    Route::post('notifications/mark-read/{id}', [NotificationController::class, 'markRead']);
-
-    // User
-    Route::apiResource('user', UserController::class)->only(['index', 'show', 'update', 'destroy']);
+Route::middleware(['auth:api', 'tenant'])->group(function () {
+    Route::get('auth/context', [AuthController::class, 'context']);
+    Route::get('organization-members', [OrganizationMemberController::class, 'index'])->middleware('can:organization-members.view');
+    Route::patch('organization-members/{user}/role', [OrganizationMemberController::class, 'updateRole'])->middleware('can:organization-members.update-role');
+    Route::patch('organization-members/{user}/status', [OrganizationMemberController::class, 'updateStatus'])->middleware('can:organization-members.update-status');
+    Route::get('organization-roles', [OrganizationRoleController::class, 'index']);
+    Route::get('organization-invitations', [OrganizationInvitationController::class, 'index'])->middleware('can:organization-members.invite');
+    Route::post('organization-invitations', [OrganizationInvitationController::class, 'store'])->middleware('can:organization-members.invite');
+    Route::post('organization-invitations/{invitation}/resend', [OrganizationInvitationController::class, 'resend'])->middleware('can:organization-members.invite');
+    Route::patch('organization-invitations/{invitation}/revoke', [OrganizationInvitationController::class, 'revoke'])->middleware('can:organization-members.invite');
+    Route::apiResource('recipients', CareRecipientController::class);
+    Route::get('recipients/{recipient}/accesses', [CareRecipientController::class, 'accesses']);
+    Route::put('recipients/{recipient}/accesses', [CareRecipientController::class, 'grant']);
+    Route::delete('recipients/{recipient}/accesses/{user}', [CareRecipientController::class, 'revoke']);
+    Route::post('recipients/{recipient}/entries/{entry}/execution', [CareEntryController::class, 'execute']);
+    Route::post('recipients/{recipient}/entries/{entry}/proposals/{proposal}/decision', [CareEntryController::class, 'decide']);
+    Route::post('recipients/{recipient}/entries/{entry}/proposals/{proposal}/withdraw', [CareEntryController::class, 'withdraw']);
+    Route::get('recipients/{recipient}/entries', [CareEntryController::class, 'index']);
+    Route::post('recipients/{recipient}/entries', [CareEntryController::class, 'store']);
+    Route::put('recipients/{recipient}/entries/{entry}', [CareEntryController::class, 'update']);
+    Route::patch('recipients/{recipient}/entries/{entry}/complete', [CareEntryController::class, 'complete']);
+    Route::delete('recipients/{recipient}/entries/{entry}', [CareEntryController::class, 'destroy']);
+    Route::post('recipients/{recipient}/entries/{entry}/shares/{share}/pay', [CareEntryController::class, 'pay']);
+    Route::get('recipients/{recipient}/documents', [CareDocumentController::class, 'index']);
+    Route::post('recipients/{recipient}/documents', [CareDocumentController::class, 'store']);
+    Route::get('recipients/{recipient}/documents/{document}/download', [CareDocumentController::class, 'download']);
+    Route::delete('recipients/{recipient}/documents/{document}', [CareDocumentController::class, 'destroy']);
+    Route::get('agenda', [CareOverviewController::class, 'agenda']);
+    Route::get('notifications', [CareOverviewController::class, 'notifications']);
+    Route::post('notifications/{notification}/read', [CareOverviewController::class, 'read']);
 });
-
-// Tutor - Aceite (sem autenticação)
-Route::get('invite/accept/{token}', [TutorInviteController::class, 'accept'])
-    ->name('invite-accept');

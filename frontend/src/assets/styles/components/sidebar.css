@@ -1,0 +1,287 @@
+/* ==========================================================================
+   SIDEBAR — CONVIVA
+   Identidade:
+   - lavanda como base da navegação;
+   - variações de verde para profundidade e estados;
+   - amarelo e coral como acentos;
+   - verde suave para indicar a página atual.
+   ========================================================================== */
+
+/* ==========================================================================
+   ESTRUTURA
+   ========================================================================== */
+
+.app-sidebar-nav {
+  position: relative;
+  isolation: isolate;
+
+  display: grid;
+  grid-template-rows:
+    auto
+    minmax(0, 1fr)
+    auto;
+
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+
+  color: var(--neutral-0);
+
+  background:
+    radial-gradient(
+      circle at 18% 14%,
+      rgb(202 231 185 / 0.1) 0,
+      rgb(202 231 185 / 0.04) 22%,
+      transparent 42%
+    ),
+    linear-gradient(180deg, #565873 0%, #4c4e67 46%, #42445c 100%);
+}
+
+/* detalhe cromático discreto */
+
+.app-sidebar-nav::before {
+  content: "";
+
+  position: absolute;
+  z-index: -1;
+  top: -4rem;
+  right: -5rem;
+
+  width: 12rem;
+  height: 12rem;
+
+  border: 1px solid rgb(235 148 134 / 0.1);
+  border-color: rgb(243 223 138 / 0.07);
+  border-radius: 50%;
+
+  pointer-events: none;
+}
+
+.app-sidebar-nav::after {
+  content: "";
+
+  position: absolute;
+  z-index: -1;
+  right: -3rem;
+  bottom: 4rem;
+
+  width: 8rem;
+  height: 8rem;
+
+  border-radius: 50%;
+
+  background: radial-gradient(
+    circle,
+    rgb(243 223 138 / 0.08) 0%,
+    transparent 68%
+  );
+
+  pointer-events: none;
+}
+
+/* ==========================================================================
+   HEADER / MARCA
+   ========================================================================== */
+
+.sidebar-header,
+.sidebar-footer {
+  padding: var(--space-4);
+}
+
+.sidebar-header {
+  display: flex;
+  align-items: center;
+
+  min-height: 4rem;
+
+  padding: var(--space-4) var(--space-5);
+
+  color: var(--neutral-0);
+
+  border-bottom: 1px solid rgb(255 255 255 / 0.1);
+
+  background: rgb(48 49 64 / 0.18);
+}
+
+.sidebar-header .app-logo {
+  color: var(--neutral-0);
+}
+
+.sidebar-header .app-logo__text {
+  color: var(--neutral-0);
+
+  font-weight: var(--font-weight-bold);
+
+  text-shadow: 0 1px 2px rgb(33 29 25 / 0.16);
+}
+
+/* ==========================================================================
+   NAVEGAÇÃO
+   ========================================================================== */
+
+.sidebar-nav {
+  display: grid;
+  align-content: start;
+
+  gap: var(--space-2);
+
+  min-height: 0;
+
+  padding: var(--space-5) var(--space-4);
+}
+
+/* ==========================================================================
+   ITEM
+   ========================================================================== */
+
+.sidebar-item {
+  position: relative;
+
+  display: flex;
+  align-items: center;
+
+  gap: var(--space-3);
+
+  width: 100%;
+  min-height: 2.875rem;
+
+  padding-inline: var(--space-4);
+
+  color: rgb(255 255 255 / 0.78);
+
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+
+  text-decoration: none;
+
+  border: 1px solid transparent;
+
+  border-radius: var(--radius-md);
+
+  transition:
+    color var(--duration-fast) var(--ease-standard),
+    background-color var(--duration-fast) var(--ease-standard),
+    border-color var(--duration-fast) var(--ease-standard),
+    transform var(--duration-fast) var(--ease-standard),
+    box-shadow var(--duration-fast) var(--ease-standard);
+}
+
+/* ==========================================================================
+   ÍCONE
+   ========================================================================== */
+
+.sidebar-item__icon {
+  flex: 0 0 auto;
+
+  color: rgb(255 255 255 / 0.7);
+
+  transition:
+    color var(--duration-fast) var(--ease-standard),
+    transform var(--duration-fast) var(--ease-standard);
+}
+
+/* ==========================================================================
+   LABEL
+   ========================================================================== */
+
+.sidebar-item__label {
+  min-width: 0;
+
+  overflow: hidden;
+
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ==========================================================================
+   HOVER
+   ========================================================================== */
+
+.sidebar-item:hover {
+  color: var(--neutral-0);
+
+  background: rgb(255 255 255 / 0.075);
+
+  border-color: rgb(255 255 255 / 0.06);
+
+  transform: translateX(2px);
+}
+
+.sidebar-item:hover .sidebar-item__icon {
+  color: var(--palette-cream-200);
+}
+
+/* ==========================================================================
+   ITEM ATIVO
+   ========================================================================== */
+
+.sidebar-item.router-link-exact-active,
+.sidebar-item.router-link-active {
+  color: var(--color-text);
+
+  font-weight: var(--font-weight-semibold);
+
+  border-color: rgb(252 235 182 / 0.06);
+
+  background: var(--palette-care-green);
+
+  box-shadow:
+    inset 3px 0 0 var(--palette-amber-400),
+    0 4px 12px rgb(48 49 64 / 0.12);
+}
+
+.sidebar-item.router-link-exact-active .sidebar-item__icon,
+.sidebar-item.router-link-active .sidebar-item__icon {
+  color: var(--color-text);
+}
+
+/* pequeno detalhe âmbar do item ativo */
+
+.sidebar-item.router-link-exact-active::after,
+.sidebar-item.router-link-active::after {
+  display: none;
+}
+
+/* ==========================================================================
+   FOCO POR TECLADO
+   ========================================================================== */
+
+.sidebar-item:focus-visible {
+  outline: none;
+
+  color: var(--neutral-0);
+
+  box-shadow: 0 0 0 2px rgb(252 235 182 / 0.7);
+}
+
+/* ==========================================================================
+   FOOTER
+   Preparado para receber posteriormente usuário / grupo.
+   ========================================================================== */
+
+.sidebar-footer {
+  min-height: var(--space-4);
+
+  border-top: 1px solid rgb(255 255 255 / 0.08);
+
+  background: linear-gradient(
+    180deg,
+    rgb(48 49 64 / 0.1) 0%,
+    rgb(48 49 64 / 0.3) 100%
+  );
+}
+
+/* ==========================================================================
+   ACESSIBILIDADE
+   ========================================================================== */
+
+@media (prefers-reduced-motion: reduce) {
+  .sidebar-item,
+  .sidebar-item__icon {
+    transition: none;
+  }
+
+  .sidebar-item:hover {
+    transform: none;
+  }
+}

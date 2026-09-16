@@ -1,0 +1,29 @@
+.app-password__toggle {
+  padding: 0;
+
+  background: transparent;
+  border: 0;
+
+  color: var(--color-accent);
+  cursor: pointer;
+
+  font: inherit;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+}
+
+.app-password__toggle:hover {
+  text-decoration: underline;
+}
+
+.app-password__toggle:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+  border-radius: var(--radius-sm);
+}
+
+.app-password__toggle:disabled {
+  color: var(--color-text-muted);
+  cursor: not-allowed;
+  text-decoration: none;
+}

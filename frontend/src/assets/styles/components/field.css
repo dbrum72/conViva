@@ -1,0 +1,117 @@
+/* ==========================================================================
+   APP FIELD
+   ========================================================================== */
+
+.app-field {
+  display: grid;
+  gap: var(--space-2);
+
+  width: 100%;
+  min-width: 0;
+}
+
+.app-field__input {
+  display: flex;
+  align-items: center;
+
+  min-width: 0;
+  flex: 1;
+}
+
+.app-field__prepend,
+.app-field__append {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  flex: 0 0 auto;
+
+  color: var(--color-text-muted);
+}
+
+.app-field__prepend {
+  margin-right: var(--space-3);
+}
+
+.app-field__append {
+  margin-left: var(--space-3);
+}
+
+.app-field__label {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+
+  color: var(--color-text);
+
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  line-height: var(--line-height-normal);
+}
+
+.app-field__required {
+  color: var(--color-danger);
+}
+
+.app-field__control {
+  display: flex;
+  align-items: center;
+
+  width: 100%;
+  min-width: 0;
+  min-height: var(--control-height);
+
+  padding-inline: var(--space-4);
+
+  background-color: var(--color-surface);
+
+  border: var(--border-width) solid var(--color-border);
+  border-radius: var(--radius-md);
+
+  transition:
+    border-color var(--duration-fast) var(--ease-standard),
+    box-shadow var(--duration-fast) var(--ease-standard),
+    background-color var(--duration-fast) var(--ease-standard);
+}
+
+.app-field__hint,
+.app-field__error {
+  margin: 0;
+
+  font-size: var(--font-size-xs);
+  line-height: var(--line-height-normal);
+}
+
+.app-field__hint {
+  color: var(--color-text-muted);
+}
+
+.app-field__error {
+  color: var(--color-danger);
+}
+
+/* ==========================================================================
+   STATES
+   ========================================================================== */
+
+.app-field--invalid .app-field__control {
+  border-color: var(--color-danger);
+}
+
+.app-field--disabled {
+  opacity: 0.65;
+}
+
+.app-field--disabled .app-field__control {
+  background-color: var(--color-surface-muted);
+  cursor: not-allowed;
+}
+
+.app-field--readonly .app-field__control {
+  background-color: var(--color-surface-soft);
+}
+
+.app-field__control:focus-within {
+  border-color: var(--color-accent);
+  box-shadow: var(--focus-ring);
+}

@@ -1,0 +1,26 @@
+/* ==========================================================================
+   CHECKBOX CONTROL
+   ========================================================================== */
+
+.checkbox-control {
+  width: var(--selection-size, 1.125rem);
+  height: var(--selection-size, 1.125rem);
+
+  flex: 0 0 auto;
+
+  margin: 0.125rem 0 0;
+
+  accent-color: var(--color-accent);
+
+  cursor: pointer;
+}
+
+.checkbox-control:focus,
+.checkbox-control:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+}
+
+.checkbox-control:disabled {
+  cursor: not-allowed;
+}

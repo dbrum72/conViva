@@ -1,164 +1,100 @@
-import { createRouter, createWebHashHistory } from "vue-router";
-
-const routes = [
-	/*{
-		path: "/",
-		name: "Index",
-		component: () => import("@/views/index.vue"),
-	},*/
-	{
-		path: "/",
-		name: "DashboardView",
-		component: () => import("@/views/DashboardView.vue"),
-		meta: { requiresAuth: true },
-	},
-	{
-		path: "/login",
-		name: "Login",
-		component: () => import("@/views/LoginView.vue"),
-	},
-	{
-		path: "/register",
-		name: "Register",
-		component: () => import("@/views/RegisterView.vue"),
-	},
-	{
-		path: "/appointment",
-		name: "Appointment",
-		meta: { requiresAuth: true },
-		children: [
-			{
-				path: "list",
-				name: "AppointmentList",
-				component: () =>
-					import("@/views/appointment/appointment-list.vue"),
-			},
-			{
-				path: "save/:id?",
-				name: "AppointmentSave",
-				component: () =>
-					import("@/views/appointment/appointment-save.vue"),
-			},
-			{
-				path: "show/:id",
-				name: "AppointmentShow",
-				component: () =>
-					import("@/views/appointment/appointment-show.vue"),
-			},
-		],
-	},
-	{
-		path: "/dependent",
-		name: "Dependent",
-		meta: { requiresAuth: true },
-		children: [
-			{
-				path: "list",
-				name: "DependentList",
-				component: () =>
-					import("@/views/dependent/dependent-list.vue"),
-			},
-			{
-				path: "show/:id",
-				name: "DependentShow",
-				component: () => import("@/views/dependent/dependent-show.vue"),
-			},
-			{
-				path: "save/:id?",
-				name: "DependentSave",
-				component: () => import("@/views/dependent/dependent-save.vue"),
-			},
-			{
-				path: "delete/:id",
-				name: "DependentDelete",
-				component: () => import("@/views/dependent/dependent-delete.vue"),
-			},
-		],
-	},
-	{
-		path: "/relationship",
-		name: "Relationship",
-		meta: { requiresAuth: true },
-		children: [
-			{
-				path: "save/:id?",
-				name: "RelationshipSave",
-				component: () => import("@/views/relationship/relationship-save.vue"),
-			}
-		],
-	},
-	{
-		path: "/transactions",
-		name: "Transactions",
-		component: () => import("@/views/TransactionView.vue"),
-		meta: { requiresAuth: true },
-	},
-	{
-		path: "/invite",
-		name: "Invite",
-		meta: { requiresAuth: true /*, roles: ['tutor', 'admin'] */ },
-		children: [
-			{
-				path: "send",
-				name: "InviteSend",
-				component: () => import("@/views/invite/invite-send.vue"),
-			},
-			{
-				path: "accept/:token",
-				name: "InviteAccept",
-				component: () => import("@/views/invite/invite-accept.vue"),
-			}
-		],
-	},
-	{
-		path: '/user',
-		name: 'User',
-		meta: { requiresAuth: true },
-		children: [
-			{ path: 'list', name: 'UserList', component: () => import('@/views/user/user-list.vue') },
-			{ path: 'show/:id', name: 'UserShow', component: () => import('@/views/user/user-show.vue') },
-			{ path: 'save/:id', name: 'UserSave', component: () => import('@/views/user/user-save.vue') },
-		],
-	},
-
-];
-
+import { createRouter, createWebHistory } from "vue-router";
+import { authGuard } from "./guards/auth.js";
+import { permissionGuard } from "./guards/permission.js";
+import DefaultLayout from "@/layouts/DefaultLayout.vue";
 const router = createRouter({
-	history: createWebHashHistory(),
-	routes,
+  history: createWebHistory(),
+  routes: [
+    {
+      path: "/",
+      name: "home",
+      component: () => import("@/views/public/LandingPage.vue"),
+    },
+    {
+      path: "/login",
+      name: "login",
+      component: () => import("@/views/auth/LoginPage.vue"),
+      meta: { guestOnly: true },
+    },
+    {
+      path: "/register",
+      name: "register",
+      component: () => import("@/views/auth/RegisterPage.vue"),
+      meta: { guestOnly: true },
+    },
+    {
+      path: "/invitations/accept/:token",
+      name: "invitations.accept",
+      component: () => import("@/views/auth/InvitationAcceptPage.vue"),
+    },
+    {
+      path: "/organizations/select",
+      name: "organizations.select",
+      component: () => import("@/views/auth/OrganizationSelectPage.vue"),
+      meta: { requiresAuth: true },
+    },
+    {
+      path: "/",
+      component: DefaultLayout,
+      meta: { requiresAuth: true, requiresOrganization: true },
+      children: [
+        {
+          path: "dashboard",
+          name: "dashboard",
+          component: () => import("@/views/care/DashboardPage.vue"),
+          meta: { breadcrumb: "Visão geral" },
+        },
+        {
+          path: "recipients",
+          name: "recipients",
+          component: () => import("@/views/care/RecipientListPage.vue"),
+          meta: { breadcrumb: "Assistidos" },
+        },
+        {
+          path: "recipients/:id",
+          name: "recipient",
+          component: () => import("@/views/care/RecipientPage.vue"),
+          meta: { breadcrumb: "Cuidados" },
+        },
+        {
+          path: "agenda",
+          name: "agenda",
+          component: () => import("@/views/care/AgendaPage.vue"),
+          meta: { breadcrumb: "Agenda" },
+        },
+        {
+          path: "finance",
+          name: "finance",
+          component: () => import("@/views/care/FinancePage.vue"),
+          meta: { breadcrumb: "Despesas" },
+        },
+        {
+          path: "notifications",
+          name: "notifications",
+          component: () => import("@/views/care/NotificationsPage.vue"),
+          meta: { breadcrumb: "Notificações" },
+        },
+        {
+          path: "organization-members",
+          name: "organization-members",
+          component: () =>
+            import("@/views/organization-members/OrganizationMemberListPage.vue"),
+          meta: {
+            permission: "organization-members.view",
+            breadcrumb: "Grupo e cuidadores",
+          },
+        },
+        {
+          path: "settings",
+          name: "settings",
+          component: () => import("@/views/care/PermissionsPage.vue"),
+          meta: { permission: "roles.view", breadcrumb: "Permissões" },
+        },
+      ],
+    },
+    { path: "/:pathMatch(.*)*", redirect: "/dashboard" },
+  ],
 });
-
-router.beforeEach((to, from, next) => {
-	const isAuthenticated = !!localStorage.getItem("token");
-	const userRoles = JSON.parse(localStorage.getItem("roles") || "[]");
-	const userPermissions = JSON.parse(localStorage.getItem("permissions") || "[]");
-
-	if (to.meta.requiresAuth && !isAuthenticated) {
-		next({ name: "Login" });
-		return;
-	}
-
-	// se rota exigir roles
-	if (to.meta.roles && Array.isArray(to.meta.roles)) {
-		const allowed = to.meta.roles.some((r) => userRoles.includes(r));
-		if (!allowed) {
-			next({ name: "Dashboard" }); // redirecionamento neutro
-			return;
-		}
-	}
-
-	// se rota exigir permissions
-	if (to.meta.permissions && Array.isArray(to.meta.permissions)) {
-		const allowedPerm = to.meta.permissions.some((p) =>
-			userPermissions.includes(p)
-		);
-		if (!allowedPerm) {
-			next({ name: "Dashboard" });
-			return;
-		}
-	}
-
-	next();
-});
-
+router.beforeEach(authGuard);
+router.beforeEach(permissionGuard);
 export default router;

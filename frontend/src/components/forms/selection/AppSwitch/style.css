@@ -1,0 +1,60 @@
+/* ==========================================================================
+   APP SWITCH
+   ========================================================================== */
+
+.app-switch {
+  display: grid;
+  gap: var(--space-2);
+
+  width: 100%;
+}
+
+.app-switch__label {
+  display: inline-flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+
+  width: fit-content;
+
+  color: var(--color-text);
+  cursor: pointer;
+}
+
+.app-switch__content {
+  display: grid;
+  gap: var(--space-1);
+
+  padding-top: 1px;
+}
+
+.app-switch__text {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  line-height: var(--line-height-normal);
+}
+
+.app-switch__required {
+  color: var(--color-danger);
+}
+
+.app-switch__hint,
+.app-switch__error {
+  font-size: var(--font-size-xs);
+  line-height: var(--line-height-normal);
+}
+
+.app-switch__hint {
+  color: var(--color-text-muted);
+}
+
+.app-switch__error {
+  color: var(--color-danger);
+}
+
+.app-switch--disabled {
+  opacity: 0.65;
+}
+
+.app-switch--disabled .app-switch__label {
+  cursor: not-allowed;
+}
