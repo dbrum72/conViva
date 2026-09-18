@@ -70,3 +70,54 @@ it("remove registros e permissões anteriores antes de abrir outro assistido", a
   expect(auth.hasPermission("care.write")).toBe(false);
   expect(auth.currentTenant).toBe("b");
 });
+
+it("ignora resposta de contexto antigo após uma nova seleção", async () => {
+  const auth = useAuthStore();
+  let finish;
+  context.mockReturnValueOnce(
+    new Promise((resolve) => {
+      finish = resolve;
+    }),
+  );
+  const oldRequest = auth.selectOrganization({ slug: "a" });
+  context.mockResolvedValueOnce({
+    data: {
+      organization: { slug: "b" },
+      roles: ["observador"],
+      permissions: [],
+    },
+  });
+  await auth.selectOrganization({ slug: "b" });
+  finish({
+    data: {
+      organization: { slug: "a" },
+      roles: ["responsavel"],
+      permissions: ["care.write"],
+    },
+  });
+  await oldRequest;
+  expect(auth.currentTenant).toBe("b");
+  expect(auth.roles).toEqual(["observador"]);
+});
+
+it("não restaura contexto quando a sessão expira durante a consulta", async () => {
+  const auth = useAuthStore();
+  let finish;
+  context.mockReturnValueOnce(
+    new Promise((resolve) => {
+      finish = resolve;
+    }),
+  );
+  const request = auth.selectOrganization({ slug: "a" });
+  auth.clearAuth();
+  finish({
+    data: {
+      organization: { slug: "a" },
+      roles: ["responsavel"],
+      permissions: ["care.write"],
+    },
+  });
+  await request;
+  expect(auth.organization).toBeNull();
+  expect(auth.permissions).toEqual([]);
+});

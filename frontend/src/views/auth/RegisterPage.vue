@@ -266,7 +266,7 @@ async function handleSubmit() {
     });
 
     await router.replace({
-      name: "dashboard",
+      name: "organizations.select",
     });
   } catch (error) {
     const status = error.response?.status;

@@ -45,6 +45,6 @@ class User extends Authenticatable implements JWTSubject
 
     public function getJWTCustomClaims(): array
     {
-        return [];
+        return ['pwd' => hash_hmac('sha256', (string) $this->password, (string) config('app.key'))];
     }
 }

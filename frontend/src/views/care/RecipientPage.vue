@@ -2,6 +2,7 @@
   <CareShell
     :title="store.recipient?.name || 'Cuidados'"
     subtitle="A rotina, o histórico e a rede de apoio deste assistido."
+    @retry="store.loadRecipient(id).catch(() => {})"
     ><template #actions
       ><RouterLink class="btn btn--outline" :to="{ name: 'recipients' }"
         >Voltar aos assistidos</RouterLink
@@ -37,6 +38,8 @@
               :class="[
                 'care-pill',
                 e.status === 'completed' ? 'care-done' : '',
+                e.status === 'pending' ? 'care-confirmed' : '',
+                e.status === 'cancelled' ? 'care-cancelled' : '',
               ]"
               >{{ statusLabels[e.status] || e.status }}</span
             >
@@ -57,7 +60,13 @@
             >
               <span
                 >{{ share.user?.name }} · {{ money(share.amount_cents) }} ·
-                {{ share.paid_at ? "Pago" : "Pendente" }}</span
+                <span
+                  class="care-pill"
+                  :class="
+                    share.paid_at ? 'care-payment-paid' : 'care-payment-pending'
+                  "
+                  >{{ share.paid_at ? "Pago" : "Pendente" }}</span
+                ></span
               ><AppButton
                 variant="action"
                 v-if="
@@ -118,8 +127,16 @@
             >
           </div></AppCard
         >
-        <p v-if="!filteredEntries.length" class="care-empty">
-          Nenhum registro nesta área. Use “Adicionar registro” para começar.
+        <p
+          v-if="!store.pending && !store.error && !filteredEntries.length"
+          class="care-empty"
+        >
+          Nenhum registro nesta área.
+          {{
+            canEdit
+              ? "Use “Adicionar registro” para começar."
+              : "Os cuidados compartilhados aparecerão aqui."
+          }}
         </p></template
       >
       <template v-if="tab === 'documents'"
@@ -156,34 +173,15 @@
             Responsáveis vinculados participam das decisões do assistido. Para
             cuidadores e observadores, conceda somente as áreas necessárias.
           </p>
-          <form class="care-form" @submit.prevent="grant">
-            <label class="care-field"
-              >Membro<select v-model="accessForm.user_id" required>
-                <option value="">Selecione</option>
-                <option v-for="m in members" :value="m.id">
-                  {{ m.name }} · {{ m.email }}
-                </option>
-              </select></label
-            >
-            <fieldset>
-              <legend>Áreas disponíveis</legend>
-              <label v-for="(label, key) in areas" class="care-check"
-                ><input
-                  type="checkbox"
-                  :value="key"
-                  v-model="accessForm.areas"
-                />{{ label }}</label
-              >
-            </fieldset>
-            <label class="care-check"
-              ><input type="checkbox" v-model="accessForm.can_edit" />Permitir
-              edição (observadores continuam somente leitura)</label
-            ><label class="care-field"
-              >Expira em (opcional)<input
-                type="datetime-local"
-                v-model="accessForm.expires_at" /></label
-            ><AppButton variant="action" type="submit">Salvar acesso</AppButton>
-          </form>
+          <CareAccessForm
+            :current-user-id="auth.user?.id"
+            :recipient-id="id"
+            :members="members"
+            :accesses="store.accesses"
+            :ready="store.accessesLoaded"
+            :busy="!!store.pending"
+            @save="grant"
+          />
           <div v-for="a in store.accesses" :key="a.id" class="care-list-row">
             <div>
               <strong>{{ a.user.name }}</strong>
@@ -207,142 +205,39 @@
         ></template
       >
     </template>
-    <dialog ref="entryDialog" class="care-dialog">
-      <form @submit.prevent="saveEntry">
-        <h2>{{ entryForm.id ? "Propor alteração" : "Novo registro" }}</h2>
-        <p class="care-muted">
-          Tarefas, compromissos, alimentação, medicamentos e vacinas precisam do
-          aceite dos demais responsáveis. Alterações não substituem o que já foi
-          acordado até todos aceitarem. Recusas exigem motivo.
-        </p>
-        <fieldset v-if="members.length" class="care-form">
-          <legend>Outros participantes afetados</legend>
-          <label
-            v-for="member in members.filter(
-              (m) => m.id !== auth.user.id && m.role !== 'observador',
-            )"
-            :key="member.id"
-            class="care-check"
-          >
-            <input
-              type="checkbox"
-              v-model="entryForm.affected_user_ids"
-              :value="member.id"
-            />{{ member.name }}
-          </label>
-          <small
-            >Selecione também quem assumirá uma obrigação. O servidor verifica o
-            acesso à área. Participantes de rateios são incluídos
-            automaticamente.</small
-          >
-        </fieldset>
-        <label v-if="members.length" class="care-field"
-          >Prestador designado (opcional)<select
-            v-model="entryForm.assigned_user_id"
-          >
-            <option :value="null">Sem designação</option>
-            <option
-              v-for="member in members.filter((m) => m.role !== 'observador')"
-              :key="member.id"
-              :value="member.id"
-            >
-              {{ member.name }}
-            </option>
-          </select></label
-        >
-        <label class="care-field"
-          >Tipo<select v-model="entryForm.kind" :disabled="!!entryForm.id">
-            <option v-for="key in availableKinds" :value="key">
-              {{ entryKinds[key] }}
-            </option>
-          </select></label
-        ><label class="care-field"
-          >Título<input
-            v-model="entryForm.title"
-            required
-            maxlength="200" /></label
-        ><label class="care-field"
-          >Descrição<textarea
-            v-model="entryForm.description"
-            rows="3"
-          ></textarea></label
-        ><label class="care-field"
-          >Quando<input
-            type="datetime-local"
-            v-model="entryForm.due_at" /></label
-        ><label v-if="entryForm.kind === 'event'" class="care-field"
-          >Término<input
-            type="datetime-local"
-            v-model="entryForm.ends_at" /></label
-        ><template
-          v-if="['medication', 'vaccine', 'feeding'].includes(entryForm.kind)"
-          ><label v-for="key in detailFields" class="care-field"
-            >{{ detailLabels[key]
-            }}<input v-model="entryForm.details[key]" /></label></template
-        ><template v-if="entryForm.kind === 'expense'"
-          ><label class="care-field"
-            >Valor total (R$)<input
-              type="number"
-              min="0.01"
-              step="0.01"
-              v-model="entryForm.amount"
-              required
-          /></label>
-          <p>
-            Opcional: distribua o valor entre membros. Sem rateio informado, a
-            despesa fica integralmente com quem a registrou.
-          </p>
-          <div
-            v-for="(share, index) in entryForm.shares"
-            :key="index"
-            class="care-share"
-          >
-            <label class="care-field"
-              >Responsável<select v-model="share.user_id" required>
-                <option v-for="m in members" :value="m.id">{{ m.name }}</option>
-              </select></label
-            ><label class="care-field"
-              >Parcela (R$)<input
-                type="number"
-                min="0.01"
-                step="0.01"
-                v-model="share.amount"
-                required /></label
-            ><AppButton
-              variant="ghost"
-              @click="entryForm.shares.splice(index, 1)"
-              >Remover</AppButton
-            >
-          </div>
-          <AppButton
-            v-if="members.length"
-            variant="outline"
-            @click="
-              entryForm.shares.push({ user_id: members[0].id, amount: '' })
-            "
-            >Adicionar parcela</AppButton
-          ></template
-        >
-        <p v-if="store.error" role="alert" class="care-error">
-          {{ store.error }}
-        </p>
-        <div class="care-actions">
-          <AppButton variant="outline" @click="entryDialog.close()"
-            >Cancelar</AppButton
-          ><AppButton variant="action" type="submit" :loading="!!store.pending"
-            >Salvar registro</AppButton
-          >
-        </div>
-      </form>
-    </dialog></CareShell
-  >
+    <CareEntryDialog
+      :open="entryOpen"
+      :entry="selectedEntry"
+      :recipient-id="id"
+      :members="members"
+      :available-kinds="availableKinds"
+      @close="entryOpen = false"
+    />
+    <CareExecutionDialog
+      :entry="executionEntry"
+      :recipient-id="id"
+      @close="executionEntry = null"
+    />
+    <AppConfirmDialog
+      :open="!!confirmation"
+      :title="confirmation?.title || 'Confirmar'"
+      :message="confirmation?.message || ''"
+      :loading="!!store.pending"
+      :error="store.error"
+      @cancel="confirmation = null"
+      @confirm="confirmAction"
+    />
+  </CareShell>
 </template>
 <script setup>
 import { ref, computed, watch } from "vue";
 import { useRoute } from "vue-router";
+import CareAccessForm from "@/components/care/CareAccessForm.vue";
 import CareDecisions from "@/components/care/CareDecisions.vue";
 import CareShell from "@/components/care/CareShell.vue";
-import { AppCard, AppButton } from "@/components/ui";
+import CareEntryDialog from "@/components/care/CareEntryDialog.vue";
+import CareExecutionDialog from "@/components/care/CareExecutionDialog.vue";
+import { AppCard, AppButton, AppConfirmDialog } from "@/components/ui";
 import { useCareStore } from "@/state/care";
 import { useAuthStore } from "@/state/auth";
 import { useOrganizationMembersStore } from "@/state/organization-members";
@@ -352,14 +247,10 @@ const route = useRoute(),
   auth = useAuthStore(),
   team = useOrganizationMembersStore(),
   tab = ref("routine"),
-  entryDialog = ref(),
-  entryForm = ref({ details: {}, shares: [] }),
-  accessForm = ref({
-    user_id: "",
-    areas: ["routine"],
-    can_edit: false,
-    expires_at: "",
-  });
+  entryOpen = ref(false),
+  selectedEntry = ref(null),
+  executionEntry = ref(null),
+  confirmation = ref(null);
 const id = computed(() => route.params.id),
   members = computed(() => team.activeMembers);
 const tabs = computed(() => [
@@ -393,101 +284,49 @@ const detailLabels = {
   quantity: "Quantidade",
   provider: "Profissional ou local",
 };
-const detailFields = computed(() =>
-  entryForm.value.kind === "feeding"
-    ? ["food", "quantity"]
-    : entryForm.value.kind === "vaccine"
-      ? ["provider"]
-      : ["dose", "frequency", "route"],
-);
-function localDate(value) {
-  if (!value) return "";
-  const d = new Date(value);
-  return new Date(d.getTime() - d.getTimezoneOffset() * 60000)
-    .toISOString()
-    .slice(0, 16);
+function openEntry(entry = null) {
+  selectedEntry.value = entry;
+  entryOpen.value = true;
 }
-function openEntry(e) {
+async function grant(data) {
+  if (!store.accessesLoaded || store.pending) return;
+  try {
+    await store.grant(id.value, data);
+  } catch {}
+}
+function recordExecution(entry) {
   store.error = "";
-  entryForm.value = e
-    ? {
-        ...e,
-        details: { ...e.details },
-        affected_user_ids: [...(e.affected_user_ids || [])],
-        due_at: localDate(e.due_at),
-        ends_at: localDate(e.ends_at),
-        amount: (e.amount_cents || 0) / 100,
-        shares: (e.shares || []).map((s) => ({
-          user_id: s.user_id,
-          amount: s.amount_cents / 100,
-        })),
-      }
-    : {
-        kind: availableKinds.value[0],
-        title: "",
-        description: "",
-        affected_user_ids: [],
-        assigned_user_id: null,
-        due_at: "",
-        ends_at: "",
-        details: {},
-        amount: "",
-        shares: [],
-      };
-  entryDialog.value.showModal();
+  executionEntry.value = entry;
 }
-async function saveEntry() {
-  const e = entryForm.value;
+function removeEntry(entry) {
+  store.error = "";
+  confirmation.value = {
+    title: "Solicitar cancelamento",
+    message:
+      "O cancelamento depende do aceite dos participantes afetados. O histórico será preservado.",
+    kind: "entry",
+    id: entry.id,
+  };
+}
+function removeDocument(doc) {
+  store.error = "";
+  confirmation.value = {
+    title: "Excluir documento",
+    message: "Excluir " + doc.filename + "?",
+    kind: "document",
+    id: doc.id,
+  };
+}
+async function confirmAction() {
+  if (store.pending || !confirmation.value) return;
   try {
-    await store.saveEntry(id.value, {
-      id: e.id,
-      kind: e.kind,
-      title: e.title,
-      description: e.description,
-      assigned_user_id: e.assigned_user_id || null,
-      affected_user_ids: e.affected_user_ids || [],
-      due_at: e.due_at ? new Date(e.due_at).toISOString() : null,
-      ends_at: e.ends_at ? new Date(e.ends_at).toISOString() : null,
-      details: e.details,
-      amount_cents:
-        e.kind === "expense" ? Math.round(Number(e.amount) * 100) : null,
-      shares:
-        e.kind === "expense"
-          ? e.shares.map((s) => ({
-              user_id: s.user_id,
-              amount_cents: Math.round(Number(s.amount) * 100),
-            }))
-          : [],
-    });
-    entryDialog.value.close();
-  } catch {}
-}
-async function grant() {
-  try {
-    await store.grant(id.value, {
-      ...accessForm.value,
-      expires_at: accessForm.value.expires_at
-        ? new Date(accessForm.value.expires_at).toISOString()
-        : null,
-    });
-  } catch {}
-}
-function recordExecution(e) {
-  const description = window.prompt("Descreva o cuidado realizado (opcional):");
-  if (description !== null)
-    store.execute(id.value, e.id, description).catch(() => {});
-}
-function removeEntry(e) {
-  if (
-    window.confirm(
-      "Cancelar este registro? Se houver participantes afetados, o cancelamento dependerá de aceite. O histórico será preservado.",
-    )
-  )
-    store.removeEntry(id.value, e.id).catch(() => {});
-}
-function removeDocument(d) {
-  if (window.confirm("Excluir " + d.filename + "?"))
-    store.removeDocument(id.value, d.id).catch(() => {});
+    const action = confirmation.value;
+    if (action.kind === "entry") await store.removeEntry(id.value, action.id);
+    else await store.removeDocument(id.value, action.id);
+    confirmation.value = null;
+  } catch {
+    /* Store exposes the error inside the dialog. */
+  }
 }
 async function upload(e) {
   const f = e.target.files[0];
@@ -497,6 +336,8 @@ async function upload(e) {
 watch(
   id,
   async (value) => {
+    entryOpen.value = false;
+    executionEntry.value = confirmation.value = null;
     tab.value = "routine";
     await store.loadRecipient(value).catch(() => {});
     tab.value = tabs.value[0]?.key || "routine";

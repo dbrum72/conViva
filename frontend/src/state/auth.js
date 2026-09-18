@@ -1,6 +1,7 @@
 import { createGroup as createGroupRequest } from "@/services/auth.js";
 import { listCareGroups } from "@/services/auth.js";
 import { useCareStore } from "./care.js";
+import { useRecipientAvatarStore } from "./recipient-avatar.js";
 import { useOrganizationInvitationsStore } from "./organization-invitations.js";
 import { computed, ref } from "vue";
 
@@ -31,6 +32,8 @@ import { useOrganizationMembersStore } from "@/state/organization-members.js";
 import { useOrganizationRolesStore } from "@/state/organization-roles.js";
 
 export const useAuthStore = defineStore("auth", () => {
+  let contextGeneration = 0;
+  let identityGeneration = 0;
   const token = ref(null);
 
   const user = ref(null);
@@ -41,9 +44,10 @@ export const useAuthStore = defineStore("auth", () => {
   const careGroups = ref([]);
 
   async function fetchCareGroups() {
+    const generation = identityGeneration;
     careGroups.value = [];
     const response = await listCareGroups();
-    careGroups.value = response.data;
+    if (generation === identityGeneration) careGroups.value = response.data;
   }
 
   const organization = ref(null);
@@ -99,6 +103,7 @@ export const useAuthStore = defineStore("auth", () => {
   }
 
   function applyAuthPayload(payload) {
+    identityGeneration++;
     const accessToken = payload?.access_token ?? payload?.token ?? null;
 
     token.value = accessToken;
@@ -125,6 +130,7 @@ export const useAuthStore = defineStore("auth", () => {
   }
 
   function clearTenantStores() {
+    useRecipientAvatarStore().clear();
     useCareStore().clear();
     useOrganizationMembersStore().clear();
     useOrganizationRolesStore().clear();
@@ -132,6 +138,7 @@ export const useAuthStore = defineStore("auth", () => {
   }
 
   function clearContext({ removeTenant = false, clearStores = false } = {}) {
+    contextGeneration++;
     organization.value = null;
 
     roles.value = [];
@@ -150,6 +157,7 @@ export const useAuthStore = defineStore("auth", () => {
   }
 
   function clearAuth() {
+    identityGeneration++;
     token.value = null;
 
     user.value = null;
@@ -215,7 +223,10 @@ export const useAuthStore = defineStore("auth", () => {
       return null;
     }
 
+    const generation = contextGeneration;
     const response = await contextRequest();
+    if (generation !== contextGeneration || tenant !== getCurrentTenant())
+      return null;
 
     applyContextPayload(response.data);
 
@@ -229,23 +240,22 @@ export const useAuthStore = defineStore("auth", () => {
         : resolveOrganizationByTenant(selectedOrganization);
 
     if (!resolvedOrganization?.slug) {
-      throw new Error("Grupo inválida.");
+      throw new Error("Grupo inválido.");
     }
 
     const tenant = resolvedOrganization.slug;
 
-    const isChangingTenant =
-      currentTenant.value !== null && currentTenant.value !== tenant;
-
     clearContext({
-      clearStores: isChangingTenant,
+      clearStores: true,
     });
 
     setCurrentTenant(tenant);
+    const generation = contextGeneration;
 
     try {
       return await fetchContext(tenant);
     } catch (error) {
+      if (generation !== contextGeneration) throw error;
       removeCurrentTenant();
 
       clearContext({
@@ -292,7 +302,9 @@ export const useAuthStore = defineStore("auth", () => {
   }
 
   async function fetchMe() {
+    const generation = identityGeneration;
     const response = await meRequest();
+    if (generation !== identityGeneration) return null;
 
     const payload = response.data;
 

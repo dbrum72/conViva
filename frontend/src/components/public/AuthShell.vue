@@ -150,6 +150,7 @@ import { AppLogo } from "@/components/ui";
 @media (max-width: 56rem) {
   .auth-shell {
     grid-template-columns: 1fr;
+    grid-template-rows: auto 1fr;
   }
 
   .auth-shell__presentation {

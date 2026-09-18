@@ -12,15 +12,6 @@
     >
     <div class="care-grid">
       <AppCard
-        class="dashboard-stat dashboard-stat--green"
-        title="Assistido do grupo"
-        ><span class="dashboard-icon"
-          ><AppIcon name="users" :size="24" decorative /></span
-        ><strong class="care-metric">{{
-          store.recipients.filter((p) => p.status === "active").length
-        }}</strong>
-        <p class="care-muted">Uma rede de cuidado por perto</p></AppCard
-      ><AppCard
         class="dashboard-stat dashboard-stat--blue"
         title="Próximos cuidados"
         ><span class="dashboard-icon"
@@ -76,7 +67,6 @@ const pending = computed(() =>
 );
 onMounted(() =>
   Promise.all([
-    store.loadRecipients(),
     store.loadAgenda(),
     store.loadNotifications(),
   ]).catch(() => {}),
@@ -104,9 +94,6 @@ onMounted(() =>
   position: relative;
   border: 1px solid rgb(86 88 115 / 12%);
   border-radius: 1.25rem;
-}
-.dashboard-stat--green {
-  background: var(--palette-baby-green);
 }
 .dashboard-stat--blue {
   background: var(--palette-baby-blue);

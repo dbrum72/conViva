@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\Auth\LoginRequest;
 use App\Http\Requests\Auth\RegisterRequest;
 use App\Models\User;
+use App\Services\Care\AccessControl;
 use App\Services\Registration\RegisterOrganization;
 use App\Support\Tenancy\CurrentOrganization;
 use Illuminate\Http\JsonResponse;
@@ -134,11 +135,14 @@ class AuthController extends Controller implements HasMiddleware
         $organization =
             $currentOrganization->get();
 
+        $recipient = $organization->recipients()->where('status', 'active')->first();
+
         return response()->json([
             'user' => $user->toArray(),
 
             'organization' => [
                 'has_recipient' => $organization->recipients()->exists(),
+                'can_manage_avatar' => $recipient && app(AccessControl::class)->responsible($user, $recipient),
                 'id' => $organization->id,
 
                 'name' => $organization->name,

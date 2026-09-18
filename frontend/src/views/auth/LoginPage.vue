@@ -17,6 +17,9 @@
           novalidate
           @submit.prevent="handleSubmit"
         >
+          <p v-if="route.query.reason === 'expired'" role="status">
+            Sua sessão expirou. Entre novamente para continuar.
+          </p>
           <AppEmail
             id="login-email"
             v-model="form.email"
@@ -58,6 +61,9 @@
           >
             Entrar
           </AppButton>
+          <RouterLink :to="{ name: 'password.forgot' }"
+            >Esqueci minha senha</RouterLink
+          >
         </form>
       </AppCard>
 
@@ -74,7 +80,7 @@
 import { useRetryCountdown } from "@/composables/useRetryCountdown";
 import { reactive, ref } from "vue";
 
-import { useRouter } from "vue-router";
+import { useRouter, useRoute } from "vue-router";
 
 import { AppEmail, AppPassword } from "@/components/forms";
 
@@ -85,6 +91,7 @@ import { AppButton, AppCard } from "@/components/ui";
 import { useAuthStore } from "@/state/auth.js";
 
 const router = useRouter();
+const route = useRoute();
 
 const authStore = useAuthStore();
 

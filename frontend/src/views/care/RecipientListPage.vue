@@ -2,6 +2,7 @@
   <CareShell
     title="Assistido do grupo"
     subtitle="Cada grupo cuida de uma pessoa ou pet. Para outro assistido, crie outro grupo."
+    @retry="store.loadRecipients().catch(() => {})"
     ><template #actions
       ><AppButton
         variant="primary"
@@ -18,6 +19,19 @@
     <RouterLink :to="{ name: 'organizations.select' }"
       >Trocar ou criar grupo</RouterLink
     >
+    <p
+      v-if="
+        store.recipients.length &&
+        auth.hasPermission('organization-members.invite')
+      "
+      class="care-muted"
+    >
+      Próximo passo:
+      <RouterLink :to="{ name: 'organization-members' }"
+        >convide sua rede de cuidados</RouterLink
+      >
+      e abra o assistido para registrar o primeiro cuidado.
+    </p>
     <div class="care-grid">
       <AppCard v-for="p in store.recipients" :key="p.id"
         ><div class="care-person">
@@ -50,13 +64,21 @@
         </div></AppCard
       >
     </div>
-    <p v-if="!store.recipients.length && !store.pending" class="care-empty">
+    <p
+      v-if="!store.recipients.length && !store.pending && !store.error"
+      class="care-empty"
+    >
       Sua rede começa aqui. Cadastre um assistido ou aguarde a concessão de
       acesso por um responsável.
     </p>
-    <dialog ref="dialog" class="care-dialog">
+    <AppDialog
+      :open="dialogOpen"
+      :title="form.id ? 'Editar assistido' : 'Novo assistido'"
+      :busy="!!store.pending"
+      :error="store.error"
+      @close="dialogOpen = false"
+    >
       <form @submit.prevent="save">
-        <h2>{{ form.id ? "Editar assistido" : "Novo assistido" }}</h2>
         <label class="care-field"
           >Nome<input v-model="form.name" required maxlength="150" /></label
         ><label class="care-field"
@@ -81,43 +103,72 @@
           {{ store.error }}
         </p>
         <div class="care-actions">
-          <AppButton variant="outline" @click="dialog.close()"
+          <AppButton
+            variant="outline"
+            :disabled="!!store.pending"
+            @click="dialogOpen = false"
             >Cancelar</AppButton
           ><AppButton variant="action" type="submit" :loading="!!store.pending"
             >Salvar</AppButton
           >
         </div>
       </form>
-    </dialog></CareShell
-  >
+    </AppDialog>
+    <AppConfirmDialog
+      :open="!!archiving"
+      title="Arquivar assistido"
+      :message="
+        'Arquivar ' + (archiving?.name || '') + '? O histórico será preservado.'
+      "
+      :loading="!!store.pending"
+      :error="store.error"
+      @cancel="archiving = null"
+      @confirm="confirmArchive"
+    />
+  </CareShell>
 </template>
 <script setup>
 import { ref, onMounted } from "vue";
 import CareShell from "@/components/care/CareShell.vue";
-import { AppCard, AppButton } from "@/components/ui";
+import {
+  AppCard,
+  AppButton,
+  AppDialog,
+  AppConfirmDialog,
+} from "@/components/ui";
 import { useAuthStore } from "@/state/auth";
 import { useCareStore } from "@/state/care";
 import { recipientKinds } from "@/utils/care";
 const store = useCareStore(),
   auth = useAuthStore(),
-  dialog = ref(),
+  dialogOpen = ref(false),
+  archiving = ref(null),
   form = ref({});
 function openForm(p) {
   store.error = "";
   form.value = p
     ? { ...p }
     : { name: "", kind: "child", birth_date: "", species: "", breed: "" };
-  dialog.value.showModal();
+  dialogOpen.value = true;
 }
 async function save() {
   try {
     await store.saveRecipient(form.value);
-    dialog.value.close();
+    dialogOpen.value = false;
   } catch {}
 }
 async function archive(p) {
-  if (window.confirm("Arquivar " + p.name + "? O histórico será preservado."))
-    await store.archive(p.id).catch(() => {});
+  store.error = "";
+  archiving.value = p;
+}
+async function confirmArchive() {
+  if (store.pending || !archiving.value) return;
+  try {
+    await store.archive(archiving.value.id);
+    archiving.value = null;
+  } catch {
+    /* Store exposes the error in the dialog. */
+  }
 }
 onMounted(() => store.loadRecipients().catch(() => {}));
 </script>

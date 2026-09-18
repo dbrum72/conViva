@@ -26,6 +26,11 @@
             grupo. Escolha de quem deseja cuidar.
           </p>
         </header>
+        <p class="care-muted">
+          Para começar: escolha ou crie um grupo, cadastre o assistido, convide
+          sua rede e registre o primeiro cuidado.
+        </p>
+        <p v-if="loading" role="status">Carregando seus assistidos…</p>
 
         <div
           v-if="authStore.careGroups.length"
@@ -67,7 +72,7 @@
         </div>
 
         <div
-          v-else-if="!loading"
+          v-else-if="!loading && !errorMessage"
           class="organization-select-page__empty"
           role="status"
         >
@@ -84,6 +89,9 @@
           role="alert"
         >
           {{ errorMessage }}
+          <AppButton variant="outline" :disabled="loading" @click="loadGroups"
+            >Tentar novamente</AppButton
+          >
         </div>
         <form class="care-form" @submit.prevent="createGroup">
           <label class="care-field"
@@ -135,7 +143,7 @@ async function createGroup() {
   errorMessage.value = "";
   try {
     await authStore.createGroup(newGroupName.value);
-    await router.replace({ name: "dashboard" });
+    await router.replace({ name: "recipients" });
   } catch (e) {
     errorMessage.value =
       e.response?.data?.message || "Não foi possível criar o grupo.";
@@ -152,8 +160,9 @@ const roleLabels = {
   cuidador: "Cuidador",
   observador: "Observador",
 };
-onMounted(async () => {
+async function loadGroups() {
   loading.value = true;
+  errorMessage.value = "";
   try {
     await authStore.fetchCareGroups();
   } catch {
@@ -162,7 +171,8 @@ onMounted(async () => {
   } finally {
     loading.value = false;
   }
-});
+}
+onMounted(loadGroups);
 
 async function handleSelect(organization) {
   if (loading.value) {

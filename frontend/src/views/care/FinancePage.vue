@@ -2,7 +2,8 @@
   <CareShell
     title="Despesas compartilhadas"
     subtitle="Organize os gastos de cuidado e acompanhe os pagamentos registrados."
-    ><AppCard title="Total registrado"
+    @retry="store.loadExpenses().catch(() => {})"
+    ><AppCard v-if="!store.pending && !store.error" title="Total registrado"
       ><strong class="care-metric">{{
         money(store.expenses.reduce((n, e) => n + e.amount_cents, 0))
       }}</strong></AppCard
@@ -21,11 +22,18 @@
         <span>{{ s.user?.name }}</span
         ><span
           >{{ money(s.amount_cents) }} ·
-          {{ s.paid_at ? "Pago" : "Pendente" }}</span
+          <span
+            class="care-pill"
+            :class="s.paid_at ? 'care-payment-paid' : 'care-payment-pending'"
+            >{{ s.paid_at ? "Pago" : "Pendente" }}</span
+          ></span
         >
       </div></AppCard
     >
-    <p v-if="!store.expenses.length" class="care-empty">
+    <p
+      v-if="!store.expenses.length && !store.pending && !store.error"
+      class="care-empty"
+    >
       Nenhuma despesa disponível. Registre despesas na área de um assistido.
     </p></CareShell
   >

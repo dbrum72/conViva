@@ -2,32 +2,24 @@
   <aside class="app-sidebar app-sidebar-nav" aria-label="Barra lateral">
     <header class="sidebar-header">
       <div v-if="authStore.organization" class="sidebar-organization">
-        <AppSelect
-          v-if="authStore.hasMultipleOrganizations"
-          :model-value="authStore.currentTenant"
-          name="organization"
-          label="Grupo de cuidados"
-          :options="organizationOptions"
-          option-label="label"
-          option-value="value"
-          :disabled="switchingOrganization"
-          @update:model-value="handleOrganizationChange"
+        <PersonalRecipientAvatar
+          :initials="groupInitials"
+          :enabled="!!authStore.organization.can_manage_avatar"
+          :context-key="`${authStore.user?.id}:${authStore.organization.id}`"
         />
-
-        <div v-else class="sidebar-organization__current">
-          <span class="sidebar-organization__label">Grupo de cuidados</span>
-          <strong class="sidebar-organization__name">
+        <div class="sidebar-organization__current">
+          <span class="sidebar-organization__label">Grupo ativo</span>
+          <strong
+            class="sidebar-organization__name"
+            :title="authStore.organization.name"
+          >
             {{ authStore.organization.name }}
           </strong>
         </div>
       </div>
     </header>
 
-    <SideBarNav /><RouterLink
-      class="care-group-link"
-      :to="{ name: 'organizations.select' }"
-      >Trocar ou criar grupo</RouterLink
-    >
+    <SideBarNav />
 
     <footer class="sidebar-footer">
       <div class="sidebar-brand">
@@ -52,45 +44,22 @@
 </template>
 
 <script setup>
-import { computed, ref } from "vue";
-import { useRouter } from "vue-router";
-
+import { computed } from "vue";
+import PersonalRecipientAvatar from "@/components/care/PersonalRecipientAvatar.vue";
 import convivaSidebarLogo from "@/assets/brand/conviva-sidebar-logo.svg";
-import { AppSelect } from "@/components/forms";
 import SideBarNav from "@/components/navigation/SideBarNav/index.vue";
 import { useAuthStore } from "@/state/auth.js";
 
-const router = useRouter();
 const authStore = useAuthStore();
-const switchingOrganization = ref(false);
-
-const organizationOptions = computed(() =>
-  authStore.organizations.map((organization) => ({
-    label: organization.name,
-    value: organization.slug,
-  })),
+const groupInitials = computed(() =>
+  (authStore.organization?.name || "")
+    .trim()
+    .split(/\s+/)
+    .slice(0, 2)
+    .map((part) => Array.from(part)[0] || "")
+    .join("")
+    .toLocaleUpperCase("pt-BR"),
 );
-
-async function handleOrganizationChange(tenant) {
-  if (
-    switchingOrganization.value ||
-    !tenant ||
-    tenant === authStore.currentTenant
-  ) {
-    return;
-  }
-
-  switchingOrganization.value = true;
-
-  try {
-    await authStore.selectOrganization(tenant);
-    await router.replace({ name: "dashboard" });
-  } catch {
-    await router.replace({ name: "organizations.select" });
-  } finally {
-    switchingOrganization.value = false;
-  }
-}
 </script>
 
 <style scoped>
@@ -112,6 +81,9 @@ async function handleOrganizationChange(tenant) {
 }
 
 .sidebar-organization {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
   width: 100%;
   min-width: 0;
 }

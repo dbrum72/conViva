@@ -6,6 +6,16 @@ const router = createRouter({
   history: createWebHistory(),
   routes: [
     {
+      path: "/forgot-password",
+      name: "password.forgot",
+      component: () => import("@/views/auth/PasswordRecoveryPage.vue"),
+    },
+    {
+      path: "/reset-password",
+      name: "password.reset",
+      component: () => import("@/views/auth/PasswordRecoveryPage.vue"),
+    },
+    {
       path: "/",
       name: "home",
       component: () => import("@/views/public/LandingPage.vue"),

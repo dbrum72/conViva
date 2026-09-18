@@ -9,21 +9,29 @@ use App\Http\Controllers\CareRecipientController;
 use App\Http\Controllers\OrganizationInvitationController;
 use App\Http\Controllers\OrganizationMemberController;
 use App\Http\Controllers\OrganizationRoleController;
+use App\Http\Controllers\PasswordRecoveryController;
+use App\Http\Controllers\RecipientAvatarController;
+use App\Http\Middleware\VerifyPasswordToken;
 use Illuminate\Support\Facades\Route;
 
 Route::post('auth/login', [AuthController::class, 'login'])->middleware('throttle:auth-login');
 Route::post('auth/register', [AuthController::class, 'register'])->middleware('throttle:auth-register');
+Route::post('auth/forgot-password', [PasswordRecoveryController::class, 'store'])->middleware('throttle:auth-recovery');
+Route::post('auth/reset-password', [PasswordRecoveryController::class, 'update'])->middleware('throttle:auth-recovery');
 Route::get('organization-invitations/accept/{token}', [OrganizationInvitationController::class, 'showAcceptance']);
 Route::post('organization-invitations/accept/{token}', [OrganizationInvitationController::class, 'accept'])->middleware('throttle:auth-register');
-Route::middleware('auth:api')->group(function () {
+Route::middleware(['auth:api', VerifyPasswordToken::class])->group(function () {
     Route::get('groups', [CareGroupController::class, 'index']);
     Route::post('groups', [CareGroupController::class, 'store']);
     Route::get('auth/me', [AuthController::class, 'me']);
     Route::post('auth/logout', [AuthController::class, 'logout']);
     Route::post('auth/refresh', [AuthController::class, 'refresh']);
 });
-Route::middleware(['auth:api', 'tenant'])->group(function () {
+Route::middleware(['auth:api', VerifyPasswordToken::class, 'tenant'])->group(function () {
     Route::get('auth/context', [AuthController::class, 'context']);
+    Route::get('my-recipient-avatar', [RecipientAvatarController::class, 'show']);
+    Route::post('my-recipient-avatar', [RecipientAvatarController::class, 'store']);
+    Route::delete('my-recipient-avatar', [RecipientAvatarController::class, 'destroy']);
     Route::get('organization-members', [OrganizationMemberController::class, 'index'])->middleware('can:organization-members.view');
     Route::patch('organization-members/{user}/role', [OrganizationMemberController::class, 'updateRole'])->middleware('can:organization-members.update-role');
     Route::patch('organization-members/{user}/status', [OrganizationMemberController::class, 'updateStatus'])->middleware('can:organization-members.update-status');

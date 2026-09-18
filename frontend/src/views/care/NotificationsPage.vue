@@ -2,6 +2,7 @@
   <CareShell
     title="Notificações"
     subtitle="Atualizações dos cuidados que você pode acompanhar."
+    @retry="store.loadNotifications().catch(() => {})"
     ><AppCard v-for="n in store.notifications" :key="n.id"
       ><div class="care-list-row">
         <div>
@@ -19,7 +20,10 @@
         ><span v-else>Lida</span>
       </div></AppCard
     >
-    <p v-if="!store.notifications.length" class="care-empty">
+    <p
+      v-if="!store.notifications.length && !store.pending && !store.error"
+      class="care-empty"
+    >
       Você está em dia. Nenhuma atualização disponível.
     </p></CareShell
   >

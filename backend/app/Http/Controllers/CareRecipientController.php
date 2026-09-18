@@ -74,7 +74,7 @@ class CareRecipientController extends Controller
         $data = $r->validate(['user_id' => 'required|integer', 'areas' => 'required|array|min:1', 'areas.*' => 'required|in:routine,health,documents,finance', 'can_edit' => 'required|boolean', 'expires_at' => 'nullable|date|after:now']);
         abort_unless($recipient->organization->users()->whereKey($data['user_id'])->wherePivot('status', 'active')->exists(), 422, 'Membro não pertence ao grupo.');
         $target = $recipient->organization->users()->whereKey($data['user_id'])->firstOrFail();
-        abort_if($this->access->responsible($target, $recipient), 409, 'Os acessos de outro responsável não podem ser reduzidos ou substituídos unilateralmente.');
+        abort_if($this->access->responsible($target, $recipient) || ($target->hasRole('responsavel') && (int) $target->id !== (int) $r->user()->id), 409, 'Os acessos de outro responsável não podem ser reduzidos ou substituídos unilateralmente.');
         if ($target->hasRole('responsavel')) {
             $data['areas'] = AccessControl::AREAS;
             $data['can_edit'] = true;
@@ -92,7 +92,7 @@ class CareRecipientController extends Controller
     {
         abort_unless($this->access->responsible($r->user(), $recipient), 403);
         $target = $recipient->organization->users()->whereKey($user)->firstOrFail();
-        abort_if($this->access->responsible($target, $recipient), 409, 'Um responsável não pode ser removido unilateralmente.');
+        abort_if($this->access->responsible($target, $recipient) || ($target->hasRole('responsavel') && (int) $target->id !== (int) $r->user()->id), 409, 'Um responsável não pode ser removido unilateralmente.');
         $recipient->accesses()->where('user_id', $user)->delete();
 
         return response()->noContent();

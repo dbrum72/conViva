@@ -9,7 +9,7 @@ Em `backend`:
 ```powershell
 composer install
 php artisan migrate --seed
-php artisan serve --host=127.0.0.1 --port=8010
+php artisan serve --host=127.0.0.1 --port=8000
 ```
 
 Em `frontend`:
@@ -19,7 +19,7 @@ npm install
 npm run dev
 ```
 
-Interface: http://127.0.0.1:5186. API: http://127.0.0.1:8010/api. Crie sua conta em `/register`; o cadastro cria o primeiro grupo e o perfil de responsável. O menu “Trocar ou criar grupo” permite criar grupos adicionais.
+Interface: http://127.0.0.1:5186. API: http://127.0.0.1:8000/api. Crie sua conta em `/register`; o cadastro cria o primeiro grupo e o perfil de responsável. O menu “Trocar ou criar grupo” permite criar grupos adicionais.
 
 ## Recursos
 
@@ -31,13 +31,19 @@ Interface: http://127.0.0.1:5186. API: http://127.0.0.1:8010/api. Crie sua conta
 - Notificações internas dos registros de cuidados.
 - Acesso por assistido e por área: rotina, saúde, documentos e despesas; leitura/edição e expiração.
 
-O responsável acessa os assistidos que cadastrou ou aos quais foi vinculado; não tem autoridade unilateral sobre outro responsável. Cuidadores são terceiros contratados/autorizados; observadores apenas visualizam as áreas concedidas. Consulte `CONVERSAO.md` para decisões e referências de mercado.
+O responsável acessa os assistidos que cadastrou ou aos quais foi vinculado; não tem autoridade unilateral sobre outro responsável. Cuidadores são terceiros contratados/autorizados; observadores apenas visualizam as áreas concedidas. Consulte `docs/CONTEXT.MD` para as regras atuais e `docs/CRONOGRAMA.md` para o plano e as referências de mercado.
+
+## Recuperação de acesso (E01)
+
+O login oferece “Esqueci minha senha”. Os links expiram em 60 minutos e têm uso único; redefinir a senha invalida os tokens de sessão anteriores. Sessões criadas antes da E01 exigem um novo login. A tabela de tokens é criada pela migration `2026_09_18_100000_create_password_reset_tokens_table.php`.
+
+Consulte `docs/ENTREGA-E01.md` para validações, configuração de envio e limites. O link usa `conviva.frontend_url`; a disponibilidade de SMTP deve ser conferida no ambiente antes de depender da entrega externa.
 
 ## Banco e e-mail
 
 O banco `conviva_db` foi reconstruído pelas migrations. Não foram importados dados pessoais do legalis. `backend/tools/rebuild-conviva.php` é uma ferramenta **destrutiva**, limitada a esse nome de banco; Nesta fase de projeto, o usuário autorizou recriar esse banco descartável. Altere diretamente as migrations de criação, sem incrementais para campos; execute `php backend/tools/rebuild-conviva.php` na raiz para aplicar mudanças a um banco já existente.
 
-No ambiente local, o transporte de e-mail está em `log`: convites são gerados, mas a mensagem fica em `backend/storage/logs/laravel.log`. O envio real depende da configuração de SMTP. Notificações internas não dependem de SMTP. Frequência de medicamentos é um registro descritivo; não há geração automática de doses nem notificações push agendadas.
+Na verificação da E01, o transporte local estava configurado como `smtp`; a entrega externa não foi testada. Quando configurado como `log`, as mensagens ficam em `backend/storage/logs/laravel.log`. Notificações internas não dependem de SMTP. Frequência de medicamentos é um registro descritivo; não há geração automática de doses nem notificações push agendadas.
 
 ## Validação
 

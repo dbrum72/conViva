@@ -7,6 +7,7 @@ export const useCareStore = defineStore("care", () => {
     entries = ref([]),
     documents = ref([]),
     accesses = ref([]),
+    accessesLoaded = ref(false),
     agenda = ref([]),
     notifications = ref([]),
     expenses = ref([]),
@@ -43,6 +44,7 @@ export const useCareStore = defineStore("care", () => {
     entries.value = [];
     documents.value = [];
     accesses.value = [];
+    accessesLoaded.value = false;
     const { data } = await run(() => careApi.recipient(id));
     if (g !== generation) return;
     recipient.value = data;
@@ -54,7 +56,10 @@ export const useCareStore = defineStore("care", () => {
     }
     if (data.can_manage_access) {
       const response = await run(() => careApi.accesses(id));
-      if (g === generation) accesses.value = response.data;
+      if (g === generation) {
+        accesses.value = response.data;
+        accessesLoaded.value = true;
+      }
     }
   }
   async function loadEntries(id) {
@@ -119,8 +124,12 @@ export const useCareStore = defineStore("care", () => {
     const g = generation;
     await run(() => careApi.grant(id, data));
     if (g !== generation) return;
+    accessesLoaded.value = false;
     const response = await run(() => careApi.accesses(id));
-    if (g === generation) accesses.value = response.data;
+    if (g === generation) {
+      accesses.value = response.data;
+      accessesLoaded.value = true;
+    }
   }
   async function revoke(id, user) {
     const g = generation;
@@ -194,6 +203,7 @@ export const useCareStore = defineStore("care", () => {
     entries.value = [];
     documents.value = [];
     accesses.value = [];
+    accessesLoaded.value = false;
     agenda.value = [];
     notifications.value = [];
     expenses.value = [];
@@ -206,6 +216,7 @@ export const useCareStore = defineStore("care", () => {
     entries,
     documents,
     accesses,
+    accessesLoaded,
     agenda,
     notifications,
     expenses,

@@ -5,6 +5,10 @@ import { getAccessToken, removeAccessToken } from "./auth-token.js";
 import { getCurrentTenant, removeCurrentTenant } from "./tenant.js";
 
 const apiUrl = import.meta.env.VITE_API_URL;
+let onSessionExpired = () => {};
+export function setSessionExpiredHandler(handler) {
+  onSessionExpired = handler;
+}
 
 if (!apiUrl) {
   throw new Error("VITE_API_URL não está configurada.");
@@ -45,9 +49,15 @@ apiClient.interceptors.response.use(
   (error) => {
     const status = error.response?.status;
 
-    if (status === 401) {
+    const requestToken = error.config?.headers?.Authorization;
+    if (
+      status === 401 &&
+      requestToken &&
+      requestToken === `Bearer ${getAccessToken()}`
+    ) {
       removeAccessToken();
       removeCurrentTenant();
+      onSessionExpired();
     }
 
     return Promise.reject(error);

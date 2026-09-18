@@ -46,6 +46,13 @@
           <AppButton type="button" variant="navigation" @click="goToLogin">
             Ir para o login
           </AppButton>
+          <AppButton
+            v-if="pageError.retryable"
+            type="button"
+            variant="outline"
+            @click="loadInvitation"
+            >Tentar novamente</AppButton
+          >
         </div>
 
         <div v-else-if="accepted" class="invitation-page__state">
@@ -133,9 +140,23 @@
                     .map((a) => invitationAreaLabels[a])
                     .join(", ")
                 }}
+                <p>
+                  {{
+                    invitation.role === "observador" ||
+                    !invitation.care_accesses.find(
+                      (a) => a.care_recipient_id === recipient.id,
+                    )?.can_edit
+                      ? "Somente leitura"
+                      : "Leitura e edição nas áreas concedidas"
+                  }}
+                </p>
               </li>
             </ul>
           </div>
+          <p class="invitation-page__description">
+            Aceitar o convite concede acesso ao assistido. Cada nova obrigação
+            de cuidado ou rateio ainda depende do seu aceite individual.
+          </p>
           <form
             class="invitation-page__form"
             novalidate
@@ -197,7 +218,7 @@
             <div v-else class="invitation-page__existing-user">
               <p>
                 Sua conta já existe no conViva. Confirme o convite para
-                ingressar nesto grupo.
+                ingressar neste grupo.
               </p>
             </div>
 
@@ -237,10 +258,8 @@ import { AppEmail, AppInput, AppPassword } from "@/components/forms";
 
 import { AppButton, AppCard, AppIcon, AppLogo } from "@/components/ui";
 
-import {
-  acceptOrganizationInvitation,
-  getInvitationAcceptance,
-} from "@/services/organization-invitations.js";
+import { useInvitationAcceptanceStore } from "@/state/invitation-acceptance.js";
+import { storeToRefs } from "pinia";
 
 import { areas as invitationAreaLabels } from "@/utils/care.js";
 import { useAuthStore } from "@/state/auth.js";
@@ -250,7 +269,8 @@ const router = useRouter();
 
 const authStore = useAuthStore();
 
-const invitation = ref(null);
+const acceptanceStore = useInvitationAcceptanceStore();
+const { invitation } = storeToRefs(acceptanceStore);
 
 const loadingInvitation = ref(true);
 const submitting = ref(false);
@@ -306,12 +326,14 @@ function resolvePageError(error) {
     return {
       title: "Convite indisponível",
 
-      message: "Este convite expirou, foi revogado ou já foi utilizado.",
+      message:
+        "Este convite expirou, foi revogado ou já foi utilizado. Peça à pessoa que convidou você um novo convite.",
     };
   }
 
   return {
     title: "Não foi possível carregar o convite",
+    retryable: true,
 
     message:
       "Ocorreu um erro ao verificar o convite. Tente novamente mais tarde.",
@@ -325,9 +347,7 @@ async function loadInvitation() {
   invitation.value = null;
 
   try {
-    invitation.value = await getInvitationAcceptance(
-      String(route.params.token),
-    );
+    await acceptanceStore.load(String(route.params.token));
   } catch (error) {
     pageError.value = resolvePageError(error);
   } finally {
@@ -377,7 +397,7 @@ async function handleAccept() {
     : {};
 
   try {
-    const result = await acceptOrganizationInvitation(
+    const result = await acceptanceStore.accept(
       String(route.params.token),
       payload,
     );

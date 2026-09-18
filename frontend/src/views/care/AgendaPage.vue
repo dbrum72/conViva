@@ -2,6 +2,7 @@
   <CareShell
     title="Agenda de cuidados"
     subtitle="Compromissos e rotinas dos assistidos que você acompanha."
+    @retry="store.loadAgenda().catch(() => {})"
     ><label class="care-check"
       ><input type="checkbox" v-model="showCompleted" />Mostrar
       concluídos</label
@@ -18,7 +19,10 @@
         <strong>{{ dateTime(e.due_at) }}</strong>
       </div></AppCard
     >
-    <p v-if="!visible.length" class="care-empty">
+    <p
+      v-if="!visible.length && !store.pending && !store.error"
+      class="care-empty"
+    >
       Nenhum cuidado agendado. Abra um assistido e registre uma data.
     </p></CareShell
   >
