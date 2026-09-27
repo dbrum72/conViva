@@ -13,7 +13,7 @@ use Illuminate\Validation\ValidationException;
 
 class CareRecords
 {
-    public function __construct(private AccessControl $access) {}
+    public function __construct(private AccessControl $access, private ProposalGuard $guard, private ProposalNotifications $notifications) {}
 
     public function save(User $user, CareRecipient $recipient, array $data, ?CareEntry $entry = null): CareEntry
     {
@@ -29,13 +29,17 @@ class CareRecords
         }
 
         return DB::transaction(function () use ($user, $recipient, $data, $entry, $area) {
-            // Serialize new proposals with decisions and preserve the agreed version.
-            CareRecipient::whereKey($recipient->id)->lockForUpdate()->firstOrFail();
+            // Serialize against membership changes as well as other proposals.
+            $recipient = $this->guard->lock($recipient);
+            $user->unsetRelation('roles')->unsetRelation('permissions');
+            $this->access->authorize($user, $recipient, $area, true);
             if ($entry) {
                 $entry = $recipient->entries()->lockForUpdate()->findOrFail($entry->id);
                 abort_if($entry->kind !== $data['kind'], 422, 'O tipo do registro não pode ser alterado.');
                 $this->ensureMutable($entry);
+                abort_if(isset($data['revision']) && (int) $data['revision'] !== (int) $entry->revision, 409, 'A versão vigente mudou. Atualize o registro antes de propor alterações.');
             }
+            unset($data['revision']);
             $affected = array_map('intval', $data['affected_user_ids'] ?? []);
             unset($data['affected_user_ids']);
             $shares = $data['shares'] ?? [];
@@ -92,6 +96,12 @@ class CareRecords
     private function propose(User $user, CareRecipient $recipient, CareEntry $entry, array $payload, array $affected, string $operation): void
     {
         $version = (int) $entry->proposals()->max('version') + 1;
+        $payload['responsible_ids'] = $this->access->responsibleIds($recipient);
+        $payload['base_revision'] = (int) $entry->revision;
+        $payload['before_status'] = $entry->status;
+        $payload['before'] = $entry->revision ? $entry->only(['title', 'description', 'due_at', 'ends_at', 'assigned_user_id', 'amount_cents', 'details']) : [];
+        $payload['before_affected_user_ids'] = $entry->affected_user_ids ?? [];
+        $payload['before_shares'] = $entry->revision ? $entry->shares()->get(['user_id', 'amount_cents'])->toArray() : [];
         $proposal = $entry->proposals()->create(['created_by' => $user->id, 'version' => $version, 'operation' => $operation, 'payload' => $payload, 'status' => $affected ? 'pending' : 'accepted']);
         foreach ($affected as $id) {
             $proposal->decisions()->create(['user_id' => $id]);
@@ -101,13 +111,14 @@ class CareRecords
         } elseif (! $entry->revision) {
             $entry->update(['status' => 'awaiting_approval']);
         }
-        $this->notify($recipient, $this->access->area($entry->kind), $affected ? 'Proposta aguardando aceite: '.$payload['data']['title'] : 'Registro atualizado: '.$entry->title);
+        $this->notifications->send($recipient, $this->access->area($entry->kind), $affected ? 'Proposta aguardando aceite: '.$payload['data']['title'] : 'Registro atualizado: '.$entry->title, $proposal);
     }
 
     public function decide(User $user, CareRecipient $recipient, int $entryId, int $proposalId, string $decision, ?string $reason): CareEntry
     {
         return DB::transaction(function () use ($user, $recipient, $entryId, $proposalId, $decision, $reason) {
-            CareRecipient::whereKey($recipient->id)->lockForUpdate()->firstOrFail();
+            $recipient = $this->guard->lock($recipient);
+            $user->unsetRelation('roles')->unsetRelation('permissions');
             $entry = $recipient->entries()->lockForUpdate()->findOrFail($entryId);
             $this->access->authorize($user, $recipient, $this->access->area($entry->kind), true);
             $proposal = $entry->proposals()->lockForUpdate()->findOrFail($proposalId);
@@ -118,6 +129,10 @@ class CareRecords
             if ($decision === 'rejected' && ! trim($reason ?? '')) {
                 throw ValidationException::withMessages(['reason' => 'Informe o motivo da recusa.']);
             }
+            if ($decision === 'accepted') {
+                $this->guard->ensureApplicable($recipient, $proposal, $this->access->area($entry->kind));
+                abort_unless((int) ($proposal->payload['base_revision'] ?? $entry->revision) === (int) $entry->revision, 409, 'A versão vigente mudou.');
+            }
             $vote->update(['status' => $decision, 'reason' => $decision === 'rejected' ? trim($reason) : null, 'decided_at' => now()]);
             if ($decision === 'rejected') {
                 $proposal->update(['status' => 'rejected']);
@@ -125,14 +140,12 @@ class CareRecords
                     $entry->update(['status' => 'rejected']);
                 }
             } elseif (! $proposal->decisions()->where('status', '!=', 'accepted')->exists()) {
-                // A revoked/suspended participant must not be silently considered consenting.
-                foreach ($proposal->decisions()->pluck('user_id') as $id) {
-                    $this->participant($recipient, (int) $id, $this->access->area($entry->kind));
-                }
+                // Recheck every participant, including the author, at application time.
+                $this->guard->ensureApplicable($recipient, $proposal->fresh(), $this->access->area($entry->kind));
                 $proposal->update(['status' => 'accepted']);
                 $this->apply($entry, $proposal);
             }
-            $this->notify($recipient, $this->access->area($entry->kind), ($decision === 'rejected' ? 'Proposta recusada: ' : 'Aceite registrado: ').$proposal->payload['data']['title']);
+            $this->notifications->send($recipient, $this->access->area($entry->kind), ($decision === 'rejected' ? 'Proposta recusada: ' : 'Aceite registrado: ').$proposal->payload['data']['title'], $proposal);
 
             return $this->load($entry);
         });
@@ -156,12 +169,17 @@ class CareRecords
     public function cancel(User $user, CareRecipient $recipient, int $id): CareEntry
     {
         return DB::transaction(function () use ($user, $recipient, $id) {
-            CareRecipient::whereKey($recipient->id)->lockForUpdate()->firstOrFail();
+            $recipient = $this->guard->lock($recipient);
+            $user->unsetRelation('roles')->unsetRelation('permissions');
             $entry = $recipient->entries()->lockForUpdate()->findOrFail($id);
             $this->access->authorize($user, $recipient, $this->access->area($entry->kind), true);
             $this->access->owner($user, $entry);
             $this->ensureMutable($entry);
             $affected = $entry->affected_user_ids ?? [];
+            if (in_array($entry->kind, ['event', 'task', 'feeding', 'medication', 'vaccine'])) {
+                $affected = array_values(array_unique([...$affected, ...$this->access->responsibleIds($recipient)]));
+                $affected = array_values(array_filter($affected, fn ($id) => (int) $id !== (int) $user->id));
+            }
             foreach ($affected as $affectedId) {
                 $this->participant($recipient, $affectedId, $this->access->area($entry->kind));
             }
@@ -174,7 +192,8 @@ class CareRecords
     public function withdraw(User $user, CareRecipient $recipient, int $id, int $proposalId): CareEntry
     {
         return DB::transaction(function () use ($user, $recipient, $id, $proposalId) {
-            CareRecipient::whereKey($recipient->id)->lockForUpdate()->firstOrFail();
+            $recipient = $this->guard->lock($recipient);
+            $user->unsetRelation('roles')->unsetRelation('permissions');
             $entry = $recipient->entries()->lockForUpdate()->findOrFail($id);
             $this->access->authorize($user, $recipient, $this->access->area($entry->kind), true);
             $this->access->owner($user, $entry);
@@ -184,7 +203,7 @@ class CareRecords
             if (! $entry->revision) {
                 $entry->update(['status' => 'withdrawn']);
             }
-            $this->notify($recipient, $this->access->area($entry->kind), 'Proposta retirada: '.$entry->title);
+            $this->notifications->send($recipient, $this->access->area($entry->kind), 'Proposta retirada: '.$entry->title, $proposal);
 
             return $this->load($entry);
         });
@@ -205,28 +224,11 @@ class CareRecords
         });
     }
 
-    public function pay(User $user, CareRecipient $recipient, int $id, int $shareId)
-    {
-        return DB::transaction(function () use ($user, $recipient, $id, $shareId) {
-            $this->access->authorize($user, $recipient, 'finance', true);
-            $entry = $recipient->entries()->where('kind', 'expense')->lockForUpdate()->findOrFail($id);
-            abort_unless(in_array($entry->status, ['pending', 'completed']), 422, 'Despesa ainda não aceita.');
-            abort_if($entry->proposals()->where('status', 'pending')->exists(), 409, 'Existe uma proposta aguardando decisão.');
-            $share = $entry->shares()->findOrFail($shareId);
-            abort_unless((int) $share->user_id === (int) $user->id, 403, 'Registre somente o pagamento da sua própria parcela.');
-            $share->update(['paid_at' => $share->paid_at ?? now()]);
-            if (! $entry->shares()->whereNull('paid_at')->exists()) {
-                $entry->update(['status' => 'completed', 'completed_at' => now()]);
-            }
-
-            return $share;
-        });
-    }
-
     public function execute(User $user, CareRecipient $recipient, int $id, ?string $description): CareEntry
     {
         return DB::transaction(function () use ($user, $recipient, $id, $description) {
-            CareRecipient::whereKey($recipient->id)->lockForUpdate()->firstOrFail();
+            $recipient = $this->guard->lock($recipient);
+            $user->unsetRelation('roles')->unsetRelation('permissions');
             $task = $recipient->entries()->lockForUpdate()->findOrFail($id);
             $this->access->authorize($user, $recipient, $this->access->area($task->kind), true);
             abort_if(in_array($task->kind, ['expense', 'journal']), 422, 'Este registro não representa um serviço de cuidado.');
@@ -243,7 +245,16 @@ class CareRecords
 
     public function load(CareEntry $entry): CareEntry
     {
-        return $entry->refresh()->load('shares.user:id,name', 'author:id,name', 'proposals.decisions.user:id,name');
+        return $this->decorate($entry->refresh()->load('shares.user:id,name', 'author:id,name', 'proposals.decisions.user:id,name'));
+    }
+
+    public function decorate(CareEntry $entry): CareEntry
+    {
+        foreach ($entry->proposals as $proposal) {
+            $proposal->setAttribute('blockers', $this->guard->blockers($entry->recipient, $proposal, $this->access->area($entry->kind)));
+        }
+
+        return $entry;
     }
 
     private function notify(CareRecipient $recipient, string $area, string $message): void

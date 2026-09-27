@@ -22,10 +22,22 @@
           }}
           · {{ labels[proposal.status] }}
         </h4>
+        <RouterLink
+          :to="{
+            name: 'decision',
+            params: { type: 'entry', proposal: proposal.id },
+          }"
+          >Ver diferenças e detalhes na central</RouterLink
+        >
+        <ul v-if="proposal.blockers?.length" role="status">
+          <li v-for="(blocker, index) in proposal.blockers" :key="index">
+            {{ blocker.message }}
+          </li>
+        </ul>
         <p v-if="proposal.status === 'pending'">
           {{
             entry.revision
-              ? "A versão anterior continua válida enquanto esta proposta é analisada."
+              ? "A versão anterior continua válida. Concluir, executar e pagar ficam indisponíveis enquanto esta proposta é analisada."
               : "Este cuidado ainda não está confirmado e não entra na agenda."
           }}
         </p>
@@ -91,7 +103,7 @@
           <AppButton
             variant="action"
             type="button"
-            :disabled="busy"
+            :disabled="busy || !!proposal.blockers?.length"
             @click="$emit('decide', proposal.id, { decision: 'accepted' })"
             >Aceitar proposta</AppButton
           >

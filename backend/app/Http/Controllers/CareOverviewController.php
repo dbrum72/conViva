@@ -6,6 +6,7 @@ use App\Models\CareEntry;
 use App\Models\CareNotification;
 use App\Services\Care\AccessControl;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class CareOverviewController extends Controller
 {
@@ -20,7 +21,12 @@ class CareOverviewController extends Controller
 
     public function notifications(Request $r)
     {
-        return CareNotification::where('user_id', $r->user()->id)->with('recipient')->latest()->limit(100)->get()->filter(fn ($n) => $n->recipient && $this->access->allowed($r->user(), $n->recipient, $n->area))->values();
+        return CareNotification::where('user_id', $r->user()->id)->with('recipient')->latest()->limit(100)->get()->filter(fn ($n) => $n->recipient && $this->access->allowed($r->user(), $n->recipient, $n->area))->map(function ($n) {
+            $target = DB::table('care_notification_targets')->where('care_notification_id', $n->id)->first();
+            $n->destination = $target ? ['type' => $target->care_profile_proposal_id ? 'profile' : 'entry', 'proposal' => $target->care_profile_proposal_id ?? $target->care_proposal_id] : null;
+
+            return $n;
+        })->values();
     }
 
     public function read(Request $r, int $notification)

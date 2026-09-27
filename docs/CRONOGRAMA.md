@@ -1,8 +1,10 @@
 # conViva — pesquisa de referência e cronograma de evolução
 
-Data da pesquisa: 18/09/2026. E00 e E01 concluídas em 18/09/2026; E02 é a próxima etapa. Evidências em `docs/BASELINE-E00.md`, `docs/ENTREGA-E01.md` e no registro de execução abaixo.
+Data da pesquisa: 18/09/2026. E00 e E01 concluídas em 18/09/2026; E02 concluída em 27/09/2026. Próxima etapa sequencial: E03. Evidências em `docs/BASELINE-E00.md`, `docs/ENTREGA-E01.md`, `docs/ENTREGA-E02.md` e no registro de execução abaixo.
 
-Ajuste solicitado antes de E02: sidebar com seleção/criação de grupos somente em Meus assistidos e avatar pessoal do assistido por responsável. Entrega descrita em `docs/AVATAR-PESSOAL.md`. E02 permanece como próxima etapa.
+Ajuste solicitado antes de E02: sidebar com seleção/criação de grupos somente em Meus assistidos e avatar pessoal do assistido por responsável. Entrega descrita em `docs/AVATAR-PESSOAL.md`, preservada na E02.
+
+Verificação de retomada em 27/09/2026: frontend inicial com 31 testes e build aprovados. Após alinhamento dos testes a MySQL `conviva_db`, conforme orientação do usuário, os 50 testes backend preexistentes passaram com 363 asserções. Histórico da conferência em `docs/VERIFICACAO-PRE-E02.md`; implementação da E02 em `docs/ENTREGA-E02.md`.
 
 ## 1. Direção do produto
 
@@ -134,11 +136,11 @@ Marcos de entrega:
 
 ### E02 — Central de decisões e cadastro compartilhado
 
-- [ ] Exibir minhas decisões pendentes, propostas enviadas, participantes, motivo de recusa e diferença entre versão vigente e proposta.
-- [ ] Permitir navegação direta da notificação até a proposta autorizada.
-- [ ] Implementar proposta de alteração/arquivamento do cadastro compartilhado, hoje bloqueada; manter o cadastro vigente até os aceites necessários.
-- [ ] Mostrar bloqueio quando participante necessário perde acesso, sem aprovar, excluir voto ou substituir participante automaticamente.
-- [ ] Definir e testar o efeito de entrada/saída de responsável sobre propostas abertas; registrar participantes exigidos por versão e revalidar autorização na aplicação.
+- [x] Exibir minhas decisões pendentes, propostas enviadas, participantes, motivo de recusa e diferença entre versão vigente e proposta.
+- [x] Permitir navegação direta da notificação até a proposta autorizada.
+- [x] Implementar proposta de alteração/arquivamento do cadastro compartilhado, hoje bloqueada; manter o cadastro vigente até os aceites necessários.
+- [x] Mostrar bloqueio quando participante necessário perde acesso, sem aprovar, excluir voto ou substituir participante automaticamente.
+- [x] Definir e testar o efeito de entrada/saída de responsável sobre propostas abertas; registrar participantes exigidos por versão e revalidar autorização na aplicação.
 
 **Codificação:** evoluir `CareRecords`, `CareProposal`, `CareDecision` e `CareDecisions.vue`; criar serviço de revisão cadastral separado ou estrutura equivalente, sem forçar revisão do assistido dentro de um registro de cuidado. Novos endpoints de pendências devem ter filtros e paginação. Controlar concorrência por transação, versão e respostas 409.
 
@@ -169,7 +171,7 @@ Marcos de entrega:
 
 **API/UI:** ampliar a agenda com `from`, `to`, filtros e paginação; criar ações Pinia e componentes de navegação. Começar no grupo selecionado. Visão entre grupos, se feita depois, deve revalidar cada contexto como `ListCareGroups`, sem remover o isolamento globalmente.
 
-**Aceite:** duas execuções do gerador não duplicam ocorrência; mudança de fuso e virada de dia preservam horário esperado; exceção não altera histórico; revisão não aceita não modifica ocorrências vigentes. Validar concorrência também com MySQL isolado de teste, sem confiar apenas em SQLite.
+**Aceite:** duas execuções do gerador não duplicam ocorrência; mudança de fuso e virada de dia preservam horário esperado; exceção não altera histórico; revisão não aceita não modifica ocorrências vigentes. Validar concorrência também em MySQL, seguindo a proteção de destino e a política de banco descartável descritas na seção 7.
 
 ### E05 — Medicamentos e vacinas com execução identificada
 
@@ -213,7 +215,7 @@ Marcos de entrega:
 
 - [ ] Criar consulta financeira dedicada com período, categoria, participante e situação, com totais calculados no Laravel.
 - [ ] Exibir total, parcelas aceitas, pagamentos declarados e saldo, distinguindo declaração de pagamento de confirmação bancária.
-- [ ] Vincular comprovantes privados à despesa e registrar pagamento somente da própria parcela.
+- [x] Vincular comprovantes privados à despesa e registrar pagamento somente da própria parcela. Antecipado por solicitação do usuário em 27/09/2026; evidências em `docs/COMPROVANTES-PAGAMENTO.md`.
 - [ ] Preservar o bloqueio atual de alteração/cancelamento de despesa paga. Se necessária correção, usar ajuste separado com referência, justificativa e novos aceites.
 - [ ] Organizar documentos por categoria, período e validade opcional; permitir associação a cuidado ou instrução.
 - [ ] Tratar falhas entre banco e armazenamento, incluindo exclusão que não deve ser apresentada como concluída quando o arquivo persistiu.
@@ -271,8 +273,10 @@ Marcos de entrega:
 Comandos já documentados pelo projeto, a executar nos diretórios indicados durante a implementação:
 
 ```powershell
-# Raiz do conViva — testes backend em memória
-php -d extension=pdo_sqlite backend/vendor/phpunit/phpunit/phpunit -c backend/phpunit.xml
+# Em backend — DESTRUTIVO: testes em MySQL conviva_db
+php artisan test
+# Na raiz — reconstruir o banco após os testes
+php backend/tools/rebuild-conviva.php
 ```
 
 ```powershell
@@ -281,7 +285,7 @@ npm test
 npm run build
 ```
 
-Testes de concorrência específicos devem usar banco MySQL exclusivo de teste e proteção explícita de destino. A reconstrução de `conviva_db` não é requisito para leitura ou atualização deste relatório.
+Por orientação do usuário na E02, a suíte, inclusive os ensaios concorrentes, usa o MySQL `conviva_db` descartável, com proteção explícita do destino e reconstrução ao final. A execução apaga dados; a leitura ou atualização deste relatório não exige reconstrução.
 
 ## 8. Métricas e critérios de sucesso
 
@@ -318,7 +322,7 @@ Usar as caixas de seleção de cada etapa como tarefas. Para concluir uma etapa,
 
 | Marco | Status inicial | Evidência necessária |
 | --- | --- | --- |
-| M1 — E00 a E03 | Em andamento: E00 e E01 concluídas | Fluxo de entrada, decisão e ficha validado |
+| M1 — E00 a E03 | Em andamento: E00, E01 e E02 concluídas | Fluxo de entrada, decisão e ficha validado |
 | M2 — E04 a E07 | Não iniciado | Recorrência, execução e lembretes testados |
 | M3 — E08 a E10 | Não iniciado | Relatórios, operação e piloto aprovados |
 | M4 — E11 | Aguardando piloto | Priorização baseada nas métricas e dificuldades observadas |
@@ -343,3 +347,21 @@ Usar as caixas de seleção de cada etapa como tarefas. Para concluir uma etapa,
 - Persistência: nova tabela de tokens aplicada por migration de criação exclusivamente em `conviva_db`, sem reconstrução. Conta, grupo e cuidados sintéticos usados na inspeção; convite sintético expirado ao final.
 - Documento histórico de conversão removido conforme solicitado; referências atualizadas. Nenhum `.env` ou arquivo/banco do legalis alterado.
 - Limites: envio SMTP externo e concorrência real MySQL ainda não verificados; não se trata de auditoria integral de acessibilidade. Próxima etapa: E02.
+
+### 27/09/2026 — E02 concluída
+
+- Responsável pela execução: Codex. Contratos, endpoints e limites em `docs/ENTREGA-E02.md`.
+- Central de decisões paginada e autorizada por grupo/área, filtros, comparação de versões, participantes, motivos e destinos diretos de notificações.
+- Revisão e arquivamento cadastral por propostas próprias, mantendo cadastro vigente até os aceites; recusa e retirada preservam histórico.
+- Participantes fixados por versão; divergência na rede e perda de acesso bloqueiam aplicação, inclusive para votos já aceitos e autoria. Transações serializadas com alterações de membros e acessos; respostas repetidas retornam 409.
+- Backend: 61 testes / 463 asserções na suíte completa MySQL; após ajuste final, 11 testes / 101 asserções, incluindo concorrência real de cuidados e cadastro, aprovados. Frontend: 36 testes em 10 arquivos. Build de produção aprovado, 2.040 módulos. Pint e whitespace aprovados.
+- Banco: usuário autorizou expressamente executar testes destrutivos em `conviva_db` e reconstruí-lo ao final. Destino verificado na suíte; reconstrução com migrations e seeder concluída. Nenhum `.env` alterado e nenhum banco adicional criado.
+- Limites: sem nova inspeção visual em navegador ou ensaio de carga; e-mail externo não validado. Próxima etapa sequencial: E03.
+
+### 27/09/2026 — Comprovantes de pagamento, item antecipado da E08
+
+- Modal de pagamento com arquivo opcional, anexo posterior à própria parcela paga e download privado nas telas de cuidados e despesas.
+- Autorização combinada de finanças/documentos; autoria da parcela; arquivo original preservado; pagamento e anexo coordenados por transação.
+- Nova tabela aplicada isoladamente em `conviva_db`, sem reconstrução ou remoção dos dados existentes. Testes específicos usam rollback transacional.
+- Validação: 7 testes backend / 59 asserções; 40 testes frontend; build aprovado. Detalhes em `docs/COMPROVANTES-PAGAMENTO.md`.
+- E08 não está concluída. A próxima etapa sequencial continua sendo E03.

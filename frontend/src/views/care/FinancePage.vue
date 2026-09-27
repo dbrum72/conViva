@@ -28,6 +28,17 @@
             >{{ s.paid_at ? "Pago" : "Pendente" }}</span
           ></span
         >
+        <AppButton
+          v-if="s.receipt"
+          variant="outline"
+          :disabled="!!store.pending"
+          @click="
+            store
+              .downloadPaymentReceipt(e.recipient.id, e.id, s)
+              .catch(() => {})
+          "
+          >Baixar comprovante</AppButton
+        >
       </div></AppCard
     >
     <p
@@ -41,7 +52,7 @@
 <script setup>
 import { onMounted } from "vue";
 import CareShell from "@/components/care/CareShell.vue";
-import { AppCard } from "@/components/ui";
+import { AppCard, AppButton } from "@/components/ui";
 import { useCareStore } from "@/state/care";
 import { money } from "@/utils/care";
 const store = useCareStore();

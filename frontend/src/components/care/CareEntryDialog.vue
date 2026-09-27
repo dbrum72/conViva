@@ -78,14 +78,15 @@
             >{{ detailLabels[key]
             }}<input v-model="entryForm.details[key]" /></label></template
         ><template v-if="entryForm.kind === 'expense'"
-          ><label class="care-field"
-            >Valor total (R$)<input
-              type="number"
-              min="0.01"
-              step="0.01"
-              v-model="entryForm.amount"
-              required
-          /></label>
+          ><AppCurrency
+            id="care-entry-amount"
+            name="amount"
+            label="Valor total (R$)"
+            v-model="entryForm.amount"
+            shift-decimal
+            :min="0.01"
+            required
+          />
           <p>
             Opcional: distribua o valor entre membros. Sem rateio informado, a
             despesa fica integralmente com quem a registrou.
@@ -99,14 +100,15 @@
               >Responsável<select v-model="share.user_id" required>
                 <option v-for="m in members" :value="m.id">{{ m.name }}</option>
               </select></label
-            ><label class="care-field"
-              >Parcela (R$)<input
-                type="number"
-                min="0.01"
-                step="0.01"
-                v-model="share.amount"
-                required /></label
-            ><AppButton
+            ><AppCurrency
+              :id="`care-entry-share-${index}`"
+              :name="`shares[${index}][amount]`"
+              label="Parcela (R$)"
+              v-model="share.amount"
+              shift-decimal
+              :min="0.01"
+              required
+            /><AppButton
               variant="ghost"
               @click="entryForm.shares.splice(index, 1)"
               >Remover</AppButton
@@ -116,7 +118,7 @@
             v-if="members.length"
             variant="outline"
             @click="
-              entryForm.shares.push({ user_id: members[0].id, amount: '' })
+              entryForm.shares.push({ user_id: members[0].id, amount: null })
             "
             >Adicionar parcela</AppButton
           ></template
@@ -138,6 +140,7 @@
 <script setup>
 import { ref, computed, watch } from "vue";
 import { AppDialog, AppButton } from "@/components/ui";
+import { AppCurrency } from "@/components/forms";
 import { useCareStore } from "@/state/care";
 import { useAuthStore } from "@/state/auth";
 import { entryKinds } from "@/utils/care";
@@ -198,7 +201,7 @@ function initialize(e) {
         due_at: "",
         ends_at: "",
         details: {},
-        amount: "",
+        amount: null,
         shares: [],
       };
 }
@@ -208,6 +211,7 @@ async function saveEntry() {
   try {
     await store.saveEntry(props.recipientId, {
       id: e.id,
+      ...(e.id ? { revision: e.revision } : {}),
       kind: e.kind,
       title: e.title,
       description: e.description,

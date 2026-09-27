@@ -19,7 +19,7 @@ npm install
 npm run dev
 ```
 
-Interface: http://127.0.0.1:5186. API: http://127.0.0.1:8000/api. Crie sua conta em `/register`; o cadastro cria o primeiro grupo e o perfil de responsável. O menu “Trocar ou criar grupo” permite criar grupos adicionais.
+Interface: http://localhost:5173/. API: http://127.0.0.1:8000/api. Crie sua conta em `/register`; o cadastro cria o primeiro grupo e o perfil de responsável. O menu “Trocar ou criar grupo” permite criar grupos adicionais.
 
 ## Recursos
 
@@ -48,8 +48,10 @@ Na verificação da E01, o transporte local estava configurado como `smtp`; a en
 ## Validação
 
 ```powershell
-# Na raiz (PDO SQLite habilitado somente para testes em memória)
-php -d extension=pdo_sqlite backend/vendor/phpunit/phpunit/phpunit -c backend/phpunit.xml
+# Em backend — DESTRUTIVO: recria tabelas de MySQL conviva_db
+php artisan test
+# Na raiz — reconstruir após os testes
+php backend/tools/rebuild-conviva.php
 # Em frontend
 npm test
 npm run build
@@ -66,7 +68,7 @@ Os testes verificam isolamento, restrições de área, revogação/expiração, 
 - Alterar ou cancelar algo acordado gera nova versão: a anterior continua válida até todos aceitarem. Recusa mantém o acordo anterior. Retirar uma proposta não apaga votos nem justificativas.
 - Cancelamentos mantêm o histórico. Documentos só podem ser excluídos pelo autor. Pagamentos impedem alteração/cancelamento da despesa.
 - O cuidador designado registra sua execução como um registro próprio, vinculado à tarefa original, sem sobrescrever o solicitante.
-- Não é possível remover, suspender ou rebaixar outro responsável unilateralmente. Cadastro compartilhado do assistido não pode ser alterado/arquivado unilateralmente; fluxo de revisão desses dados cadastrais permanece bloqueado.
+- Não é possível remover, suspender ou rebaixar outro responsável unilateralmente. Cadastro compartilhado do assistido não pode ser alterado/arquivado unilateralmente; a revisão cadastral agora usa propostas com aceite dos demais responsáveis, conforme `docs/ENTREGA-E02.md`.
 - O esquema de decisões está consolidado na migration de criação das tabelas de cuidados. A reconstrução elimina os dados anteriores e inicia diretamente com os perfis atuais, sem conversão de perfis antigos.
 
 Validação desta etapa: 24 testes de backend (117 asserções), 10 testes de frontend e build de produção.

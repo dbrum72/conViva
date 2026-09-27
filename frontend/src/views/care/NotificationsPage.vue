@@ -7,7 +7,17 @@
       ><div class="care-list-row">
         <div>
           <RouterLink
-            :to="{ name: 'recipient', params: { id: n.care_recipient_id } }"
+            :to="
+              n.destination
+                ? {
+                    name: 'decision',
+                    params: {
+                      type: n.destination.type,
+                      proposal: n.destination.proposal,
+                    },
+                  }
+                : { name: 'recipient', params: { id: n.care_recipient_id } }
+            "
             ><strong>{{ n.message }}</strong></RouterLink
           >
           <p>{{ n.recipient?.name }} · {{ dateTime(n.created_at) }}</p>

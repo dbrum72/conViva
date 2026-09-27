@@ -1,5 +1,16 @@
 import client from "./client.js";
 export const careApi = {
+  decisions: (params) => client.get("/decisions", { params }),
+  decision: (type, id) => client.get(`/decisions/${type}/${id}`),
+  proposeProfile: (id, data) =>
+    client.post(`/recipients/${id}/profile-proposals`, data),
+  decideProfile: (id, proposal, data) =>
+    client.post(
+      `/recipients/${id}/profile-proposals/${proposal}/decision`,
+      data,
+    ),
+  withdrawProfile: (id, proposal) =>
+    client.post(`/recipients/${id}/profile-proposals/${proposal}/withdraw`),
   execute: (id, entry, description) =>
     client.post("/recipients/" + id + "/entries/" + entry + "/execution", {
       description,
@@ -60,8 +71,16 @@ export const careApi = {
   agenda: () => client.get("/agenda"),
   notifications: () => client.get("/notifications"),
   read: (id) => client.post("/notifications/" + id + "/read"),
-  pay: (id, entry, share) =>
-    client.post(
-      "/recipients/" + id + "/entries/" + entry + "/shares/" + share + "/pay",
-    ),
+  paymentReceipt: (id, entry, share) =>
+    client.get(`/recipients/${id}/entries/${entry}/shares/${share}/receipt`, {
+      responseType: "blob",
+    }),
+  pay: (id, entry, share, receipt = null) => {
+    const data = new FormData();
+    if (receipt) data.append("receipt", receipt);
+    return client.post(
+      `/recipients/${id}/entries/${entry}/shares/${share}/pay`,
+      data,
+    );
+  },
 };

@@ -2,6 +2,7 @@
 
 namespace App\Services\OrganizationInvitations;
 
+use App\Models\Organization;
 use App\Models\OrganizationInvitation;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
@@ -19,6 +20,7 @@ class AcceptOrganizationInvitation
                 $invitation,
                 $data,
             ): User {
+                Organization::whereKey($invitation->organization_id)->lockForUpdate()->firstOrFail();
                 $expectedTokenHash = $invitation->token_hash;
                 $invitation = OrganizationInvitation::whereKey($invitation->id)->lockForUpdate()->firstOrFail();
                 abort_unless($invitation->isAcceptable() && hash_equals($expectedTokenHash, $invitation->token_hash), 410, 'Este convite não está mais disponível.');

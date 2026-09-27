@@ -73,12 +73,16 @@
     </p>
     <AppDialog
       :open="dialogOpen"
-      :title="form.id ? 'Editar assistido' : 'Novo assistido'"
+      :title="form.id ? 'Propor revisão cadastral' : 'Novo assistido'"
       :busy="!!store.pending"
       :error="store.error"
       @close="dialogOpen = false"
     >
       <form @submit.prevent="save">
+        <p v-if="form.id">
+          O cadastro vigente será preservado até o aceite dos demais
+          responsáveis. Acompanhe a proposta na central de decisões.
+        </p>
         <label class="care-field"
           >Nome<input v-model="form.name" required maxlength="150" /></label
         ><label class="care-field"
@@ -118,7 +122,9 @@
       :open="!!archiving"
       title="Arquivar assistido"
       :message="
-        'Arquivar ' + (archiving?.name || '') + '? O histórico será preservado.'
+        'Propor o arquivamento de ' +
+        (archiving?.name || '') +
+        '? O cadastro continuará vigente até os aceites necessários. O histórico será preservado.'
       "
       :loading="!!store.pending"
       :error="store.error"
@@ -129,6 +135,8 @@
 </template>
 <script setup>
 import { ref, onMounted } from "vue";
+import { useRouter } from "vue-router";
+const router = useRouter();
 import CareShell from "@/components/care/CareShell.vue";
 import {
   AppCard,
@@ -153,7 +161,20 @@ function openForm(p) {
 }
 async function save() {
   try {
-    await store.saveRecipient(form.value);
+    if (form.value.id) {
+      const proposal = await store.proposeProfile(form.value.id, {
+        ...form.value,
+        operation: "save",
+        version: form.value.profile_version,
+      });
+      if (proposal)
+        await router.push({
+          name: "decision",
+          params: { type: "profile", proposal: proposal.id },
+        });
+    } else {
+      await store.saveRecipient(form.value);
+    }
     dialogOpen.value = false;
   } catch {}
 }
@@ -164,7 +185,15 @@ async function archive(p) {
 async function confirmArchive() {
   if (store.pending || !archiving.value) return;
   try {
-    await store.archive(archiving.value.id);
+    const proposal = await store.proposeProfile(archiving.value.id, {
+      operation: "archive",
+      version: archiving.value.profile_version,
+    });
+    if (proposal)
+      await router.push({
+        name: "decision",
+        params: { type: "profile", proposal: proposal.id },
+      });
     archiving.value = null;
   } catch {
     /* Store exposes the error in the dialog. */

@@ -3,9 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\CareRecipientRequest;
+use App\Models\CareProfileProposal;
 use App\Models\CareRecipient;
 use App\Models\Organization;
 use App\Services\Care\AccessControl;
+use App\Services\Care\ProposalGuard;
 use App\Support\Tenancy\CurrentOrganization;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -16,7 +18,7 @@ class CareRecipientController extends Controller
 
     public function index(Request $r)
     {
-        return $this->access->visible($r->user())->orderBy('name')->get()->map(fn ($p) => [...$p->toArray(), 'capabilities' => $this->access->capabilities($r->user(), $p), 'can_manage_profile' => (int) $p->created_by === (int) $r->user()->id && count($this->access->responsibleIds($p)) === 1]);
+        return $this->access->visible($r->user())->orderBy('name')->get()->map(fn ($p) => [...$p->toArray(), 'capabilities' => $this->access->capabilities($r->user(), $p), 'can_manage_profile' => (int) $p->created_by === (int) $r->user()->id && $this->access->responsible($r->user(), $p) && $this->access->allowed($r->user(), $p, 'routine', true) && $p->status === 'active', 'profile_version' => (int) CareProfileProposal::where('care_recipient_id', $p->id)->max('version')]);
     }
 
     public function store(CareRecipientRequest $r)
@@ -43,22 +45,32 @@ class CareRecipientController extends Controller
 
     public function update(CareRecipientRequest $r, CareRecipient $recipient)
     {
-        $this->access->authorize($r->user(), $recipient, 'routine', true);
-        abort_unless((int) $recipient->created_by === (int) $r->user()->id, 403, 'Somente o autor pode alterar este cadastro.');
-        abort_if(count($this->access->responsibleIds($recipient)) > 1, 409, 'O cadastro compartilhado não pode ser alterado unilateralmente.');
-        $recipient->update($r->validated());
+        return DB::transaction(function () use ($r, $recipient) {
+            $recipient = app(ProposalGuard::class)->lock($recipient);
+            $r->user()->unsetRelation('roles')->unsetRelation('permissions');
+            $this->access->authorize($r->user(), $recipient, 'routine', true);
+            abort_unless((int) $recipient->created_by === (int) $r->user()->id, 403, 'Somente o autor pode alterar este cadastro.');
+            abort_if(count($this->access->responsibleIds($recipient)) > 1, 409, 'O cadastro compartilhado não pode ser alterado unilateralmente.');
+            abort_if(CareProfileProposal::where('care_recipient_id', $recipient->id)->where('status', 'pending')->exists(), 409, 'Existe uma revisão cadastral pendente.');
+            $recipient->update($r->validated());
 
-        return $recipient;
+            return $recipient;
+        });
     }
 
     public function destroy(Request $r, CareRecipient $recipient)
     {
-        abort_unless($this->access->responsible($r->user(), $recipient), 403);
-        abort_unless((int) $recipient->created_by === (int) $r->user()->id, 403);
-        abort_if(count($this->access->responsibleIds($recipient)) > 1, 409, 'Não é permitido arquivar unilateralmente um assistido compartilhado.');
-        $recipient->update(['status' => 'archived']);
+        return DB::transaction(function () use ($r, $recipient) {
+            $recipient = app(ProposalGuard::class)->lock($recipient);
+            $r->user()->unsetRelation('roles')->unsetRelation('permissions');
+            abort_unless($this->access->responsible($r->user(), $recipient), 403);
+            abort_unless((int) $recipient->created_by === (int) $r->user()->id, 403);
+            abort_if(count($this->access->responsibleIds($recipient)) > 1, 409, 'Não é permitido arquivar unilateralmente um assistido compartilhado.');
+            abort_if(CareProfileProposal::where('care_recipient_id', $recipient->id)->where('status', 'pending')->exists(), 409, 'Existe uma revisão cadastral pendente.');
+            $recipient->update(['status' => 'archived']);
 
-        return response()->noContent();
+            return response()->noContent();
+        });
     }
 
     public function accesses(Request $r, CareRecipient $recipient)
@@ -70,31 +82,39 @@ class CareRecipientController extends Controller
 
     public function grant(Request $r, CareRecipient $recipient)
     {
-        abort_unless($this->access->responsible($r->user(), $recipient), 403);
-        $data = $r->validate(['user_id' => 'required|integer', 'areas' => 'required|array|min:1', 'areas.*' => 'required|in:routine,health,documents,finance', 'can_edit' => 'required|boolean', 'expires_at' => 'nullable|date|after:now']);
-        abort_unless($recipient->organization->users()->whereKey($data['user_id'])->wherePivot('status', 'active')->exists(), 422, 'Membro não pertence ao grupo.');
-        $target = $recipient->organization->users()->whereKey($data['user_id'])->firstOrFail();
-        abort_if($this->access->responsible($target, $recipient) || ($target->hasRole('responsavel') && (int) $target->id !== (int) $r->user()->id), 409, 'Os acessos de outro responsável não podem ser reduzidos ou substituídos unilateralmente.');
-        if ($target->hasRole('responsavel')) {
-            $data['areas'] = AccessControl::AREAS;
-            $data['can_edit'] = true;
-            $data['expires_at'] = null;
-        }
-        if ($target->hasRole('observador')) {
-            $data['can_edit'] = false;
-        }
-        $data['areas'] = array_values(array_unique($data['areas']));
+        return DB::transaction(function () use ($r, $recipient) {
+            $recipient = app(ProposalGuard::class)->lock($recipient);
+            $r->user()->unsetRelation('roles')->unsetRelation('permissions');
+            abort_unless($this->access->responsible($r->user(), $recipient), 403);
+            $data = $r->validate(['user_id' => 'required|integer', 'areas' => 'required|array|min:1', 'areas.*' => 'required|in:routine,health,documents,finance', 'can_edit' => 'required|boolean', 'expires_at' => 'nullable|date|after:now']);
+            abort_unless($recipient->organization->users()->whereKey($data['user_id'])->wherePivot('status', 'active')->exists(), 422, 'Membro não pertence ao grupo.');
+            $target = $recipient->organization->users()->whereKey($data['user_id'])->firstOrFail();
+            abort_if($this->access->responsible($target, $recipient) || ($target->hasRole('responsavel') && (int) $target->id !== (int) $r->user()->id), 409, 'Os acessos de outro responsável não podem ser reduzidos ou substituídos unilateralmente.');
+            if ($target->hasRole('responsavel')) {
+                $data['areas'] = AccessControl::AREAS;
+                $data['can_edit'] = true;
+                $data['expires_at'] = null;
+            }
+            if ($target->hasRole('observador')) {
+                $data['can_edit'] = false;
+            }
+            $data['areas'] = array_values(array_unique($data['areas']));
 
-        return $recipient->accesses()->updateOrCreate(['user_id' => $data['user_id']], $data);
+            return $recipient->accesses()->updateOrCreate(['user_id' => $data['user_id']], $data);
+        });
     }
 
     public function revoke(Request $r, CareRecipient $recipient, int $user)
     {
-        abort_unless($this->access->responsible($r->user(), $recipient), 403);
-        $target = $recipient->organization->users()->whereKey($user)->firstOrFail();
-        abort_if($this->access->responsible($target, $recipient) || ($target->hasRole('responsavel') && (int) $target->id !== (int) $r->user()->id), 409, 'Um responsável não pode ser removido unilateralmente.');
-        $recipient->accesses()->where('user_id', $user)->delete();
+        return DB::transaction(function () use ($r, $recipient, $user) {
+            $recipient = app(ProposalGuard::class)->lock($recipient);
+            $r->user()->unsetRelation('roles')->unsetRelation('permissions');
+            abort_unless($this->access->responsible($r->user(), $recipient), 403);
+            $target = $recipient->organization->users()->whereKey($user)->firstOrFail();
+            abort_if($this->access->responsible($target, $recipient) || ($target->hasRole('responsavel') && (int) $target->id !== (int) $r->user()->id), 409, 'Um responsável não pode ser removido unilateralmente.');
+            $recipient->accesses()->where('user_id', $user)->delete();
 
-        return response()->noContent();
+            return response()->noContent();
+        });
     }
 }

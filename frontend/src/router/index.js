@@ -49,6 +49,18 @@ const router = createRouter({
       meta: { requiresAuth: true, requiresOrganization: true },
       children: [
         {
+          path: "decisions",
+          name: "decisions",
+          component: () => import("@/views/care/DecisionsPage.vue"),
+          meta: { breadcrumb: "Central de decisões" },
+        },
+        {
+          path: "decisions/:type/:proposal",
+          name: "decision",
+          component: () => import("@/views/care/DecisionPage.vue"),
+          meta: { breadcrumb: "Proposta" },
+        },
+        {
           path: "dashboard",
           name: "dashboard",
           component: () => import("@/views/care/DashboardPage.vue"),

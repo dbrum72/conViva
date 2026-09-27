@@ -1,5 +1,11 @@
 export default [
   {
+    id: "decisions",
+    label: "Central de decisões",
+    name: "decisions",
+    icon: "calendar",
+  },
+  {
     id: "my-recipients",
     label: "Meus assistidos",
     name: "organizations.select",

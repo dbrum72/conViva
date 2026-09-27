@@ -11,9 +11,12 @@ export const useCareStore = defineStore("care", () => {
     agenda = ref([]),
     notifications = ref([]),
     expenses = ref([]),
+    decisions = ref(null),
+    decision = ref(null),
     error = ref(""),
     pending = ref(0);
   let generation = 0;
+  let decisionRequest = 0;
   async function run(fn) {
     const g = generation;
     pending.value++;
@@ -175,11 +178,24 @@ export const useCareStore = defineStore("care", () => {
     );
     if (g === generation) expenses.value = all.flat();
   }
-  async function pay(id, entry, share) {
+  async function pay(id, entry, share, receipt = null) {
     const g = generation;
-    await run(() => careApi.pay(id, entry, share));
+    await run(() => careApi.pay(id, entry, share, receipt));
     if (g !== generation) return;
     await loadEntries(id);
+  }
+  async function downloadPaymentReceipt(id, entry, share) {
+    const g = generation;
+    const { data } = await run(() =>
+      careApi.paymentReceipt(id, entry, share.id),
+    );
+    if (g !== generation) return;
+    const url = URL.createObjectURL(data);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = share.receipt.filename;
+    link.click();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
   }
   async function execute(id, entry, description) {
     const g = generation;
@@ -196,7 +212,62 @@ export const useCareStore = defineStore("care", () => {
     await run(() => careApi.withdraw(id, entry, proposal));
     if (g === generation) await loadEntries(id);
   }
+  async function loadDecisions(filters = {}) {
+    const g = generation,
+      request = ++decisionRequest;
+    decisions.value = null;
+    const { data } = await run(() => careApi.decisions(filters));
+    if (g === generation && request === decisionRequest) decisions.value = data;
+  }
+  async function loadDecision(type, id) {
+    const g = generation,
+      request = ++decisionRequest;
+    decision.value = null;
+    const { data } = await run(() => careApi.decision(type, id));
+    if (g === generation && request === decisionRequest) decision.value = data;
+  }
+  async function respondToProposal(proposal, data) {
+    const g = generation,
+      request = decisionRequest;
+    await run(() =>
+      proposal.type === "profile"
+        ? careApi.decideProfile(proposal.care_recipient_id, proposal.id, data)
+        : careApi.decide(
+            proposal.care_recipient_id,
+            proposal.entry_id,
+            proposal.id,
+            data,
+          ),
+    );
+    if (g === generation && request === decisionRequest)
+      await loadDecision(proposal.type, proposal.id);
+  }
+  async function withdrawProposal(proposal) {
+    const g = generation,
+      request = decisionRequest;
+    await run(() =>
+      proposal.type === "profile"
+        ? careApi.withdrawProfile(proposal.care_recipient_id, proposal.id)
+        : careApi.withdraw(
+            proposal.care_recipient_id,
+            proposal.entry_id,
+            proposal.id,
+          ),
+    );
+    if (g === generation && request === decisionRequest)
+      await loadDecision(proposal.type, proposal.id);
+  }
+  async function proposeProfile(id, data) {
+    const g = generation;
+    const response = await run(() => careApi.proposeProfile(id, data));
+    if (g !== generation) return;
+    await loadRecipients();
+    return response.data;
+  }
   function clear() {
+    decisionRequest++;
+    decisions.value = null;
+    decision.value = null;
     generation++;
     recipients.value = [];
     recipient.value = null;
@@ -211,6 +282,13 @@ export const useCareStore = defineStore("care", () => {
     pending.value = 0;
   }
   return {
+    decisions,
+    decision,
+    loadDecisions,
+    loadDecision,
+    respondToProposal,
+    withdrawProposal,
+    proposeProfile,
     recipients,
     recipient,
     entries,
@@ -243,6 +321,7 @@ export const useCareStore = defineStore("care", () => {
     read,
     loadExpenses,
     pay,
+    downloadPaymentReceipt,
     clear,
   };
 });

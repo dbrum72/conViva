@@ -15,6 +15,7 @@ class CareEntryRequest extends FormRequest
     public function rules(): array
     {
         return [
+            'revision' => 'sometimes|integer|min:0',
             'affected_user_ids' => 'sometimes|array|max:50', 'affected_user_ids.*' => 'integer|distinct',
             'kind' => ['required', Rule::in(['event', 'task', 'journal', 'medication', 'vaccine', 'feeding', 'expense'])],
             'title' => 'required|string|max:200', 'description' => 'nullable|string|max:10000', 'due_at' => 'nullable|date', 'ends_at' => 'nullable|date|after_or_equal:due_at', 'assigned_user_id' => 'nullable|integer',

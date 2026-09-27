@@ -13,6 +13,11 @@ class ExpenseShare extends Model
         return ['paid_at' => 'datetime', 'amount_cents' => 'integer'];
     }
 
+    public function receipt()
+    {
+        return $this->hasOne(ExpensePaymentReceipt::class);
+    }
+
     public function user()
     {
         return $this->belongsTo(User::class);

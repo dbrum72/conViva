@@ -76,8 +76,23 @@
                   ['pending', 'completed'].includes(e.status) &&
                   !e.proposals?.some((p) => p.status === 'pending')
                 "
-                @click="store.pay(id, e.id, share.id).catch(() => {})"
+                @click="openPayment(e, share)"
                 >Registrar pagamento</AppButton
+              >
+              <AppButton
+                v-if="share.paid_at && share.can_attach_receipt"
+                variant="outline"
+                @click="openPayment(e, share)"
+                >Anexar comprovante</AppButton
+              >
+              <AppButton
+                v-if="share.receipt"
+                variant="outline"
+                :disabled="!!store.pending"
+                @click="
+                  store.downloadPaymentReceipt(id, e.id, share).catch(() => {})
+                "
+                >Baixar comprovante · {{ share.receipt.filename }}</AppButton
               >
             </div></template
           >
@@ -213,6 +228,11 @@
       :available-kinds="availableKinds"
       @close="entryOpen = false"
     />
+    <CarePaymentDialog
+      :payment="payment"
+      :recipient-id="id"
+      @close="payment = null"
+    />
     <CareExecutionDialog
       :entry="executionEntry"
       :recipient-id="id"
@@ -236,6 +256,7 @@ import CareAccessForm from "@/components/care/CareAccessForm.vue";
 import CareDecisions from "@/components/care/CareDecisions.vue";
 import CareShell from "@/components/care/CareShell.vue";
 import CareEntryDialog from "@/components/care/CareEntryDialog.vue";
+import CarePaymentDialog from "@/components/care/CarePaymentDialog.vue";
 import CareExecutionDialog from "@/components/care/CareExecutionDialog.vue";
 import { AppCard, AppButton, AppConfirmDialog } from "@/components/ui";
 import { useCareStore } from "@/state/care";
@@ -250,6 +271,7 @@ const route = useRoute(),
   entryOpen = ref(false),
   selectedEntry = ref(null),
   executionEntry = ref(null),
+  payment = ref(null),
   confirmation = ref(null);
 const id = computed(() => route.params.id),
   members = computed(() => team.activeMembers);
@@ -294,6 +316,10 @@ async function grant(data) {
     await store.grant(id.value, data);
   } catch {}
 }
+function openPayment(entry, share) {
+  store.error = "";
+  payment.value = { entry, share };
+}
 function recordExecution(entry) {
   store.error = "";
   executionEntry.value = entry;
@@ -337,6 +363,7 @@ watch(
   id,
   async (value) => {
     entryOpen.value = false;
+    payment.value = null;
     executionEntry.value = confirmation.value = null;
     tab.value = "routine";
     await store.loadRecipient(value).catch(() => {});
