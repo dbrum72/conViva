@@ -15,6 +15,15 @@ class CareEntryRequest extends FormRequest
     public function rules(): array
     {
         return [
+            'schedule' => 'nullable|array:frequency,timezone,local_start,until,weekdays,duration_minutes',
+            'schedule.frequency' => 'required_with:schedule|in:once,daily,weekly',
+            'schedule.timezone' => 'required_with:schedule|timezone:all',
+            'schedule.local_start' => 'required_with:schedule|date_format:Y-m-d\\TH:i',
+            'schedule.until' => 'required_with:schedule|date_format:Y-m-d',
+            'schedule.duration_minutes' => 'required_with:schedule|integer|min:0|max:1440',
+            'schedule.weekdays' => 'sometimes|array|max:7',
+            'schedule.weekdays.*' => 'integer|between:1,7|distinct',
+            'publish_to_agenda' => 'sometimes|boolean',
             'revision' => 'sometimes|integer|min:0',
             'affected_user_ids' => 'sometimes|array|max:50', 'affected_user_ids.*' => 'integer|distinct',
             'kind' => ['required', Rule::in(['event', 'task', 'journal', 'medication', 'vaccine', 'feeding', 'expense'])],

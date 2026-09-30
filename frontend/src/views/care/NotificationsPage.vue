@@ -10,13 +10,15 @@
             :to="
               n.destination
                 ? {
-                    name: 'decision',
-                    params: {
+                    name: 'decisions',
+                    query: {
                       type: n.destination.type,
                       proposal: n.destination.proposal,
                     },
                   }
-                : { name: 'recipient', params: { id: n.care_recipient_id } }
+                : n.area === 'finance'
+                  ? { name: 'finance' }
+                  : { name: 'recipient', params: { id: n.care_recipient_id } }
             "
             ><strong>{{ n.message }}</strong></RouterLink
           >

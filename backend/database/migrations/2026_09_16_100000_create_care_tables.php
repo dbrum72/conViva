@@ -18,6 +18,8 @@ return new class extends Migration
             $t->date('birth_date')->nullable();
             $t->string('species')->nullable();
             $t->string('breed')->nullable();
+            $t->json('routine_profile')->nullable();
+            $t->json('health_profile')->nullable();
             $t->string('status')->default('active');
             $t->timestamps();
         });
@@ -46,6 +48,8 @@ return new class extends Migration
             $t->timestamp('completed_at')->nullable();
             $t->unsignedBigInteger('amount_cents')->nullable();
             $t->json('details')->nullable();
+            $t->json('schedule')->nullable();
+            $t->boolean('publish_to_agenda')->default(false);
             $t->unsignedInteger('revision')->default(0);
             $t->json('affected_user_ids')->nullable();
             $t->foreignId('related_entry_id')->nullable()->constrained('care_entries');

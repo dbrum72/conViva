@@ -32,13 +32,13 @@
 }
 
 .btn--primary,
-.btn--modal {
+.btn--action {
   background: var(--color-brand);
   color: var(--color-on-brand);
 }
 
 .btn--primary:hover,
-.btn--modal:hover {
+.btn--action:hover {
   background: var(--color-brand-hover);
 }
 
@@ -63,28 +63,27 @@
     color-mix(in srgb, var(--color-danger) 28%, transparent);
 }
 
-.btn--highlight,
-.btn--action {
+.btn--highlight {
   background: var(--color-highlight);
   color: var(--color-on-highlight);
 }
 
-.btn--highlight:hover,
-.btn--action:hover {
+.btn--highlight:hover {
   background: var(--color-highlight-hover);
 }
 
 .btn--action:active {
-  background: var(--palette-care-coral);
-  box-shadow: inset 0 2px 4px rgb(67 39 35 / 18%);
+  background: var(--color-brand-active);
+  box-shadow: inset 0 2px 4px rgb(48 49 64 / 18%);
 }
 
 .btn--action:focus-visible {
-  outline: 2px solid var(--color-on-highlight);
+  outline: 2px solid var(--color-brand);
   outline-offset: 3px;
 }
 
 .btn--outline,
+.btn--modal,
 .btn--filter {
   background: transparent;
   border-color: var(--color-brand);
@@ -92,6 +91,7 @@
 }
 
 .btn--outline:hover,
+.btn--modal:hover,
 .btn--filter:hover {
   background: var(--color-surface-soft);
 }
@@ -141,4 +141,35 @@
 .btn--lg {
   min-height: 3rem;
   padding: var(--space-3) var(--space-6);
+}
+
+.btn--modal:focus-visible {
+  outline: 2px solid var(--color-brand);
+  outline-offset: 3px;
+}
+
+.btn--cancel {
+  background: transparent;
+  border-color: var(--color-cancel);
+  color: var(--color-cancel);
+}
+.btn--cancel:hover:not(:disabled) {
+  background: var(--color-cancel-soft);
+  color: var(--color-cancel-hover);
+  border-color: var(--color-cancel-hover);
+}
+.btn--cancel:active:not(:disabled) {
+  background: color-mix(in srgb, var(--color-cancel) 14%, transparent);
+  color: var(--color-cancel-active);
+  border-color: var(--color-cancel-active);
+}
+.btn--cancel:focus-visible {
+  outline: 2px solid var(--color-cancel);
+  outline-offset: 3px;
+}
+.btn--cancel:disabled {
+  background: var(--color-surface-muted);
+  border-color: var(--color-border);
+  color: var(--color-text-muted);
+  opacity: 1;
 }

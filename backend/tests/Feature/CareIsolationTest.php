@@ -300,14 +300,14 @@ class CareIsolationTest extends TestCase
     public function test_shared_task_requires_peer_acceptance_and_cannot_be_self_approved(): void
     {
         [$g,$a,$b,$p] = $this->sharedCare();
-        $e = $this->asMember($a, $g)->postJson('/api/recipients/'.$p->id.'/entries', ['kind' => 'task', 'title' => 'Buscar na escola', 'due_at' => '2026-10-01 10:00:00'])->assertCreated()->assertJsonPath('status', 'awaiting_approval')->json();
+        $e = $this->asMember($a, $g)->postJson('/api/recipients/'.$p->id.'/entries', ['kind' => 'task', 'title' => 'Buscar na escola', 'publish_to_agenda' => true, 'due_at' => '2026-10-01 10:00:00'])->assertCreated()->assertJsonPath('status', 'awaiting_approval')->json();
         $base = '/api/recipients/'.$p->id.'/entries/'.$e['id'];
         $proposal = $e['proposals'][0]['id'];
-        $this->getJson('/api/agenda')->assertOk()->assertJsonCount(0);
+        $this->getJson('/api/agenda?from=2026-10-01&to=2026-10-01')->assertOk()->assertJsonCount(0, 'data');
         $this->patchJson($base.'/complete')->assertUnprocessable();
         $this->postJson($base.'/proposals/'.$proposal.'/decision', ['decision' => 'accepted'])->assertForbidden();
         $this->asMember($b, $g)->postJson($base.'/proposals/'.$proposal.'/decision', ['decision' => 'accepted'])->assertOk()->assertJsonPath('status', 'pending');
-        $this->getJson('/api/agenda')->assertOk()->assertJsonCount(1);
+        $this->getJson('/api/agenda?from=2026-10-01&to=2026-10-01')->assertOk()->assertJsonCount(1, 'data');
         $this->postJson($base.'/proposals/'.$proposal.'/decision', ['decision' => 'accepted'])->assertConflict();
     }
 

@@ -1,6 +1,6 @@
 # conViva — pesquisa de referência e cronograma de evolução
 
-Data da pesquisa: 18/09/2026. E00 e E01 concluídas em 18/09/2026; E02 concluída em 27/09/2026. Próxima etapa sequencial: E03. Evidências em `docs/BASELINE-E00.md`, `docs/ENTREGA-E01.md`, `docs/ENTREGA-E02.md` e no registro de execução abaixo.
+Data da pesquisa: 18/09/2026. E00 e E01 concluídas em 18/09/2026; E02 concluída em 27/09/2026. E03 e E04 concluídas em 28/09/2026. Próxima etapa sequencial: E05. Evidências em `docs/BASELINE-E00.md`, `docs/ENTREGA-E01.md`, `docs/ENTREGA-E02.md` e no registro de execução abaixo.
 
 Ajuste solicitado antes de E02: sidebar com seleção/criação de grupos somente em Meus assistidos e avatar pessoal do assistido por responsável. Entrega descrita em `docs/AVATAR-PESSOAL.md`, preservada na E02.
 
@@ -54,7 +54,7 @@ Leitura estática do código; os testes existentes foram inspecionados, mas não
 | Saúde | Medicamento e vacina são tipos de `CareEntry`; detalhes têm dose, frequência e via em texto. | Separar programação e execução; texto de frequência não deve gerar doses automaticamente. |
 | Notificações | Registros internos e leitura; consulta limitada aos últimos 100. | Paginação, preferências, filas e lembretes. `routes/console.php` não contém agendamentos de cuidados. |
 | Documentos | Arquivos privados, validação de tipo/tamanho e autorização de download; exclusão pelo autor. | Categorias, vínculos a registros, validade opcional e tratamento consistente de falha na exclusão do arquivo. |
-| Finanças | Valores inteiros em centavos, rateio, aceite e pagamento da própria parcela. | Consulta financeira dedicada, filtros, comprovantes e correções rastreáveis. A store atual busca registros e filtra despesas no cliente. |
+| Finanças | Valores inteiros em centavos, rateio, aceite e pagamento da própria parcela. | Consulta financeira dedicada, filtros, comprovantes e correções rastreáveis. Consulta básica GET /api/finance e totais no Laravel já disponíveis; operações financeiras unificadas em Despesas. Filtros avançados e paginação continuam pendentes. |
 | Interface | Vue, Pinia, Axios e componentes próprios; `RecipientPage.vue` reúne múltiplas áreas e formulários. | Dividir componentes por jornada, substituir diálogos nativos e melhorar estados de erro, carregamento e acessibilidade. |
 | Qualidade | `CareIsolationTest.php` e testes de frontend para estado, decisões e grupos. | Acrescentar cenários de concorrência, recorrência, filas e exportação conforme cada entrega. |
 
@@ -148,11 +148,11 @@ Marcos de entrega:
 
 ### E03 — Ficha útil para cada tipo de assistido
 
-- [ ] Organizar identificação, contatos, instruções e informações de referência por área de acesso.
-- [ ] Criança/adolescente: contatos e referências escolares, rotina e pessoas autorizadas conforme definição do produto.
-- [ ] Adulto: preferências, contatos de apoio e instruções de cuidado informadas pelos participantes.
-- [ ] Pet: espécie/raça já existentes, identificação opcional, contato veterinário e rotina específica.
-- [ ] Oferecer modelos de preenchimento curtos, sem tornar campos de outro tipo obrigatórios.
+- [x] Organizar identificação, contatos, instruções e informações de referência por área de acesso.
+- [x] Criança/adolescente: contatos e referências escolares, rotina e pessoas autorizadas conforme definição do produto.
+- [x] Adulto: preferências, contatos de apoio e instruções de cuidado informadas pelos participantes.
+- [x] Pet: espécie/raça já existentes, identificação opcional, contato veterinário e rotina específica.
+- [x] Oferecer modelos de preenchimento curtos, sem tornar campos de outro tipo obrigatórios.
 
 **Codificação:** ampliar `CareRecipientRequest`, model e migration de criação; introduzir contatos estruturados e campos tipados apenas onde forem consultados/validados. Dados de saúde devem ter autorização própria, mesmo quando exibidos junto à identificação. Aplicar E02 às mudanças compartilhadas.
 
@@ -160,12 +160,12 @@ Marcos de entrega:
 
 ### E04 — Agenda e ocorrências recorrentes
 
-- [ ] Adicionar visões dia/semana/mês e lista acessível, com período, tipo, executor e situação como filtros.
-- [ ] Introduzir série, ocorrência e exceção: data isolada, repetição diária/semanal, término e cancelamento de uma ocorrência ou das futuras.
-- [ ] Manter propostas pendentes em área separada da agenda confirmada.
-- [ ] Explicitar fuso do grupo; guardar instantes em UTC e regra local de recorrência com fuso identificado.
-- [ ] Detectar sobreposição e informar conflito, sem impor troca de responsável.
-- [ ] Diferenciar execução registrada de conclusão administrativa do registro original.
+- [x] Adicionar visões dia/semana/mês e lista acessível, com período, tipo, executor e situação como filtros.
+- [x] Introduzir série, ocorrência e exceção: data isolada, repetição diária/semanal, término e cancelamento de uma ocorrência ou das futuras.
+- [x] Manter propostas pendentes em área separada da agenda confirmada.
+- [x] Explicitar fuso do grupo; guardar instantes em UTC e regra local de recorrência com fuso identificado.
+- [x] Detectar sobreposição e informar conflito, sem impor troca de responsável.
+- [x] Diferenciar execução registrada de conclusão administrativa do registro original.
 
 **Codificação proposta:** `CareSchedule`, `CareOccurrence` e serviço `GenerateCareOccurrences`, vinculados à versão aprovada do cuidado. Usar chave única de série/instante/versão aplicável e geração idempotente em janela limitada. Reutilizar filas e scheduler do Laravel. Aceite da série autoriza apenas as ocorrências descritas por ela; alteração futura exige nova proposta.
 
@@ -322,8 +322,8 @@ Usar as caixas de seleção de cada etapa como tarefas. Para concluir uma etapa,
 
 | Marco | Status inicial | Evidência necessária |
 | --- | --- | --- |
-| M1 — E00 a E03 | Em andamento: E00, E01 e E02 concluídas | Fluxo de entrada, decisão e ficha validado |
-| M2 — E04 a E07 | Não iniciado | Recorrência, execução e lembretes testados |
+| M1 — E00 a E03 | Concluído: E00, E01, E02 e E03 | Fluxo de entrada, decisão e ficha validado |
+| M2 — E04 a E07 | Em andamento: E04 concluída | Recorrência, execução e lembretes testados |
 | M3 — E08 a E10 | Não iniciado | Relatórios, operação e piloto aprovados |
 | M4 — E11 | Aguardando piloto | Priorização baseada nas métricas e dificuldades observadas |
 
@@ -365,3 +365,34 @@ Usar as caixas de seleção de cada etapa como tarefas. Para concluir uma etapa,
 - Nova tabela aplicada isoladamente em `conviva_db`, sem reconstrução ou remoção dos dados existentes. Testes específicos usam rollback transacional.
 - Validação: 7 testes backend / 59 asserções; 40 testes frontend; build aprovado. Detalhes em `docs/COMPROVANTES-PAGAMENTO.md`.
 - E08 não está concluída. A próxima etapa sequencial continua sendo E03.
+
+### 28/09/2026 — E03 concluída
+
+- Ficha por tipo, contatos estruturados, instruções e referências separadas por rotina/saúde. Campos opcionais e exemplos curtos.
+- Revisão compartilhada preserva a ficha vigente; saúde filtrada também nas propostas e comparações, com revalidação de acesso para aceite.
+- Frontend: 43 testes e build aprovados. Backend: 63 testes aprovados na execução conjunta; sete testes de comprovantes aprovados separadamente (59 asserções) após reconstrução, devido à limpeza dos testes concorrentes. Evidências e limites em `docs/ENTREGA-E03.md`.
+- Migration de criação atualizada e `conviva_db` reconstruído após testes. Próxima etapa: E04.
+
+### 28/09/2026 — Ajuste de revisão cadastral antes da E04
+
+- Qualquer responsável com acesso vigente pode propor revisão, inclusive convidado; autoria do cadastro não restringe essa capacidade.
+- Único responsável aplica imediatamente; vários responsáveis exigem anuência de todos, preservando a versão anterior durante a pendência.
+- Cinco testes backend / 51 asserções aprovados com rollback, sem reconstrução do banco. Detalhes em `docs/ENTREGA-E03.md`.
+
+### 28/09/2026 — Decisões concentradas na Central antes da E04
+
+- Aceite e recusa motivada nos próprios cartões, com comparação expansível, bloqueios e atualização após resposta.
+- Respostas removidas das telas de cuidado/detalhe; links e notificações encaminham para a Central.
+- “Revogar” foi esclarecido pelo usuário como recusar proposta pendente, sem desfazer aceite anterior. Sem alteração de banco; detalhes em `docs/ENTREGA-E03.md`.
+
+
+### 28/09/2026 — E04 concluída
+
+- Agenda por dia/semana/mês/lista, período, tipo, executor, situação e paginação autorizada; propostas pendentes continuam na Central.
+- Séries aprovadas com regra local/fuso, ocorrências UTC, geração idempotente, exceções por proposta e execução identificada. Revisões preservam histórico e programação vigente enquanto pendentes.
+- Fuso informado ao criar grupo; séries mantêm seu próprio fuso aprovado. Sobreposições visíveis são avisadas sem alterar designações.
+- Job por grupo e comando diário para antecipar 90 dias; consulta gera a janela necessária. Scheduler/worker precisam ser mantidos pelo operador.
+- Suíte completa: **91 testes backend / 739 asserções**, incluindo cinco ensaios concorrentes reais em MySQL; **52 testes frontend em 13 arquivos**; build aprovado (2.047 módulos). Pint e whitespace aprovados.
+- Ordem da suíte corrigida para executar concorrência após testes transacionais, resolvendo a pendência de composição registrada na E03.
+- `conviva_db` reconstruído ao final com migrations e seeder. Contas e dados anteriores não foram preservados, conforme política do banco descartável; nenhum `.env` ou arquivo/banco do legalis alterado.
+- Contratos, limites e evidências em `docs/ENTREGA-E04.md`. Próxima etapa sequencial: **E05 — programação e execução de medicamentos**.

@@ -63,13 +63,10 @@ import { useCareStore } from "@/state/care";
 import { entryKinds, dateTime } from "@/utils/care";
 const store = useCareStore();
 const pending = computed(() =>
-  store.agenda.filter((e) => e.status !== "completed"),
+  store.agenda.filter((e) => e.status === "scheduled"),
 );
 onMounted(() =>
-  Promise.all([
-    store.loadAgenda(),
-    store.loadNotifications(),
-  ]).catch(() => {}),
+  Promise.all([store.loadAgenda(), store.loadNotifications()]).catch(() => {}),
 );
 </script>
 

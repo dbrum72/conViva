@@ -19,7 +19,7 @@
         </div>
 
         <AppButton
-          variant="navigation"
+          variant="modal"
           v-if="canInvite"
           type="button"
           icon="email"
@@ -54,7 +54,7 @@
         <template #cell-actions="{ row }">
           <div class="organization-members__actions">
             <AppButton
-              variant="outline"
+              variant="modal"
               v-if="canUpdateRole && row.can_update_role"
               type="button"
               size="sm"
@@ -285,7 +285,7 @@
           <div class="organization-members__form-actions">
             <AppButton
               type="button"
-              variant="ghost"
+              variant="cancel"
               :disabled="invitationsStore.creating"
               @click="closeInvitationDialog"
             >
@@ -355,7 +355,7 @@
           <div class="organization-members__form-actions">
             <AppButton
               type="button"
-              variant="ghost"
+              variant="cancel"
               :disabled="updatingRole"
               @click="closeRoleDialog"
             >

@@ -37,7 +37,7 @@
       </p>
       <div class="care-actions">
         <AppButton
-          variant="ghost"
+          variant="cancel"
           :disabled="!!store.pending"
           @click="$emit('close')"
           >Cancelar</AppButton
@@ -66,7 +66,7 @@ import { AppFileUpload } from "@/components/forms";
 import { useCareStore } from "@/state/care";
 import { money } from "@/utils/care";
 const props = defineProps({ payment: Object, recipientId: [Number, String] });
-const emit = defineEmits(["close"]);
+const emit = defineEmits(["close", "saved"]);
 const store = useCareStore(),
   files = ref([]),
   fileError = ref("");
@@ -91,6 +91,7 @@ async function submit() {
       props.payment.share.id,
       files.value[0] ?? null,
     );
+    emit("saved");
     emit("close");
   } catch {
     /* Keep the selected file and server error available for retry. */

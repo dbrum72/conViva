@@ -6,7 +6,6 @@ use App\Models\CareEntry;
 use App\Models\CareProfileProposal;
 use App\Models\CareProposal;
 use App\Models\User;
-use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
 
 class DecisionCenter
@@ -69,7 +68,7 @@ class DecisionCenter
         }
         $this->access->authorize($user, $recipient, $area);
         $blockers = $this->guard->blockers($recipient, $proposal, $area, $type === 'profile');
-        if ($proposal->status === 'pending' && $type === 'profile' && Arr::only($recipient->toArray(), ProfileRevisions::FIELDS) != $proposal->payload['before']) {
+        if ($proposal->status === 'pending' && $type === 'profile' && app(ProfileRevisions::class)->snapshot($recipient) != $proposal->payload['before']) {
             $blockers[] = ['user_id' => null, 'message' => 'O cadastro vigente mudou. É necessária uma nova proposta.'];
         }
         $canWrite = $this->access->allowed($user, $recipient, $area, true);
@@ -77,6 +76,11 @@ class DecisionCenter
         $canRespond = $canWrite && $proposal->status === 'pending' && $vote?->status === 'pending'
             && ($type !== 'profile' || $this->access->responsible($user, $recipient));
         $payload = $proposal->payload;
+        if ($type === 'profile') {
+            foreach (['before', 'data'] as $key) {
+                $payload[$key] = app(RecipientProfile::class)->filter($user, $recipient, $payload[$key] ?? []);
+            }
+        }
         $before = $payload['before'] ?? [];
         $after = $proposal->operation === 'cancel' ? [...$before, 'status' => 'cancelled'] : [...$before, ...($payload['data'] ?? [])];
         if ($proposal->operation === 'cancel') {
@@ -88,6 +92,9 @@ class DecisionCenter
             $before['affected_user_ids'] = $payload['before_affected_user_ids'] ?? [];
             $after['affected_user_ids'] = $payload['affected_user_ids'] ?? [];
         }
+        if ($proposal->operation === 'cancel_occurrence') {
+            $after['exception'] = $payload['exception'];
+        }
         $changes = [];
         foreach (array_unique([...array_keys($before), ...array_keys($after)]) as $field) {
             if (($before[$field] ?? null) != ($after[$field] ?? null)) {
@@ -96,10 +103,13 @@ class DecisionCenter
         }
 
         return [
-            ...$proposal->toArray(), 'type' => $type, 'care_recipient_id' => $recipient->id,
+            ...$proposal->toArray(), 'payload' => $payload, 'type' => $type, 'care_recipient_id' => $recipient->id,
             'recipient_name' => $recipient->name, 'entry_id' => $entry?->id,
             'title' => $type === 'profile' ? 'Cadastro de '.$recipient->name : ($payload['data']['title'] ?? $entry->title),
             'author' => User::select('id', 'name')->find($proposal->created_by),
+            // Submission is the author's consent; only the other participants vote.
+            // Derive it from the immutable proposal, including pre-existing proposals.
+            'author_acceptance' => ['status' => 'accepted', 'decided_at' => $proposal->created_at],
             'comparison_available' => array_key_exists('before', $payload),
             'changes' => $changes, 'blockers' => $blockers,
             'can_accept' => $canRespond && ! $blockers, 'can_reject' => $canRespond,

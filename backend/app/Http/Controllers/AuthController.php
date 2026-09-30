@@ -141,6 +141,7 @@ class AuthController extends Controller implements HasMiddleware
             'user' => $user->toArray(),
 
             'organization' => [
+                'timezone' => $organization->timezone,
                 'has_recipient' => $organization->recipients()->exists(),
                 'can_manage_avatar' => $recipient && app(AccessControl::class)->responsible($user, $recipient),
                 'id' => $organization->id,

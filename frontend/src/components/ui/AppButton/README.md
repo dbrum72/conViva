@@ -38,11 +38,13 @@ Use preferencialmente as variantes semânticas:
 
 | Variante | Cor               | Uso                                              |
 | -------- | ----------------- | ------------------------------------------------ |
-| `action` | Laranja           | Persistir, criar, atualizar ou executar uma ação |
+| `action` | Lavanda escura (`#565873`) | Persistir, criar, atualizar ou executar uma ação |
 | `route`  | Verde             | Navegar para outra rota                          |
-| `modal`  | Marrom            | Abrir modal ou painel contextual                 |
-| `filter` | Marrom contornado | Aplicar ou abrir filtros e detalhes              |
+| `modal`  | Lavanda contornada, fundo transparente | Abrir modal, formulário ou painel contextual |
+| `filter` | Lavanda contornada | Aplicar ou abrir filtros e detalhes              |
 | `danger` | Vermelho          | Exclusão, cancelamento ou ação destrutiva        |
+
+Botões que enviam operações de criação (`store`) ou atualização (`update`) devem usar `variant="action"`. A variante compartilha o fundo `--color-brand` e texto branco de `primary`, como “Nova despesa”, com hover e estado pressionado mais escuros. Filtros continuam usando `filter`/`outline`; ações destrutivas mantêm `danger`.
 
 As variantes históricas continuam disponíveis por compatibilidade:
 
@@ -521,3 +523,9 @@ aria-label
 icon-only
 ícone decorativo
 ```
+
+Botões que apenas abrem um modal ou formulário devem usar `variant="modal"`: fundo transparente, borda e texto em `--color-brand`, como “Adicionar parcela”. O botão dentro do formulário que persiste os dados usa `variant="action"`. O comportamento é explícito pela variante; `type="submit"` sozinho não define a cor, pois também pode executar consultas.
+
+## Cancelar
+
+Use `variant="cancel"` para desistir de uma edição ou fechar um formulário sem salvar. Estilo outline: fundo transparente, borda e texto azul-petróleo escuro (`#285B57`), fundo suave (`#EDF5F3`) no hover e destaque no pressionado e foco visível. Quando desabilitado, usa fundo cinza claro, texto atenuado e cursor de indisponibilidade. Não confundir com cancelar um registro persistido ou outra operação destrutiva (`danger`). O botão de cancelamento de `AppConfirmDialog` segue este padrão.

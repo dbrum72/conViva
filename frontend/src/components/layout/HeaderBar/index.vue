@@ -22,10 +22,18 @@
       <button
         class="app-header-bar__icon-button app-header-bar__notifications"
         type="button"
-        aria-label="Abrir notificações"
+        v-if="authStore.user && authStore.currentTenant"
+        :aria-label="notificationLabel"
+        :title="notificationLabel"
         @click="router.push({ name: 'notifications' })"
       >
         <Bell :size="21" :stroke-width="1.8" aria-hidden="true" />
+        <span
+          v-if="careStore.unreadNotifications > 0"
+          class="app-header-bar__badge"
+          aria-hidden="true"
+          >{{ careStore.unreadNotifications }}</span
+        >
       </button>
       <button
         v-if="canAccessSettings"
@@ -83,9 +91,10 @@
 </template>
 
 <script setup>
-import { computed, onBeforeUnmount, onMounted, ref } from "vue";
+import { computed, onBeforeUnmount, onMounted, ref, watch } from "vue";
 import { Bell, ChevronDown, LogOut, Menu, Settings } from "@lucide/vue";
-import { useRouter } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
+import { useCareStore } from "@/state/care.js";
 import { useAuthStore } from "@/state/auth.js";
 import { settingsPermissions } from "@/config/settings.js";
 
@@ -94,6 +103,28 @@ defineEmits(["toggle-sidebar"]);
 
 const router = useRouter();
 const authStore = useAuthStore();
+const careStore = useCareStore();
+const route = useRoute();
+const notificationLabel = computed(() => {
+  const count = careStore.unreadNotifications;
+  return count == null
+    ? "Abrir notificações"
+    : `Abrir notificações: ${count} ${count === 1 ? "não lida" : "não lidas"}`;
+});
+function refreshNotifications() {
+  if (
+    authStore.user &&
+    authStore.currentTenant &&
+    document.visibilityState !== "hidden"
+  )
+    careStore.refreshUnreadNotifications();
+}
+watch(
+  () => [authStore.user?.id, authStore.currentTenant, route.fullPath],
+  refreshNotifications,
+  { immediate: true },
+);
+let notificationTimer;
 const canAccessSettings = computed(() =>
   settingsPermissions.some((permission) => authStore.hasPermission(permission)),
 );
@@ -173,11 +204,17 @@ function handleDocumentKeydown(event) {
 }
 
 onMounted(() => {
+  notificationTimer = window.setInterval(refreshNotifications, 30000);
+  window.addEventListener("focus", refreshNotifications);
+  document.addEventListener("visibilitychange", refreshNotifications);
   document.addEventListener("click", handleDocumentClick);
   document.addEventListener("keydown", handleDocumentKeydown);
 });
 
 onBeforeUnmount(() => {
+  window.clearInterval(notificationTimer);
+  window.removeEventListener("focus", refreshNotifications);
+  document.removeEventListener("visibilitychange", refreshNotifications);
   document.removeEventListener("click", handleDocumentClick);
   document.removeEventListener("keydown", handleDocumentKeydown);
 });

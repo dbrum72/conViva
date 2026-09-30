@@ -10,13 +10,13 @@ use Illuminate\Support\Facades\DB;
 
 class ProfileRevisions
 {
-    public const FIELDS = ['name', 'kind', 'birth_date', 'species', 'breed', 'status'];
+    public const FIELDS = ['name', 'kind', 'birth_date', 'species', 'breed', 'status', 'routine_profile', 'health_profile'];
 
     public function __construct(private AccessControl $access, private ProposalGuard $guard, private ProposalNotifications $notifications) {}
 
     public function snapshot(CareRecipient $recipient): array
     {
-        return Arr::only($recipient->toArray(), self::FIELDS);
+        return [...Arr::only($recipient->toArray(), self::FIELDS), 'routine_profile' => $recipient->routine_profile, 'health_profile' => $recipient->health_profile];
     }
 
     public function propose(User $user, CareRecipient $recipient, array $data, string $operation, int $version): CareProfileProposal
@@ -24,17 +24,26 @@ class ProfileRevisions
         return DB::transaction(function () use ($user, $recipient, $data, $operation, $version) {
             $recipient = $this->guard->lock($recipient);
             $user->unsetRelation('roles')->unsetRelation('permissions');
-            $this->authorizeAuthor($user, $recipient);
+            $this->authorizeResponsible($user, $recipient);
             abort_unless($recipient->status === 'active', 409, 'Este assistido está arquivado.');
             $query = CareProfileProposal::where('care_recipient_id', $recipient->id);
             abort_if((clone $query)->where('status', 'pending')->exists(), 409, 'Existe uma revisão cadastral aguardando decisão.');
             $latest = (int) (clone $query)->max('version');
             abort_unless($latest === $version, 409, 'O cadastro mudou. Atualize a página antes de propor outra revisão.');
+            app(RecipientProfile::class)->authorizeChanges($user, $recipient, $data);
             $before = $this->snapshot($recipient);
             $after = $operation === 'archive' ? [...$before, 'status' => 'archived'] : [...$before, ...$data, 'status' => 'active'];
             if ($after['kind'] !== 'pet') {
                 $after['species'] = null;
                 $after['breed'] = null;
+            }
+            if (is_array($after['routine_profile'])) {
+                if ($after['kind'] !== 'child') {
+                    unset($after['routine_profile']['school'], $after['routine_profile']['authorized_people']);
+                }
+                if ($after['kind'] !== 'pet') {
+                    unset($after['routine_profile']['identification']);
+                }
             }
             $ids = $this->access->responsibleIds($recipient);
             $proposal = CareProfileProposal::create([
@@ -97,10 +106,10 @@ class ProfileRevisions
         });
     }
 
-    private function authorizeAuthor(User $user, CareRecipient $recipient): void
+    private function authorizeResponsible(User $user, CareRecipient $recipient): void
     {
         $this->access->authorize($user, $recipient, 'routine', true);
-        abort_unless($this->access->responsible($user, $recipient) && (int) $recipient->created_by === (int) $user->id, 403, 'Somente o responsável autor pode propor uma revisão deste cadastro.');
+        abort_unless($this->access->responsible($user, $recipient), 403, 'Somente responsáveis com acesso vigente podem propor uma revisão deste cadastro.');
     }
 
     private function apply(CareRecipient $recipient, CareProfileProposal $proposal): void

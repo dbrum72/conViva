@@ -9,22 +9,30 @@ export const useCareStore = defineStore("care", () => {
     accesses = ref([]),
     accessesLoaded = ref(false),
     agenda = ref([]),
+    agendaPage = ref(null),
     notifications = ref([]),
+    unreadNotifications = ref(null),
     expenses = ref([]),
+    financeRecipients = ref([]),
+    financeSummary = ref(null),
+    financePeriod = ref(null),
     decisions = ref(null),
     decision = ref(null),
     error = ref(""),
     pending = ref(0);
   let generation = 0;
   let decisionRequest = 0;
-  async function run(fn) {
+  let agendaRequest = 0;
+  let unreadRequest = 0;
+  let financeRequest = 0;
+  async function run(fn, isCurrent = () => true) {
     const g = generation;
     pending.value++;
     error.value = "";
     try {
       return await fn();
     } catch (e) {
-      if (g === generation)
+      if (g === generation && isCurrent())
         error.value =
           Object.values(e.response?.data?.errors || {})
             .flat()
@@ -140,15 +148,59 @@ export const useCareStore = defineStore("care", () => {
     if (g !== generation) return;
     accesses.value = accesses.value.filter((a) => a.user_id !== user);
   }
-  async function loadAgenda() {
+  async function loadAgenda(filters = {}, { allPages = false } = {}) {
+    const g = generation,
+      request = ++agendaRequest;
+    const current = () => g === generation && request === agendaRequest;
+    agenda.value = [];
+    agendaPage.value = null;
+    await run(async () => {
+      let { data } = await careApi.agenda(filters);
+      const first = data;
+      const rows = [...data.data];
+      while (allPages && data.current_page < data.last_page) {
+        if (!current()) return;
+        const response = await careApi.agenda({
+          ...filters,
+          page: data.current_page + 1,
+        });
+        data = response.data;
+        rows.push(...data.data);
+      }
+      if (current()) {
+        agenda.value = [...new Map(rows.map((row) => [row.id, row])).values()];
+        agendaPage.value = { ...first, data: agenda.value };
+      }
+    }, current);
+  }
+  async function executeOccurrence(id, data) {
     const g = generation;
-    const { data } = await run(() => careApi.agenda());
-    if (g === generation) agenda.value = data;
+    await run(() => careApi.executeOccurrence(id, data));
+    return g === generation;
+  }
+  async function cancelOccurrence(id, scope) {
+    const g = generation;
+    const { data } = await run(() => careApi.cancelOccurrence(id, scope));
+    return g === generation ? data : null;
+  }
+  async function refreshUnreadNotifications() {
+    const g = generation,
+      request = ++unreadRequest;
+    try {
+      const { data } = await careApi.unreadCount();
+      if (g === generation && request === unreadRequest)
+        unreadNotifications.value = data.unread_count;
+    } catch {
+      if (g === generation && request === unreadRequest)
+        unreadNotifications.value = null;
+    }
   }
   async function loadNotifications() {
     const g = generation;
     const { data } = await run(() => careApi.notifications());
-    if (g === generation) notifications.value = data;
+    if (g !== generation) return;
+    notifications.value = data;
+    await refreshUnreadNotifications();
   }
   async function read(id) {
     const g = generation;
@@ -156,27 +208,24 @@ export const useCareStore = defineStore("care", () => {
     if (g !== generation) return;
     const n = notifications.value.find((n) => n.id === id);
     if (n) n.read_at = new Date().toISOString();
+    await refreshUnreadNotifications();
   }
-  async function loadExpenses() {
-    const g = generation;
-    await loadRecipients();
-    if (g !== generation) return;
-    const all = await run(() =>
-      Promise.all(
-        recipients.value
-          .filter((p) => p.capabilities.finance.view)
-          .map(async (p) =>
-            (await careApi.entries(p.id)).data
-              .filter(
-                (e) =>
-                  e.kind === "expense" &&
-                  ["pending", "completed"].includes(e.status),
-              )
-              .map((e) => ({ ...e, recipient: p })),
-          ),
-      ),
+  async function loadExpenses(filters = {}) {
+    const g = generation,
+      request = ++financeRequest;
+    expenses.value = [];
+    financeRecipients.value = [];
+    financeSummary.value = null;
+    financePeriod.value = null;
+    const { data } = await run(
+      () => careApi.finance(filters),
+      () => request === financeRequest,
     );
-    if (g === generation) expenses.value = all.flat();
+    if (g !== generation || request !== financeRequest) return;
+    expenses.value = data.data;
+    financeRecipients.value = data.recipients;
+    financeSummary.value = data.summary;
+    financePeriod.value = data.period;
   }
   async function pay(id, entry, share, receipt = null) {
     const g = generation;
@@ -197,9 +246,9 @@ export const useCareStore = defineStore("care", () => {
     link.click();
     setTimeout(() => URL.revokeObjectURL(url), 1000);
   }
-  async function execute(id, entry, description) {
+  async function execute(id, entry, description, occurredAt) {
     const g = generation;
-    await run(() => careApi.execute(id, entry, description));
+    await run(() => careApi.execute(id, entry, description, occurredAt));
     if (g === generation) await loadEntries(id);
   }
   async function decide(id, entry, proposal, data) {
@@ -239,8 +288,9 @@ export const useCareStore = defineStore("care", () => {
             data,
           ),
     );
-    if (g === generation && request === decisionRequest)
-      await loadDecision(proposal.type, proposal.id);
+    if (g !== generation || request !== decisionRequest) return false;
+    await loadDecision(proposal.type, proposal.id);
+    return g === generation;
   }
   async function withdrawProposal(proposal) {
     const g = generation,
@@ -254,8 +304,9 @@ export const useCareStore = defineStore("care", () => {
             proposal.id,
           ),
     );
-    if (g === generation && request === decisionRequest)
-      await loadDecision(proposal.type, proposal.id);
+    if (g !== generation || request !== decisionRequest) return false;
+    await loadDecision(proposal.type, proposal.id);
+    return g === generation;
   }
   async function proposeProfile(id, data) {
     const g = generation;
@@ -276,8 +327,16 @@ export const useCareStore = defineStore("care", () => {
     accesses.value = [];
     accessesLoaded.value = false;
     agenda.value = [];
+    agendaPage.value = null;
+    agendaRequest++;
     notifications.value = [];
+    unreadNotifications.value = null;
+    unreadRequest++;
     expenses.value = [];
+    financeRecipients.value = [];
+    financeSummary.value = null;
+    financePeriod.value = null;
+    financeRequest++;
     error.value = "";
     pending.value = 0;
   }
@@ -296,8 +355,16 @@ export const useCareStore = defineStore("care", () => {
     accesses,
     accessesLoaded,
     agenda,
+    agendaPage,
+    executeOccurrence,
+    cancelOccurrence,
     notifications,
+    unreadNotifications,
+    refreshUnreadNotifications,
     expenses,
+    financeRecipients,
+    financeSummary,
+    financePeriod,
     error,
     pending,
     loadRecipients,

@@ -4,8 +4,8 @@ export function listCareGroups() {
   return apiClient.get("/groups");
 }
 
-export function createGroup(name) {
-  return apiClient.post("/groups", { name });
+export function createGroup(name, timezone) {
+  return apiClient.post("/groups", { name, timezone });
 }
 
 export function login(credentials) {

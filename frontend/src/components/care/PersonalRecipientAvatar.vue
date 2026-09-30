@@ -56,7 +56,7 @@
           @click="remove"
           >Remover minha foto</AppButton
         >
-        <AppButton variant="ghost" :disabled="store.pending" @click="close"
+        <AppButton variant="cancel" :disabled="store.pending" @click="close"
           >Cancelar</AppButton
         >
         <AppButton

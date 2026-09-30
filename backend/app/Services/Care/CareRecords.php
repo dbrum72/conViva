@@ -4,8 +4,10 @@ namespace App\Services\Care;
 
 use App\Models\CareEntry;
 use App\Models\CareNotification;
+use App\Models\CareOccurrence;
 use App\Models\CareProposal;
 use App\Models\CareRecipient;
+use App\Models\CareSchedule;
 use App\Models\User;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\DB;
@@ -17,11 +19,6 @@ class CareRecords
 
     public function save(User $user, CareRecipient $recipient, array $data, ?CareEntry $entry = null): CareEntry
     {
-        foreach (['due_at', 'ends_at'] as $dateField) {
-            if (! empty($data[$dateField])) {
-                $data[$dateField] = CarbonImmutable::parse($data[$dateField])->utc()->toISOString();
-            }
-        }
         $area = $this->access->area($data['kind']);
         $this->access->authorize($user, $recipient, $area, true);
         if ($entry) {
@@ -38,6 +35,19 @@ class CareRecords
                 abort_if($entry->kind !== $data['kind'], 422, 'O tipo do registro não pode ser alterado.');
                 $this->ensureMutable($entry);
                 abort_if(isset($data['revision']) && (int) $data['revision'] !== (int) $entry->revision, 409, 'A versão vigente mudou. Atualize o registro antes de propor alterações.');
+            }
+            if ($entry && ($entry->schedule || ! empty($data['schedule']))) {
+                abort_unless(isset($data['revision']), 422, 'Informe a versão vigente ao revisar uma programação.');
+            }
+            $data = app(GenerateCareOccurrences::class)->normalize($data, $entry);
+            $data['publish_to_agenda'] = (bool) ($data['publish_to_agenda'] ?? $entry?->publish_to_agenda ?? false);
+            if ($data['publish_to_agenda'] && ! (array_key_exists('due_at', $data) ? $data['due_at'] : $entry?->due_at)) {
+                throw ValidationException::withMessages(['due_at' => 'Informe a data para publicar na agenda.']);
+            }
+            foreach (['due_at', 'ends_at'] as $dateField) {
+                if (! empty($data[$dateField])) {
+                    $data[$dateField] = CarbonImmutable::parse($data[$dateField])->utc()->toISOString();
+                }
             }
             unset($data['revision']);
             $affected = array_map('intval', $data['affected_user_ids'] ?? []);
@@ -99,7 +109,7 @@ class CareRecords
         $payload['responsible_ids'] = $this->access->responsibleIds($recipient);
         $payload['base_revision'] = (int) $entry->revision;
         $payload['before_status'] = $entry->status;
-        $payload['before'] = $entry->revision ? $entry->only(['title', 'description', 'due_at', 'ends_at', 'assigned_user_id', 'amount_cents', 'details']) : [];
+        $payload['before'] = $entry->revision ? $entry->only(['title', 'description', 'due_at', 'ends_at', 'assigned_user_id', 'amount_cents', 'details', 'schedule', 'publish_to_agenda']) : [];
         $payload['before_affected_user_ids'] = $entry->affected_user_ids ?? [];
         $payload['before_shares'] = $entry->revision ? $entry->shares()->get(['user_id', 'amount_cents'])->toArray() : [];
         $proposal = $entry->proposals()->create(['created_by' => $user->id, 'version' => $version, 'operation' => $operation, 'payload' => $payload, 'status' => $affected ? 'pending' : 'accepted']);
@@ -153,17 +163,46 @@ class CareRecords
 
     private function apply(CareEntry $entry, CareProposal $proposal): void
     {
+        if ($proposal->operation === 'cancel_occurrence') {
+            app(CareAgenda::class)->applyException($entry, $proposal);
+            $entry->update(['revision' => $proposal->version]);
+
+            return;
+        }
         if ($proposal->operation === 'cancel') {
             $entry->update(['status' => 'cancelled', 'revision' => $proposal->version]);
+            app(GenerateCareOccurrences::class)->apply($entry);
 
             return;
         }
         $payload = $proposal->payload;
         $entry->update([...$payload['data'], 'affected_user_ids' => $payload['affected_user_ids'], 'revision' => $proposal->version, 'status' => 'pending', 'completed_at' => null]);
+        app(GenerateCareOccurrences::class)->apply($entry);
         $entry->shares()->delete();
         if ($payload['shares']) {
             $entry->shares()->createMany($payload['shares']);
         }
+    }
+
+    public function cancelOccurrence(User $user, CareRecipient $recipient, int $occurrenceId, string $scope): CareEntry
+    {
+        return DB::transaction(function () use ($user, $recipient, $occurrenceId, $scope) {
+            $recipient = $this->guard->lock($recipient);
+            $user->unsetRelation('roles')->unsetRelation('permissions');
+            $occurrence = CareOccurrence::with('schedule.entry')->findOrFail($occurrenceId);
+            $entry = $recipient->entries()->lockForUpdate()->findOrFail($occurrence->schedule->care_entry_id);
+            $this->access->authorize($user, $recipient, $this->access->area($entry->kind), true);
+            $this->access->owner($user, $entry);
+            $this->ensureMutable($entry);
+            abort_unless($occurrence->status === 'scheduled' && $occurrence->starts_at->isFuture(), 409, 'Somente ocorrências futuras sem execução podem ser canceladas.');
+            $affected = array_values(array_diff(array_unique([...($entry->affected_user_ids ?? []), ...$this->access->responsibleIds($recipient)]), [$user->id]));
+            foreach ($affected as $id) {
+                $this->participant($recipient, $id, $this->access->area($entry->kind));
+            }
+            $this->propose($user, $recipient, $entry, ['data' => ['title' => $entry->title], 'exception' => ['occurrence_id' => $occurrence->id, 'scope' => $scope, 'starts_at' => $occurrence->starts_at->toISOString()], 'affected_user_ids' => $affected], $affected, 'cancel_occurrence');
+
+            return $this->load($entry);
+        });
     }
 
     public function cancel(User $user, CareRecipient $recipient, int $id): CareEntry
@@ -224,18 +263,20 @@ class CareRecords
         });
     }
 
-    public function execute(User $user, CareRecipient $recipient, int $id, ?string $description): CareEntry
+    public function execute(User $user, CareRecipient $recipient, int $id, ?string $description, ?string $occurredAt = null): CareEntry
     {
-        return DB::transaction(function () use ($user, $recipient, $id, $description) {
+        return DB::transaction(function () use ($user, $recipient, $id, $description, $occurredAt) {
             $recipient = $this->guard->lock($recipient);
             $user->unsetRelation('roles')->unsetRelation('permissions');
             $task = $recipient->entries()->lockForUpdate()->findOrFail($id);
             $this->access->authorize($user, $recipient, $this->access->area($task->kind), true);
+            abort_if($task->related_entry_id, 422, 'Este registro já representa uma execução.');
+            abort_if($task->due_at || CareSchedule::where('care_entry_id', $task->id)->exists(), 422, 'Registre a execução da ocorrência na agenda.');
             abort_if(in_array($task->kind, ['expense', 'journal']), 422, 'Este registro não representa um serviço de cuidado.');
-            abort_unless((int) $task->assigned_user_id === (int) $user->id, 403, 'Somente o prestador designado pode registrar esta execução.');
-            abort_unless($task->status === 'pending' && ! $task->proposals()->where('status', 'pending')->exists(), 409, 'O cuidado precisa estar confirmado e sem alterações pendentes.');
-            abort_if($recipient->entries()->where('related_entry_id', $id)->where('created_by', $user->id)->exists(), 409, 'A execução já foi registrada.');
-            $record = $recipient->entries()->create(['created_by' => $user->id, 'related_entry_id' => $id, 'kind' => $task->kind, 'title' => 'Execução: '.$task->title, 'description' => $description, 'status' => 'completed', 'completed_at' => now(), 'revision' => 1, 'details' => $task->details]);
+            abort_unless($this->access->canExecuteCare($user, $recipient, $task->kind, $task->assigned_user_id), 403, 'Você não pode registrar esta execução.');
+            abort_unless(in_array($task->status, ['pending', 'completed']) && ! $task->proposals()->where('status', 'pending')->exists(), 409, 'O cuidado precisa estar confirmado e sem alterações pendentes.');
+            abort_if($recipient->entries()->where('related_entry_id', $id)->exists(), 409, 'A execução já foi registrada.');
+            $record = $recipient->entries()->create(['created_by' => $user->id, 'related_entry_id' => $id, 'kind' => $task->kind, 'title' => 'Execução: '.$task->title, 'description' => $description, 'due_at' => $occurredAt ? CarbonImmutable::parse($occurredAt)->utc() : now(), 'status' => 'completed', 'completed_at' => now(), 'revision' => 1, 'details' => $task->details]);
             $record->proposals()->create(['created_by' => $user->id, 'version' => 1, 'operation' => 'save', 'status' => 'accepted', 'payload' => ['data' => $record->only(['title', 'description', 'details']), 'shares' => [], 'affected_user_ids' => []]]);
             $this->notify($recipient, $this->access->area($task->kind), 'Execução registrada: '.$task->title);
 
@@ -250,6 +291,13 @@ class CareRecords
 
     public function decorate(CareEntry $entry): CareEntry
     {
+        $entry->setAttribute('has_occurrences', (! $entry->related_entry_id && $entry->revision && $entry->due_at) || CareSchedule::where('care_entry_id', $entry->id)->exists());
+        $user = auth()->user();
+        $entry->setAttribute('can_execute', $user && ! $entry->has_occurrences && ! $entry->related_entry_id
+            && ! in_array($entry->kind, ['expense', 'journal']) && in_array($entry->status, ['pending', 'completed'])
+            && ! $entry->proposals->contains('status', 'pending')
+            && $this->access->canExecuteCare($user, $entry->recipient, $entry->kind, $entry->assigned_user_id)
+            && ! CareEntry::where('related_entry_id', $entry->id)->exists());
         foreach ($entry->proposals as $proposal) {
             $proposal->setAttribute('blockers', $this->guard->blockers($entry->recipient, $proposal, $this->access->area($entry->kind)));
         }

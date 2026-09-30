@@ -8,6 +8,7 @@ use App\Models\CareRecipient;
 use App\Models\Organization;
 use App\Services\Care\AccessControl;
 use App\Services\Care\ProposalGuard;
+use App\Services\Care\RecipientProfile;
 use App\Support\Tenancy\CurrentOrganization;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -18,7 +19,7 @@ class CareRecipientController extends Controller
 
     public function index(Request $r)
     {
-        return $this->access->visible($r->user())->orderBy('name')->get()->map(fn ($p) => [...$p->toArray(), 'capabilities' => $this->access->capabilities($r->user(), $p), 'can_manage_profile' => (int) $p->created_by === (int) $r->user()->id && $this->access->responsible($r->user(), $p) && $this->access->allowed($r->user(), $p, 'routine', true) && $p->status === 'active', 'profile_version' => (int) CareProfileProposal::where('care_recipient_id', $p->id)->max('version')]);
+        return $this->access->visible($r->user())->orderBy('name')->get()->map(fn ($p) => [...app(RecipientProfile::class)->present($r->user(), $p), 'capabilities' => $this->access->capabilities($r->user(), $p), 'can_manage_profile' => $this->access->canManageProfile($r->user(), $p), 'profile_version' => (int) CareProfileProposal::where('care_recipient_id', $p->id)->max('version')]);
     }
 
     public function store(CareRecipientRequest $r)
@@ -40,7 +41,7 @@ class CareRecipientController extends Controller
     {
         $this->access->authorize($r->user(), $recipient);
 
-        return [...$recipient->toArray(), 'capabilities' => $this->access->capabilities($r->user(), $recipient), 'can_manage_access' => $this->access->responsible($r->user(), $recipient)];
+        return [...app(RecipientProfile::class)->present($r->user(), $recipient), 'capabilities' => $this->access->capabilities($r->user(), $recipient), 'can_manage_access' => $this->access->responsible($r->user(), $recipient), 'can_manage_profile' => $this->access->canManageProfile($r->user(), $recipient)];
     }
 
     public function update(CareRecipientRequest $r, CareRecipient $recipient)
@@ -49,9 +50,10 @@ class CareRecipientController extends Controller
             $recipient = app(ProposalGuard::class)->lock($recipient);
             $r->user()->unsetRelation('roles')->unsetRelation('permissions');
             $this->access->authorize($r->user(), $recipient, 'routine', true);
-            abort_unless((int) $recipient->created_by === (int) $r->user()->id, 403, 'Somente o autor pode alterar este cadastro.');
+            abort_unless($this->access->canManageProfile($r->user(), $recipient), 403, 'Somente responsáveis com acesso vigente podem alterar este cadastro.');
             abort_if(count($this->access->responsibleIds($recipient)) > 1, 409, 'O cadastro compartilhado não pode ser alterado unilateralmente.');
             abort_if(CareProfileProposal::where('care_recipient_id', $recipient->id)->where('status', 'pending')->exists(), 409, 'Existe uma revisão cadastral pendente.');
+            app(RecipientProfile::class)->authorizeChanges($r->user(), $recipient, $r->validated());
             $recipient->update($r->validated());
 
             return $recipient;
@@ -64,7 +66,7 @@ class CareRecipientController extends Controller
             $recipient = app(ProposalGuard::class)->lock($recipient);
             $r->user()->unsetRelation('roles')->unsetRelation('permissions');
             abort_unless($this->access->responsible($r->user(), $recipient), 403);
-            abort_unless((int) $recipient->created_by === (int) $r->user()->id, 403);
+            abort_unless($this->access->canManageProfile($r->user(), $recipient), 403);
             abort_if(count($this->access->responsibleIds($recipient)) > 1, 409, 'Não é permitido arquivar unilateralmente um assistido compartilhado.');
             abort_if(CareProfileProposal::where('care_recipient_id', $recipient->id)->where('status', 'pending')->exists(), 409, 'Existe uma revisão cadastral pendente.');
             $recipient->update(['status' => 'archived']);

@@ -6,6 +6,13 @@
   --palette-care-yellow: #f3df8a;
   --palette-care-coral: #eb9486;
   --palette-care-lavender: #7e7f9a;
+  /* Complementos suaves: petróleo, azul névoa e areia. */
+  --palette-care-teal: #b8d8d3;
+  --palette-care-mist: #c2d6e5;
+  --palette-care-sand: #e6d6b8;
+  --color-appointment: var(--palette-care-teal);
+  --color-on-appointment: #285b57;
+  --color-surface-appointment-soft: #edf5f3;
   --palette-baby-blue: #cde7f5;
   --palette-baby-pink: #f5d6e2;
   --palette-baby-green: #d8edcf;
@@ -14,6 +21,11 @@
   --color-brand-hover: #474961;
   --color-brand-active: #383a50;
   --color-on-brand: #ffffff;
+  --color-cancel: #285b57;
+  --color-cancel-hover: #204b48;
+  --color-cancel-active: #193c39;
+  --color-cancel-soft: #edf5f3;
+  --color-on-cancel: #ffffff;
   --color-brand-secondary: #46613a;
   --color-brand-secondary-hover: #354b2c;
   --color-brand-secondary-active: #293d22;

@@ -15,8 +15,8 @@ class CareGroupController extends Controller
 
     public function store(Request $request, CreateCareGroup $groups)
     {
-        $data = $request->validate(['name' => 'required|string|max:150']);
+        $data = $request->validate(['name' => 'required|string|max:150', 'timezone' => 'sometimes|required|timezone:all']);
 
-        return response()->json($groups->execute($request->user(), $data['name']), 201);
+        return response()->json($groups->execute($request->user(), $data['name'], $data['timezone'] ?? 'America/Sao_Paulo'), 201);
     }
 }

@@ -60,7 +60,7 @@ it("mantém execução aberta e exibe falha para nova tentativa", async () => {
     .querySelector("form")
     .dispatchEvent(new Event("submit", { bubbles: true, cancelable: true }));
   await flushPromises();
-  expect(store.execute).toHaveBeenCalledWith(2, 7, "");
+  expect(store.execute).toHaveBeenCalledWith(2, 7, "", expect.any(String));
   expect(wrapper.emitted("close")).toBeUndefined();
   expect(document.querySelector('[role="alert"]').textContent).toContain(
     "Não foi possível salvar",

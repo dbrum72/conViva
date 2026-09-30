@@ -11,6 +11,12 @@
 
         <testsuite name="Feature">
             <directory>tests/Feature</directory>
+            <exclude>tests/Feature/DecisionConcurrencyTest.php</exclude>
+        </testsuite>
+        <!-- Process-based tests clean up their schema; run after transactional suites. -->
+        <testsuite name="Concurrency">
+            <file>tests/Feature/DecisionConcurrencyTest.php</file>
+            <directory>tests/Concurrency</directory>
         </testsuite>
     </testsuites>
 

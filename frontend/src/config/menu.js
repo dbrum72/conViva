@@ -33,12 +33,6 @@ export default [
     permission: "organization-members.view",
   },
   {
-    id: "notifications",
-    label: "Notificações",
-    name: "notifications",
-    icon: "email",
-  },
-  {
     id: "settings",
     label: "Permissões",
     name: "settings",

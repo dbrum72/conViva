@@ -10,10 +10,10 @@ use Spatie\Permission\Models\Role;
 
 class CreateCareGroup
 {
-    public function execute(User $user, string $name): Organization
+    public function execute(User $user, string $name, string $timezone = 'America/Sao_Paulo'): Organization
     {
-        return DB::transaction(function () use ($user, $name) {
-            $group = Organization::create(['name' => $name, 'slug' => (Str::slug($name) ?: 'grupo').'-'.Str::lower(Str::random(8)), 'status' => 'active']);
+        return DB::transaction(function () use ($user, $name, $timezone) {
+            $group = Organization::create(['name' => $name, 'timezone' => $timezone, 'slug' => (Str::slug($name) ?: 'grupo').'-'.Str::lower(Str::random(8)), 'status' => 'active']);
             $group->users()->attach($user->id, ['status' => 'active', 'joined_at' => now()]);
             app(ProvisionOrganizationRoles::class)->execute($group);
             $previous = getPermissionsTeamId();

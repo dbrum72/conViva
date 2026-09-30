@@ -63,7 +63,10 @@ class ExpensePayments
         $canRead = $this->access->allowed($user, $recipient, 'documents') && $this->access->allowed($user, $recipient, 'finance');
         $canAttach = $this->access->allowed($user, $recipient, 'documents', true) && $this->access->allowed($user, $recipient, 'finance', true)
             && in_array($entry->status, ['pending', 'completed']) && ! $entry->proposals->contains('status', 'pending');
+        $canPay = $this->access->allowed($user, $recipient, 'finance', true)
+            && in_array($entry->status, ['pending', 'completed']) && ! $entry->proposals->contains('status', 'pending');
         foreach ($entry->shares as $share) {
+            $share->setAttribute('can_pay', $canPay && ! $share->paid_at && (int) $share->user_id === (int) $user->id);
             $share->setAttribute('receipt', $canRead ? $share->receipt()->first(['id', 'expense_share_id', 'filename', 'mime_type', 'size', 'created_at']) : null);
             $share->setAttribute('can_attach_receipt', $canAttach && (int) $share->user_id === (int) $user->id && ! $share->receipt()->exists());
         }

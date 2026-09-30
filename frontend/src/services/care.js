@@ -11,9 +11,10 @@ export const careApi = {
     ),
   withdrawProfile: (id, proposal) =>
     client.post(`/recipients/${id}/profile-proposals/${proposal}/withdraw`),
-  execute: (id, entry, description) =>
+  execute: (id, entry, description, occurredAt) =>
     client.post("/recipients/" + id + "/entries/" + entry + "/execution", {
       description,
+      ...(occurredAt ? { occurred_at: occurredAt } : {}),
     }),
   decide: (id, entry, proposal, data) =>
     client.post(
@@ -68,7 +69,13 @@ export const careApi = {
   grant: (id, data) => client.put("/recipients/" + id + "/accesses", data),
   revoke: (id, user) =>
     client.delete("/recipients/" + id + "/accesses/" + user),
-  agenda: () => client.get("/agenda"),
+  agenda: (params) => client.get("/agenda", { params }),
+  executeOccurrence: (id, data) =>
+    client.post(`/occurrences/${id}/execution`, data),
+  cancelOccurrence: (id, scope) =>
+    client.post(`/occurrences/${id}/cancellation`, { scope }),
+  unreadCount: () => client.get("/notifications/unread-count"),
+  finance: (params = {}) => client.get("/finance", { params }),
   notifications: () => client.get("/notifications"),
   read: (id) => client.post("/notifications/" + id + "/read"),
   paymentReceipt: (id, entry, share) =>

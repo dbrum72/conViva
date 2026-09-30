@@ -54,9 +54,9 @@ class CareEntryController extends Controller
 
     public function execute(Request $r, CareRecipient $recipient, int $entry)
     {
-        $data = $r->validate(['description' => 'nullable|string|max:10000']);
+        $data = $r->validate(['description' => 'nullable|string|max:10000', 'occurred_at' => 'sometimes|required|date|before_or_equal:now']);
 
-        return response()->json($this->records->execute($r->user(), $recipient, $entry, $data['description'] ?? null), 201);
+        return response()->json($this->records->execute($r->user(), $recipient, $entry, $data['description'] ?? null, $data['occurred_at'] ?? null), 201);
     }
 
     public function decide(CareDecisionRequest $r, CareRecipient $recipient, int $entry, int $proposal)

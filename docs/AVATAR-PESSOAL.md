@@ -13,3 +13,5 @@ Arquivos JPG, PNG e WebP até 2 MB e 4096 × 4096 pixels são validados no Larav
 Frontend segue componente → Pinia → Axios. A prévia local não substitui a foto persistida antes da confirmação do servidor. Troca de grupo/sessão limpa imagens e invalida respostas antigas; URLs de blob são revogadas.
 
 Validação: suíte backend de 48 testes/347 asserções aprovada antes da última ampliação; os quatro testes finais de avatar passaram com 62 asserções, cobrindo isolamento entre responsáveis e grupos, substituição/remoção, arquivo inválido, expiração, suspensão e falta de acesso. Frontend: 27 testes aprovados, incluindo respostas atrasadas e falha de upload. Build de produção aprovado. Testes PHP usam SQLite em memória e armazenamento simulado; não foi realizado envio pelo navegador nesta entrega.
+
+Ajuste de 28/09/2026: o cartão em Assistido do grupo reutiliza a foto pessoal da sidebar pela mesma store Pinia. Substituir ou remover a foto atualiza ambas as exibições; o cartão só mostra a imagem no grupo ativo autorizado. Sem foto, mantém o marcador de identificação. Não há nova requisição ou URL pública.

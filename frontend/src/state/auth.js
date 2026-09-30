@@ -331,8 +331,8 @@ export const useAuthStore = defineStore("auth", () => {
     }
   }
 
-  async function createGroup(name) {
-    const response = await createGroupRequest(name);
+  async function createGroup(name, timezone) {
+    const response = await createGroupRequest(name, timezone);
     await fetchMe();
     await selectOrganization(response.data);
     return response.data;

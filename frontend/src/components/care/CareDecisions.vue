@@ -16,7 +16,7 @@
         <h4>
           Versão {{ proposal.version }} ·
           {{
-            proposal.operation === "cancel"
+            ["cancel", "cancel_occurrence"].includes(proposal.operation)
               ? "Cancelamento"
               : "Registro / alteração"
           }}
@@ -24,10 +24,10 @@
         </h4>
         <RouterLink
           :to="{
-            name: 'decision',
-            params: { type: 'entry', proposal: proposal.id },
+            name: 'decisions',
+            query: { type: 'entry', proposal: proposal.id },
           }"
-          >Ver diferenças e detalhes na central</RouterLink
+          >Ver e responder na central de decisões</RouterLink
         >
         <ul v-if="proposal.blockers?.length" role="status">
           <li v-for="(blocker, index) in proposal.blockers" :key="index">
@@ -89,66 +89,16 @@
           </li>
         </ul>
         <p v-else>Registro próprio, sem obrigação para outro participante.</p>
-        <form
-          v-if="
-            canEdit &&
-            proposal.status === 'pending' &&
-            proposal.decisions.some(
-              (d) => d.user_id === userId && d.status === 'pending',
-            )
-          "
-          @submit.prevent="reject(proposal.id)"
-          class="care-form"
-        >
-          <AppButton
-            variant="action"
-            type="button"
-            :disabled="busy || !!proposal.blockers?.length"
-            @click="$emit('decide', proposal.id, { decision: 'accepted' })"
-            >Aceitar proposta</AppButton
-          >
-          <label class="care-field"
-            >Motivo da recusa<textarea
-              v-model="reasons[proposal.id]"
-              maxlength="2000"
-              required
-              rows="3"
-            />
-          </label>
-          <AppButton
-            variant="action"
-            type="submit"
-            :disabled="busy || !reasons[proposal.id]?.trim()"
-            >Recusar com justificativa</AppButton
-          >
-        </form>
-        <AppButton
-          variant="action"
-          v-if="
-            canEdit &&
-            entry.created_by === userId &&
-            proposal.status === 'pending'
-          "
-          :disabled="busy"
-          @click="$emit('withdraw', proposal.id)"
-          >Retirar proposta</AppButton
-        >
       </article>
     </details>
   </section>
 </template>
 <script setup>
-import { reactive } from "vue";
-import { AppButton } from "@/components/ui";
 import { dateTime, money } from "@/utils/care";
 const props = defineProps({
   entry: { type: Object, required: true },
   userId: { type: Number, required: true },
-  canEdit: Boolean,
-  busy: Boolean,
 });
-const emit = defineEmits(["decide", "withdraw"]);
-const reasons = reactive({});
 const labels = {
   pending: "Aguardando aceite",
   accepted: "Aceita",
@@ -169,10 +119,6 @@ function participantName(proposal, id) {
     props.entry.author?.name ||
     "Autor"
   );
-}
-function reject(id) {
-  if (reasons[id]?.trim())
-    emit("decide", id, { decision: "rejected", reason: reasons[id].trim() });
 }
 </script>
 <style scoped>

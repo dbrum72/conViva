@@ -21,7 +21,7 @@
       <template v-if="!['documents', 'access'].includes(tab)"
         ><div class="care-toolbar">
           <h2>{{ tabs.find((t) => t.key === tab)?.label }}</h2>
-          <AppButton variant="primary" v-if="canEdit" @click="openEntry()"
+          <AppButton variant="modal" v-if="canEdit" @click="openEntry()"
             >Adicionar registro</AppButton
           >
         </div>
@@ -41,9 +41,24 @@
                 e.status === 'pending' ? 'care-confirmed' : '',
                 e.status === 'cancelled' ? 'care-cancelled' : '',
               ]"
-              >{{ statusLabels[e.status] || e.status }}</span
+              >{{
+                e.related_entry_id && e.status === "completed"
+                  ? "Executado"
+                  : statusLabels[e.status] || e.status
+              }}</span
             >
           </div>
+          <p
+            v-if="e.status === 'completed' && !e.related_entry_id"
+            class="care-muted"
+          >
+            Cadastro encerrado em {{ dateTime(e.completed_at) }}. As execuções
+            são registradas separadamente; o encerramento não cancela a
+            programação.
+          </p>
+          <p v-if="e.related_entry_id" class="care-muted">
+            Registrado em {{ dateTime(e.created_at) }}.
+          </p>
           <p class="care-pre">{{ e.description }}</p>
           <dl v-if="e.details" class="care-details">
             <template v-for="(value, key) in e.details" :key="key"
@@ -51,76 +66,18 @@
               <dd>{{ value }}</dd></template
             >
           </dl>
-          <template v-if="e.kind === 'expense'"
-            ><strong>{{ money(e.amount_cents) }}</strong>
-            <div
-              v-for="share in e.shares"
-              :key="share.id"
-              class="care-list-row"
-            >
-              <span
-                >{{ share.user?.name }} · {{ money(share.amount_cents) }} ·
-                <span
-                  class="care-pill"
-                  :class="
-                    share.paid_at ? 'care-payment-paid' : 'care-payment-pending'
-                  "
-                  >{{ share.paid_at ? "Pago" : "Pendente" }}</span
-                ></span
-              ><AppButton
-                variant="action"
-                v-if="
-                  !share.paid_at &&
-                  canEdit &&
-                  share.user_id === auth.user.id &&
-                  ['pending', 'completed'].includes(e.status) &&
-                  !e.proposals?.some((p) => p.status === 'pending')
-                "
-                @click="openPayment(e, share)"
-                >Registrar pagamento</AppButton
-              >
-              <AppButton
-                v-if="share.paid_at && share.can_attach_receipt"
-                variant="outline"
-                @click="openPayment(e, share)"
-                >Anexar comprovante</AppButton
-              >
-              <AppButton
-                v-if="share.receipt"
-                variant="outline"
-                :disabled="!!store.pending"
-                @click="
-                  store.downloadPaymentReceipt(id, e.id, share).catch(() => {})
-                "
-                >Baixar comprovante · {{ share.receipt.filename }}</AppButton
-              >
-            </div></template
-          >
           <AppButton
-            variant="outline"
-            v-if="
-              canEdit &&
-              e.assigned_user_id === auth.user.id &&
-              e.status === 'pending' &&
-              !e.proposals?.some((p) => p.status === 'pending') &&
-              !store.entries.some((r) => r.related_entry_id === e.id)
-            "
+            variant="modal"
+            v-if="e.can_execute"
             @click="recordExecution(e)"
             >Registrar minha execução</AppButton
           >
-          <CareDecisions
-            :entry="e"
-            :user-id="auth.user.id"
-            :can-edit="canEdit"
-            :busy="!!store.pending"
-            @decide="
-              (proposal, data) =>
-                store.decide(id, e.id, proposal, data).catch(() => {})
-            "
-            @withdraw="
-              (proposal) => store.withdraw(id, e.id, proposal).catch(() => {})
-            "
-          />
+          <RouterLink
+            v-if="e.has_occurrences && e.publish_to_agenda"
+            :to="{ name: 'agenda' }"
+            >Consultar ocorrências e registrar execução na agenda</RouterLink
+          >
+          <CareDecisions :entry="e" :user-id="auth.user.id" />
           <div
             v-if="
               canEdit &&
@@ -135,8 +92,8 @@
               variant="action"
               v-if="e.status === 'pending' && e.kind !== 'expense'"
               @click="store.complete(id, e.id).catch(() => {})"
-              >Marcar como concluído</AppButton
-            ><AppButton variant="ghost" @click="openEntry(e)">Editar</AppButton
+              >Encerrar cadastro</AppButton
+            ><AppButton variant="modal" @click="openEntry(e)">Editar</AppButton
             ><AppButton variant="danger" @click="removeEntry(e)"
               >Solicitar cancelamento</AppButton
             >
@@ -228,11 +185,6 @@
       :available-kinds="availableKinds"
       @close="entryOpen = false"
     />
-    <CarePaymentDialog
-      :payment="payment"
-      :recipient-id="id"
-      @close="payment = null"
-    />
     <CareExecutionDialog
       :entry="executionEntry"
       :recipient-id="id"
@@ -256,13 +208,12 @@ import CareAccessForm from "@/components/care/CareAccessForm.vue";
 import CareDecisions from "@/components/care/CareDecisions.vue";
 import CareShell from "@/components/care/CareShell.vue";
 import CareEntryDialog from "@/components/care/CareEntryDialog.vue";
-import CarePaymentDialog from "@/components/care/CarePaymentDialog.vue";
 import CareExecutionDialog from "@/components/care/CareExecutionDialog.vue";
 import { AppCard, AppButton, AppConfirmDialog } from "@/components/ui";
 import { useCareStore } from "@/state/care";
 import { useAuthStore } from "@/state/auth";
 import { useOrganizationMembersStore } from "@/state/organization-members";
-import { entryKinds, areas, areaFor, dateTime, money } from "@/utils/care";
+import { entryKinds, areas, areaFor, dateTime } from "@/utils/care";
 const route = useRoute(),
   store = useCareStore(),
   auth = useAuthStore(),
@@ -271,13 +222,14 @@ const route = useRoute(),
   entryOpen = ref(false),
   selectedEntry = ref(null),
   executionEntry = ref(null),
-  payment = ref(null),
   confirmation = ref(null);
 const id = computed(() => route.params.id),
   members = computed(() => team.activeMembers);
 const tabs = computed(() => [
   ...Object.entries(areas)
-    .filter(([key]) => store.recipient?.capabilities[key]?.view)
+    .filter(
+      ([key]) => key !== "finance" && store.recipient?.capabilities[key]?.view,
+    )
     .map(([key, label]) => ({ key, label })),
   ...(store.recipient?.can_manage_access
     ? [{ key: "access", label: "Permissões" }]
@@ -292,7 +244,7 @@ const filteredEntries = computed(() =>
 );
 const statusLabels = {
   pending: "Confirmado",
-  completed: "Concluído",
+  completed: "Cadastro encerrado",
   awaiting_approval: "Aguardando aceite",
   rejected: "Proposta recusada",
   withdrawn: "Proposta retirada",
@@ -315,10 +267,6 @@ async function grant(data) {
   try {
     await store.grant(id.value, data);
   } catch {}
-}
-function openPayment(entry, share) {
-  store.error = "";
-  payment.value = { entry, share };
 }
 function recordExecution(entry) {
   store.error = "";
@@ -363,7 +311,6 @@ watch(
   id,
   async (value) => {
     entryOpen.value = false;
-    payment.value = null;
     executionEntry.value = confirmation.value = null;
     tab.value = "routine";
     await store.loadRecipient(value).catch(() => {});

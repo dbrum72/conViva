@@ -9,11 +9,11 @@ class CareEntry extends Model
 {
     use BelongsToOrganization;
 
-    protected $fillable = ['organization_id', 'care_recipient_id', 'created_by', 'assigned_user_id', 'kind', 'title', 'description', 'status', 'due_at', 'ends_at', 'completed_at', 'amount_cents', 'details', 'revision', 'affected_user_ids', 'related_entry_id'];
+    protected $fillable = ['organization_id', 'care_recipient_id', 'created_by', 'assigned_user_id', 'kind', 'title', 'description', 'status', 'due_at', 'ends_at', 'completed_at', 'amount_cents', 'details', 'revision', 'affected_user_ids', 'related_entry_id', 'schedule', 'publish_to_agenda'];
 
     protected function casts(): array
     {
-        return ['affected_user_ids' => 'array', 'revision' => 'integer', 'details' => 'array', 'due_at' => 'datetime', 'ends_at' => 'datetime', 'completed_at' => 'datetime', 'amount_cents' => 'integer'];
+        return ['publish_to_agenda' => 'boolean', 'schedule' => 'array', 'affected_user_ids' => 'array', 'revision' => 'integer', 'details' => 'array', 'due_at' => 'datetime', 'ends_at' => 'datetime', 'completed_at' => 'datetime', 'amount_cents' => 'integer'];
     }
 
     public function proposals()

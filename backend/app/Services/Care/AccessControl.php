@@ -51,9 +51,23 @@ class AccessControl
         return $this->administrator($user) && $this->allowed($user, $recipient);
     }
 
+    public function canManageProfile(User $user, CareRecipient $recipient): bool
+    {
+        return $recipient->status === 'active'
+            && $this->responsible($user, $recipient)
+            && $this->allowed($user, $recipient, 'routine', true);
+    }
+
     public function responsibleIds(CareRecipient $recipient): array
     {
         return $recipient->organization->users()->wherePivot('status', 'active')->get()->filter(fn ($u) => $this->responsible($u, $recipient))->pluck('id')->map(fn ($id) => (int) $id)->all();
+    }
+
+    public function canExecuteCare(User $user, CareRecipient $recipient, string $kind, ?int $assignedUserId): bool
+    {
+        return $recipient->status === 'active'
+            && $this->allowed($user, $recipient, $this->area($kind), true)
+            && ($assignedUserId ? $assignedUserId === (int) $user->id : $this->responsible($user, $recipient));
     }
 
     public function owner(User $user, CareEntry $entry): void

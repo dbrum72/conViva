@@ -17,6 +17,7 @@ export const appButtonProps = {
         "ghost",
         "navigation",
         "danger",
+        "cancel",
         "action",
         "route",
         "modal",

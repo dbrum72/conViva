@@ -30,7 +30,7 @@
         <footer class="app-confirm-dialog__actions">
           <AppButton
             type="button"
-            variant="ghost"
+            variant="cancel"
             :disabled="loading"
             @click="handleCancel"
           >

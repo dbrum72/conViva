@@ -4,6 +4,7 @@ import { mount, flushPromises } from "@vue/test-utils";
 import { createRouter, createMemoryHistory } from "vue-router";
 import { useCareStore } from "@/state/care";
 import { careApi } from "@/services/care";
+import DecisionsPage from "@/views/care/DecisionsPage.vue";
 import DecisionPage from "@/views/care/DecisionPage.vue";
 vi.mock("@/services/care", () => ({
   careApi: {
@@ -117,17 +118,24 @@ it("exibe comparação, bloqueio e recusa motivada sem oferecer aceite bloqueado
     has_current_version: true,
   };
   careApi.decision.mockResolvedValue({ data: proposal });
+  careApi.decisions.mockResolvedValue({
+    data: { data: [proposal], current_page: 1, last_page: 1 },
+  });
   careApi.decideProfile.mockResolvedValue({});
   const router = createRouter({
     history: createMemoryHistory(),
     routes: [
       { path: "/decisions", name: "decisions", component: {} },
-      { path: "/decisions/:type/:proposal", component: DecisionPage },
+      {
+        path: "/decisions/:type/:proposal",
+        name: "decision",
+        component: DecisionPage,
+      },
     ],
   });
   await router.push("/decisions/profile/1");
   await router.isReady();
-  const wrapper = mount(DecisionPage, {
+  const wrapper = mount(DecisionsPage, {
     global: {
       plugins: [router],
       stubs: { CareShell: { template: "<div><slot /></div>" } },
@@ -138,6 +146,10 @@ it("exibe comparação, bloqueio e recusa motivada sem oferecer aceite bloqueado
   expect(wrapper.text()).toContain("Nome proposto");
   expect(wrapper.text()).toContain("A rede de responsáveis mudou.");
   expect(wrapper.text()).not.toContain("Aceitar proposta");
+  await wrapper
+    .findAll("button")
+    .find((b) => b.text() === "Recusar proposta")
+    .trigger("click");
   expect(wrapper.find('button[type="submit"]').element.disabled).toBe(true);
   await wrapper.find("textarea").setValue("Manter cadastro atual");
   await wrapper.find("form").trigger("submit");
@@ -145,4 +157,202 @@ it("exibe comparação, bloqueio e recusa motivada sem oferecer aceite bloqueado
     decision: "rejected",
     reason: "Manter cadastro atual",
   });
+});
+
+async function central(proposal, url = "/decisions") {
+  careApi.decisions.mockResolvedValue({
+    data: { data: [proposal], current_page: 1, last_page: 1 },
+  });
+  careApi.decision.mockResolvedValue({ data: proposal });
+  const router = createRouter({
+    history: createMemoryHistory(),
+    routes: [
+      { path: "/decisions", name: "decisions", component: DecisionsPage },
+      {
+        path: "/decisions/:type/:proposal",
+        name: "decision",
+        component: DecisionPage,
+      },
+    ],
+  });
+  await router.push(url);
+  await router.isReady();
+  const wrapper = mount(DecisionsPage, {
+    global: {
+      plugins: [router],
+      stubs: { CareShell: { template: "<div><slot /></div>" } },
+    },
+  });
+  await flushPromises();
+  return wrapper;
+}
+const actionable = {
+  id: 8,
+  type: "profile",
+  care_recipient_id: 2,
+  title: "Ficha",
+  status: "pending",
+  version: 1,
+  blockers: [],
+  changes: [],
+  decisions: [],
+  can_accept: true,
+  can_reject: true,
+};
+it("aceita na listagem e atualiza as pendências sem navegar", async () => {
+  careApi.decideProfile.mockResolvedValue({});
+  const wrapper = await central(actionable);
+  careApi.decisions.mockResolvedValue({
+    data: { data: [], current_page: 1, last_page: 1 },
+  });
+  await wrapper
+    .findAll("button")
+    .find((b) => b.text() === "Aceitar proposta")
+    .trigger("click");
+  await flushPromises();
+  expect(careApi.decideProfile).toHaveBeenCalledWith(2, 8, {
+    decision: "accepted",
+  });
+  expect(wrapper.text()).toContain("Seu aceite foi registrado");
+  expect(wrapper.text()).toContain("Nenhuma proposta");
+});
+it("exige motivo não vazio e preserva a justificativa quando a API falha", async () => {
+  careApi.decideProfile.mockRejectedValue({
+    response: { data: { message: "Tente novamente" } },
+  });
+  const wrapper = await central(actionable);
+  await wrapper
+    .findAll("button")
+    .find((b) => b.text() === "Recusar proposta")
+    .trigger("click");
+  await wrapper.find("textarea").setValue("   ");
+  await wrapper.find("form").trigger("submit");
+  expect(careApi.decideProfile).not.toHaveBeenCalled();
+  await wrapper.find("textarea").setValue("  Manter a ficha  ");
+  await wrapper.find("form").trigger("submit");
+  await flushPromises();
+  expect(careApi.decideProfile).toHaveBeenCalledWith(2, 8, {
+    decision: "rejected",
+    reason: "Manter a ficha",
+  });
+  expect(wrapper.find("textarea").element.value).toBe("  Manter a ficha  ");
+  expect(useCareStore().error).toBe("Tente novamente");
+});
+it("responde a cuidados pela mesma central e não oferece ações sem capacidade", async () => {
+  careApi.decide.mockResolvedValue({});
+  const wrapper = await central({ ...actionable, type: "entry", entry_id: 4 });
+  await wrapper
+    .findAll("button")
+    .find((b) => b.text() === "Aceitar proposta")
+    .trigger("click");
+  await flushPromises();
+  expect(careApi.decide).toHaveBeenCalledWith(2, 4, 8, {
+    decision: "accepted",
+  });
+  wrapper.unmount();
+  const readOnly = await central({
+    ...actionable,
+    can_accept: false,
+    can_reject: false,
+  });
+  expect(readOnly.text()).not.toContain("Aceitar proposta");
+  expect(readOnly.text()).not.toContain("Recusar proposta");
+});
+
+it("abre a proposta indicada pelo link na central e evita cartão duplicado", async () => {
+  const wrapper = await central(
+    actionable,
+    "/decisions?type=profile&proposal=8",
+  );
+  expect(careApi.decision).toHaveBeenCalledWith("profile", "8");
+  expect(wrapper.text()).toContain("Proposta selecionada pelo link");
+  expect(
+    wrapper.findAll("button").filter((b) => b.text() === "Aceitar proposta"),
+  ).toHaveLength(1);
+});
+
+it.each(["accepted", "pending"])(
+  "remove a proposta vinculada das minhas pendências após meu aceite (situação global: %s)",
+  async (status) => {
+    careApi.decideProfile.mockResolvedValue({});
+    const wrapper = await central(
+      actionable,
+      "/decisions?type=profile&proposal=8",
+    );
+    expect(wrapper.find("select").element.value).toBe("all");
+    await wrapper.find("select").setValue("mine");
+    await flushPromises();
+    careApi.decisions.mockResolvedValue({
+      data: { data: [], current_page: 1, last_page: 1 },
+    });
+    careApi.decision.mockResolvedValue({
+      data: { ...actionable, status, can_accept: false, can_reject: false },
+    });
+    await wrapper
+      .findAll("button")
+      .find((b) => b.text() === "Aceitar proposta")
+      .trigger("click");
+    await flushPromises();
+    expect(wrapper.text()).toContain("Seu aceite foi registrado");
+    expect(wrapper.text()).toContain("Nenhuma proposta para estes filtros");
+    expect(
+      wrapper.findAll("h2").some((heading) => heading.text() === "Ficha"),
+    ).toBe(false);
+    expect(careApi.decisions).toHaveBeenLastCalledWith(
+      expect.objectContaining({ scope: "mine" }),
+    );
+    wrapper.unmount();
+  },
+);
+
+it.each([
+  [0, "sent"],
+  [1, "rejected"],
+  [2, "entry"],
+])(
+  "não injeta a proposta do link ao mudar o filtro %s",
+  async (index, value) => {
+    const wrapper = await central(
+      actionable,
+      "/decisions?type=profile&proposal=8",
+    );
+    careApi.decisions.mockResolvedValue({
+      data: { data: [], current_page: 1, last_page: 1 },
+    });
+    await wrapper.findAll("select")[index].setValue(value);
+    await flushPromises();
+    expect(wrapper.text()).toContain("Nenhuma proposta para estes filtros");
+    expect(wrapper.text()).not.toContain("Proposta selecionada pelo link");
+    wrapper.unmount();
+  },
+);
+
+it("distingue o aceite automático do autor da proposta ainda pendente de outro participante", async () => {
+  const wrapper = await central(
+    {
+      ...actionable,
+      author: { id: 1, name: "Cricilene" },
+      author_acceptance: { status: "accepted" },
+      can_accept: false,
+      can_reject: false,
+      decisions: [
+        { id: 1, user_id: 2, user: { name: "Dario" }, status: "pending" },
+      ],
+    },
+    "/decisions?type=profile&proposal=8",
+  );
+  const author = wrapper
+    .findAll("li")
+    .find((item) => item.text().includes("Cricilene (autor)"));
+  expect(author.find(".decision-status-badge--accepted").text()).toBe("Aceita");
+  expect(author.text()).toContain("Aceite automático ao enviar a proposta");
+  const peer = wrapper
+    .findAll("li")
+    .find((item) => item.text().includes("Dario"));
+  expect(peer.find(".decision-status-badge--pending").text()).toBe(
+    "Aguardando aceite",
+  );
+  expect(wrapper.text()).toContain("Situação da proposta:");
+  expect(wrapper.text()).not.toContain("Aceitar proposta");
+  wrapper.unmount();
 });

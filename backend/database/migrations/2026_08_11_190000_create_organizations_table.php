@@ -12,6 +12,7 @@ return new class extends Migration
             $table->id();
 
             $table->string('name', 150);
+            $table->string('timezone')->default('America/Sao_Paulo');
 
             $table
                 ->string('slug', 100)

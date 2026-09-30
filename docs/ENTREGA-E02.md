@@ -1,5 +1,7 @@
 # E02 — Central de decisões e revisão cadastral
 
+Nota posterior (28/09/2026): a restrição ao responsável autor descrita nesta entrega foi substituída. Qualquer responsável com acesso vigente pode propor revisão; permanecem aplicação imediata quando único e unanimidade quando compartilhado. Regra atual em `CONTEXT.MD` e evidências em `ENTREGA-E03.md`.
+
 Implementação de 27/09/2026. Contratos anteriores preservados em `BASELINE-E00.md` e `ENTREGA-E01.md`; regras vigentes em `CONTEXT.MD`.
 
 ## Entrega

@@ -31,35 +31,12 @@ function render(userId = 2, canEdit = true) {
   return mount(CareDecisions, { props: { entry, userId, canEdit } });
 }
 describe("decisões compartilhadas", () => {
-  it("exibe a proposta antes do aceite e emite apenas a decisão do participante", async () => {
+  it("exibe o histórico e encaminha todas as respostas à central", () => {
     const wrapper = render();
     expect(wrapper.text()).toContain("Consulta");
     expect(wrapper.text()).toContain("ainda não está confirmado");
-    await wrapper
-      .findAll("button")
-      .find((b) => b.text() === "Aceitar proposta")
-      .trigger("click");
-    expect(wrapper.emitted("decide")[0]).toEqual([8, { decision: "accepted" }]);
-  });
-  it("exige justificativa não vazia para recusar", async () => {
-    const wrapper = render();
-    await wrapper.find("form").trigger("submit");
-    expect(wrapper.emitted("decide")).toBeUndefined();
-    await wrapper.find("textarea").setValue("Não tenho disponibilidade.");
-    await wrapper.find("form").trigger("submit");
-    expect(wrapper.emitted("decide")[0]).toEqual([
-      8,
-      { decision: "rejected", reason: "Não tenho disponibilidade." },
-    ]);
-  });
-  it("não oferece decisão ao autor, a terceiros ou a observadores", () => {
-    for (const [user, edit] of [
-      [1, true],
-      [3, true],
-      [2, false],
-    ]) {
-      const wrapper = render(user, edit);
-      expect(wrapper.find("form").exists()).toBe(false);
-    }
+    expect(wrapper.text()).toContain("Ver e responder na central de decisões");
+    expect(wrapper.find("form").exists()).toBe(false);
+    expect(wrapper.find("button").exists()).toBe(false);
   });
 });

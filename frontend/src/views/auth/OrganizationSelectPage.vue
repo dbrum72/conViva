@@ -100,6 +100,11 @@
               required
               maxlength="150"
               placeholder="Ex.: Família Oliveira" /></label
+          ><label class="care-field"
+            >Fuso da agenda do grupo<input
+              v-model="newGroupTimezone"
+              required
+              placeholder="America/Sao_Paulo" /></label
           ><AppButton variant="action" type="submit" :loading="loading"
             >Criar grupo de cuidados</AppButton
           >
@@ -138,11 +143,12 @@ const router = useRouter();
 const authStore = useAuthStore();
 
 const newGroupName = ref("");
+const newGroupTimezone = ref("America/Sao_Paulo");
 async function createGroup() {
   loading.value = true;
   errorMessage.value = "";
   try {
-    await authStore.createGroup(newGroupName.value);
+    await authStore.createGroup(newGroupName.value, newGroupTimezone.value);
     await router.replace({ name: "recipients" });
   } catch (e) {
     errorMessage.value =
