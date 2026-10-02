@@ -216,7 +216,7 @@ function initialize(e) {
         publish_to_agenda: !!e.publish_to_agenda,
         schedule: e.schedule ? JSON.parse(JSON.stringify(e.schedule)) : null,
         details: { ...e.details },
-        affected_user_ids: [...(e.affected_user_ids || [])],
+        affected_user_ids: [...(e.responsibility_user_ids || [])],
         due_at: localDate(e.due_at),
         ends_at: localDate(e.ends_at),
         amount: (e.amount_cents || 0) / 100,

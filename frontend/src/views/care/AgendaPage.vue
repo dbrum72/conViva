@@ -5,6 +5,19 @@
     subtitle="Acompanhe os cuidados do grupo em uma visão de calendário."
     @retry="load()"
   >
+    <template #actions>
+      <AppButton
+        v-if="store.agendaPage?.availability_recipient"
+        variant="modal"
+        :disabled="!!store.pending"
+        @click="openAvailability"
+        >{{
+          store.agendaPage.availability_recipient.can_manage
+            ? "Minha disponibilidade"
+            : "Disponibilidade do grupo"
+        }}</AppButton
+      >
+    </template>
     <section class="agenda-toolbar" aria-label="Controles da agenda">
       <div class="agenda-period">
         <div class="agenda-navigation">
@@ -98,6 +111,9 @@
           @select="selectedDate = $event"
         />
         <footer class="agenda-legend" aria-label="Tipos de cuidados">
+          <span class="agenda-kind-unavailability"
+            ><i aria-hidden="true" />Indisponibilidade</span
+          >
           <span
             v-for="(label, key) in entryKinds"
             :key="key"
@@ -116,8 +132,8 @@
           <p>
             {{
               store.pending
-                ? "Carregando cuidados…"
-                : `${selectedItems.length} ${selectedItems.length === 1 ? "cuidado" : "cuidados"}`
+                ? "Carregando registros…"
+                : `${selectedItems.length} ${selectedItems.length === 1 ? "registro" : "registros"}`
             }}
           </p>
         </header>
@@ -126,9 +142,9 @@
           class="agenda-empty"
         >
           <span class="agenda-empty-mark" aria-hidden="true">○</span
-          ><strong>Nenhum cuidado neste dia</strong>
+          ><strong>Nenhum registro neste dia</strong>
           <p>
-            Os cuidados deste dia aparecerão aqui conforme os filtros
+            Os registros deste dia aparecerão aqui conforme os filtros
             selecionados.
           </p>
         </div>
@@ -167,7 +183,7 @@
               @click="showDay(date)"
             >
               {{ Number(date.slice(-2)) }}</button
-            ><small>{{ groups[date]?.length || 0 }} cuidados</small>
+            ><small>{{ groups[date]?.length || 0 }} registros</small>
           </header>
           <button
             v-for="item in groups[date]"
@@ -181,11 +197,21 @@
             @click="showDay(date)"
           >
             <span class="agenda-kind-label"
-              ><i aria-hidden="true" />{{ entryKinds[item.kind] }}</span
-            ><time>{{ timeLabel(item.due_at, zone) }}</time
+              ><i aria-hidden="true" />{{
+                item.kind === "unavailability"
+                  ? "Indisponibilidade"
+                  : entryKinds[item.kind]
+              }}</span
+            ><time>{{
+              item.kind === "unavailability"
+                ? "Dia inteiro"
+                : timeLabel(item.due_at, zone)
+            }}</time
             ><strong>{{ item.title }}</strong
             ><small>{{
-              executor(item.assigned_user_id) || "Sem executor designado"
+              item.participant_name ||
+              executor(item.assigned_user_id) ||
+              "Sem executor designado"
             }}</small
             ><span v-if="item.conflict" class="agenda-week-warning"
               >Sobreposição de horários</span
@@ -195,7 +221,7 @@
             v-if="!groups[date]?.length && !store.pending && !store.error"
             class="agenda-week-empty"
           >
-            Nenhum cuidado
+            Nenhum registro
           </p>
         </section>
       </div>
@@ -221,7 +247,7 @@
         v-if="!visibleGroups.length && !store.pending && !store.error"
         class="agenda-empty"
       >
-        <strong>Nenhum cuidado neste período</strong>
+        <strong>Nenhum registro neste período</strong>
         <p>Experimente outro período ou ajuste os filtros.</p>
       </div>
       <section
@@ -232,7 +258,7 @@
         <header>
           <span>{{ dateLabel(group.date, { weekday: "long" }) }}</span>
           <h2>{{ dateLabel(group.date) }}</h2>
-          <small>{{ group.items.length }} cuidados</small>
+          <small>{{ group.items.length }} registros</small>
         </header>
         <div class="agenda-list-items">
           <AgendaOccurrence
@@ -272,6 +298,16 @@
         >
       </nav>
     </section>
+    <CareUnavailabilityDialog
+      :open="!!availabilityTarget"
+      :recipient-id="availabilityTarget?.id"
+      :recipient-name="availabilityTarget?.name"
+      :can-manage="!!availabilityTarget?.can_manage"
+      :group-name="auth.organization?.name || 'Grupo selecionado'"
+      :timezone="zone"
+      @close="availabilityTarget = null"
+      @changed="load(store.agendaPage?.current_page || 1)"
+    />
     <AppDialog
       :open="!!selected"
       :title="
@@ -327,6 +363,7 @@
 <script setup>
 import { computed, ref, watch } from "vue";
 import { useRouter } from "vue-router";
+import CareUnavailabilityDialog from "@/components/care/CareUnavailabilityDialog.vue";
 import CareShell from "@/components/care/CareShell.vue";
 import AgendaMonth from "@/components/care/agenda/AgendaMonth.vue";
 import AgendaOccurrence from "@/components/care/agenda/AgendaOccurrence.vue";
@@ -389,7 +426,13 @@ const bounds = computed(() =>
     : { from: dates.value[0], to: dates.value.at(-1) },
 );
 const groups = computed(() =>
-  occurrenceDays(store.agenda, dates.value, zone.value),
+  occurrenceDays(
+    [...store.agenda, ...(store.agendaPage?.unavailabilities || [])].sort(
+      (a, b) => new Date(a.due_at) - new Date(b.due_at),
+    ),
+    dates.value,
+    zone.value,
+  ),
 );
 const selectedItems = computed(() => groups.value[selectedDate.value] || []);
 const visibleGroups = computed(() =>
@@ -409,6 +452,7 @@ const periodLabel = computed(() => {
     });
   return `${dateLabel(bounds.value.from, { day: "numeric", month: "short" })} — ${dateLabel(bounds.value.to, { day: "numeric", month: "short", year: "numeric" })}`;
 });
+const availabilityTarget = ref(null);
 const selected = ref(null),
   action = ref(""),
   scope = ref("one"),
@@ -495,6 +539,12 @@ function format(value) {
     timeStyle: "short",
   });
 }
+function openAvailability() {
+  const recipient = store.agendaPage?.availability_recipient;
+  if (store.pending || !recipient) return;
+  selected.value = null;
+  availabilityTarget.value = { ...recipient };
+}
 function open(item, type) {
   selected.value = item;
   action.value = type;
@@ -536,6 +586,7 @@ watch(
   () => auth.currentTenant,
   () => {
     selected.value = null;
+    availabilityTarget.value = null;
     notice.value = "";
     anchor.value = today.value;
     selectedDate.value = today.value;

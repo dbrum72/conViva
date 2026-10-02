@@ -59,7 +59,7 @@ export function occurrenceDays(items, dates, zone) {
     const end = dateKey(
       Math.max(
         new Date(item.due_at).getTime(),
-        new Date(item.ends_at).getTime() - 1,
+        new Date(item.interval_ends_at || item.ends_at).getTime() - 1,
       ),
       zone,
     );

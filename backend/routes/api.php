@@ -7,6 +7,7 @@ use App\Http\Controllers\CareGroupController;
 use App\Http\Controllers\CareOccurrenceController;
 use App\Http\Controllers\CareOverviewController;
 use App\Http\Controllers\CareRecipientController;
+use App\Http\Controllers\CareUnavailabilityController;
 use App\Http\Controllers\DecisionCenterController;
 use App\Http\Controllers\OrganizationInvitationController;
 use App\Http\Controllers\OrganizationMemberController;
@@ -31,6 +32,10 @@ Route::middleware(['auth:api', VerifyPasswordToken::class])->group(function () {
     Route::post('auth/refresh', [AuthController::class, 'refresh']);
 });
 Route::middleware(['auth:api', VerifyPasswordToken::class, 'tenant'])->group(function () {
+    Route::get('recipients/{recipient}/unavailabilities', [CareUnavailabilityController::class, 'sharedIndex']);
+    Route::get('recipients/{recipient}/my-unavailabilities', [CareUnavailabilityController::class, 'index']);
+    Route::post('recipients/{recipient}/my-unavailabilities', [CareUnavailabilityController::class, 'store']);
+    Route::post('recipients/{recipient}/my-unavailabilities/{period}/cancel', [CareUnavailabilityController::class, 'cancel']);
     Route::get('auth/context', [AuthController::class, 'context']);
     Route::get('my-recipient-avatar', [RecipientAvatarController::class, 'show']);
     Route::post('my-recipient-avatar', [RecipientAvatarController::class, 'store']);

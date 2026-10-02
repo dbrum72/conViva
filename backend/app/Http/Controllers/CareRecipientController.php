@@ -7,6 +7,7 @@ use App\Models\CareProfileProposal;
 use App\Models\CareRecipient;
 use App\Models\Organization;
 use App\Services\Care\AccessControl;
+use App\Services\Care\CareAvailability;
 use App\Services\Care\ProposalGuard;
 use App\Services\Care\RecipientProfile;
 use App\Support\Tenancy\CurrentOrganization;
@@ -41,7 +42,7 @@ class CareRecipientController extends Controller
     {
         $this->access->authorize($r->user(), $recipient);
 
-        return [...app(RecipientProfile::class)->present($r->user(), $recipient), 'capabilities' => $this->access->capabilities($r->user(), $recipient), 'can_manage_access' => $this->access->responsible($r->user(), $recipient), 'can_manage_profile' => $this->access->canManageProfile($r->user(), $recipient)];
+        return [...app(RecipientProfile::class)->present($r->user(), $recipient), 'capabilities' => $this->access->capabilities($r->user(), $recipient), 'can_manage_unavailability' => app(CareAvailability::class)->canManage($r->user(), $recipient), 'can_manage_access' => $this->access->responsible($r->user(), $recipient), 'can_manage_profile' => $this->access->canManageProfile($r->user(), $recipient)];
     }
 
     public function update(CareRecipientRequest $r, CareRecipient $recipient)

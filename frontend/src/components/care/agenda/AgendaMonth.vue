@@ -15,7 +15,7 @@
           'is-selected': date === selectedDate,
         }"
         :data-date="date"
-        :aria-label="`${dateLabel(date, { dateStyle: 'full' })}, ${items[date]?.length || 0} cuidados`"
+        :aria-label="`${dateLabel(date, { dateStyle: 'full' })}, ${items[date]?.length || 0} registros`"
         :aria-pressed="date === selectedDate"
         :aria-current="date === today ? 'date' : undefined"
         :tabindex="date === focusDate ? 0 : -1"
@@ -38,11 +38,13 @@
               { 'agenda-is-overdue': item.is_overdue },
             ]"
             ><i aria-hidden="true" /><span class="agenda-preview-time">{{
-              timeLabel(item.due_at, timezone)
+              item.kind === "unavailability"
+                ? "Dia inteiro"
+                : timeLabel(item.due_at, timezone)
             }}</span
             ><span class="agenda-preview-title">{{ item.title }}</span></span
           ><span v-if="items[date]?.length > 3" class="agenda-more"
-            >+{{ items[date].length - 3 }} cuidados</span
+            >+{{ items[date].length - 3 }} registros</span
           ></span
         >
       </button>

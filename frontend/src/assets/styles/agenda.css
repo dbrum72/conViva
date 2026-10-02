@@ -733,3 +733,21 @@
     font-size: 0.68rem;
   }
 }
+
+/* Unavailability uses the muted surface of disabled controls, while staying readable. */
+.agenda-kind-unavailability {
+  --agenda-kind: var(--color-text-muted);
+  --agenda-kind-fill: var(--color-border-strong);
+  --agenda-kind-soft: var(--color-surface-muted);
+}
+.agenda-occurrence.agenda-kind-unavailability,
+.agenda-week-item.agenda-kind-unavailability,
+.agenda-preview.agenda-kind-unavailability {
+  background: var(--color-surface-muted);
+  color: var(--color-text-muted);
+  border-color: var(--color-border);
+}
+.agenda-kind-unavailability .agenda-kind-label {
+  color: var(--color-text-muted);
+  background: var(--color-surface);
+}

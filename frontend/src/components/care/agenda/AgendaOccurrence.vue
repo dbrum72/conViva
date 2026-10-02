@@ -8,14 +8,22 @@
   >
     <div class="agenda-occurrence-meta">
       <span class="agenda-kind-label"
-        ><i aria-hidden="true" />{{ entryKinds[item.kind] }}</span
-      ><span class="agenda-status">{{
+        ><i aria-hidden="true" />{{
+          item.kind === "unavailability"
+            ? "Indisponibilidade"
+            : entryKinds[item.kind]
+        }}</span
+      ><span v-if="item.kind !== 'unavailability'" class="agenda-status">{{
         item.is_overdue
           ? "Vencido · sem execução registrada"
           : agendaStates[item.status]
       }}</span>
     </div>
-    <p class="agenda-occurrence-time">
+    <p v-if="item.kind === 'unavailability'" class="agenda-occurrence-time">
+      {{ dateLabel(item.starts_at, { dateStyle: "short" }) }} —
+      {{ dateLabel(item.ends_at, { dateStyle: "short" }) }} · Dias completos
+    </p>
+    <p v-else class="agenda-occurrence-time">
       {{ timeLabel(item.due_at, timezone) }} —
       {{ timeLabel(item.ends_at, timezone)
       }}<span
@@ -28,13 +36,36 @@
     </p>
     <h3>{{ item.title }}</h3>
     <p class="agenda-occurrence-executor">
-      {{ executor || "Sem executor designado" }}
+      {{ item.participant_name || executor || "Sem executor designado" }}
+    </p>
+    <p v-if="item.kind === 'unavailability'" class="agenda-occurrence-note">
+      Assistido: {{ item.recipient.name }}
+    </p>
+    <p
+      v-if="item.kind === 'unavailability' && item.reason"
+      class="agenda-occurrence-note care-pre"
+    >
+      Motivo: {{ item.reason }}
     </p>
     <p v-if="item.timezone !== timezone" class="agenda-occurrence-note">
       Fuso da série: {{ item.timezone }}
     </p>
     <p v-if="item.conflict" class="agenda-occurrence-warning">
       Sobreposição com outro cuidado visível. Confira os horários.
+    </p>
+    <p
+      v-if="item.availability_conflict && !item.execution_block"
+      class="agenda-occurrence-warning"
+      role="status"
+    >
+      {{ item.availability_conflict }}
+    </p>
+    <p
+      v-if="item.execution_block"
+      class="agenda-occurrence-warning"
+      role="status"
+    >
+      {{ item.execution_block }}
     </p>
     <p v-if="item.pending_change" class="agenda-occurrence-note">
       Alteração aguardando decisão; programação vigente preservada.
@@ -48,7 +79,10 @@
       {{ stamp(item.execution.occurred_at) }}. Registrado em
       {{ stamp(item.execution.recorded_at) }}.
     </p>
-    <div class="agenda-occurrence-actions">
+    <div
+      v-if="item.kind !== 'unavailability'"
+      class="agenda-occurrence-actions"
+    >
       <RouterLink
         :to="
           item.kind === 'expense'

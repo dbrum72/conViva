@@ -50,7 +50,9 @@ class CareRecords
                 }
             }
             unset($data['revision']);
-            $affected = array_map('intval', $data['affected_user_ids'] ?? []);
+            $responsibilities = array_map('intval', $data['affected_user_ids'] ?? []);
+            $assignmentData = [...($entry?->only(['kind', 'assigned_user_id', 'due_at', 'ends_at', 'schedule']) ?? []), ...$data];
+            $affected = $responsibilities;
             unset($data['affected_user_ids']);
             $shares = $data['shares'] ?? [];
             unset($data['shares']);
@@ -77,10 +79,11 @@ class CareRecords
             foreach ($affected as $id) {
                 $this->participant($recipient, $id, $area);
             }
+            app(CareAvailability::class)->ensureAssignment($recipient, $assignmentData, $responsibilities);
             if (! $entry) {
                 $entry = $recipient->entries()->create([...$data, 'created_by' => $user->id, 'status' => 'awaiting_approval']);
             }
-            $payload = ['data' => $data, 'shares' => $shares, 'affected_user_ids' => $affected];
+            $payload = ['data' => $data, 'shares' => $shares, 'affected_user_ids' => $affected, 'responsibility_user_ids' => $responsibilities];
             $this->propose($user, $recipient, $entry, $payload, $affected, 'save');
 
             return $this->load($entry);
@@ -276,6 +279,7 @@ class CareRecords
             abort_unless($this->access->canExecuteCare($user, $recipient, $task->kind, $task->assigned_user_id), 403, 'Você não pode registrar esta execução.');
             abort_unless(in_array($task->status, ['pending', 'completed']) && ! $task->proposals()->where('status', 'pending')->exists(), 409, 'O cuidado precisa estar confirmado e sem alterações pendentes.');
             abort_if($recipient->entries()->where('related_entry_id', $id)->exists(), 409, 'A execução já foi registrada.');
+            app(CareAvailability::class)->ensureExecution($recipient, (int) $user->id, $occurredAt ? CarbonImmutable::parse($occurredAt)->utc() : CarbonImmutable::now()->utc());
             $record = $recipient->entries()->create(['created_by' => $user->id, 'related_entry_id' => $id, 'kind' => $task->kind, 'title' => 'Execução: '.$task->title, 'description' => $description, 'due_at' => $occurredAt ? CarbonImmutable::parse($occurredAt)->utc() : now(), 'status' => 'completed', 'completed_at' => now(), 'revision' => 1, 'details' => $task->details]);
             $record->proposals()->create(['created_by' => $user->id, 'version' => 1, 'operation' => 'save', 'status' => 'accepted', 'payload' => ['data' => $record->only(['title', 'description', 'details']), 'shares' => [], 'affected_user_ids' => []]]);
             $this->notify($recipient, $this->access->area($task->kind), 'Execução registrada: '.$task->title);
@@ -292,11 +296,19 @@ class CareRecords
     public function decorate(CareEntry $entry): CareEntry
     {
         $entry->setAttribute('has_occurrences', (! $entry->related_entry_id && $entry->revision && $entry->due_at) || CareSchedule::where('care_entry_id', $entry->id)->exists());
+        $entry->setAttribute('responsibility_user_ids', $entry->proposals->where('operation', 'save')->where('status', 'accepted')->sortByDesc('version')->first()?->payload['responsibility_user_ids'] ?? []);
         $user = auth()->user();
+        $executionBlock = $user && ! $entry->related_entry_id && ! $entry->has_occurrences
+            && in_array($entry->status, ['pending', 'completed']) && ! $entry->proposals->contains('status', 'pending')
+            && ! in_array($entry->kind, ['expense', 'journal'])
+            && $this->access->canExecuteCare($user, $entry->recipient, $entry->kind, $entry->assigned_user_id)
+            ? app(CareAvailability::class)->executionBlock($entry->recipient, (int) $user->id) : null;
+        $entry->setAttribute('execution_block', $executionBlock);
         $entry->setAttribute('can_execute', $user && ! $entry->has_occurrences && ! $entry->related_entry_id
             && ! in_array($entry->kind, ['expense', 'journal']) && in_array($entry->status, ['pending', 'completed'])
             && ! $entry->proposals->contains('status', 'pending')
             && $this->access->canExecuteCare($user, $entry->recipient, $entry->kind, $entry->assigned_user_id)
+            && ! $executionBlock
             && ! CareEntry::where('related_entry_id', $entry->id)->exists());
         foreach ($entry->proposals as $proposal) {
             $proposal->setAttribute('blockers', $this->guard->blockers($entry->recipient, $proposal, $this->access->area($entry->kind)));

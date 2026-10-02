@@ -250,7 +250,7 @@ it("abre mês com sete colunas, seleciona o dia e navega entre períodos sem pre
   const calls = careApi.agenda.mock.calls.length;
   await wrapper.find('[data-date="2026-10-02"]').trigger("click");
   expect(wrapper.find(".agenda-selected-day").text()).toContain(
-    "Nenhum cuidado neste dia",
+    "Nenhum registro neste dia",
   );
   expect(careApi.agenda.mock.calls).toHaveLength(calls);
   await wrapper.find('[aria-label="Próximo período"]').trigger("click");
@@ -292,7 +292,7 @@ it("oferece navegação por setas e resumo de dias com muitos cuidados", async (
   await flushPromises();
   const day = wrapper.find('[data-date="2026-10-01"]');
   expect(day.findAll(".agenda-preview")).toHaveLength(3);
-  expect(day.text()).toContain("+2 cuidados");
+  expect(day.text()).toContain("+2 registros");
   expect(
     wrapper.findAll(".agenda-selected-day .agenda-occurrence"),
   ).toHaveLength(5);

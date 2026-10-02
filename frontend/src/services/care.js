@@ -1,5 +1,11 @@
 import client from "./client.js";
 export const careApi = {
+  unavailabilities: (id, page = 1) =>
+    client.get(`/recipients/${id}/unavailabilities`, { params: { page } }),
+  saveUnavailability: (id, data) =>
+    client.post(`/recipients/${id}/my-unavailabilities`, data),
+  cancelUnavailability: (id, period) =>
+    client.post(`/recipients/${id}/my-unavailabilities/${period}/cancel`),
   decisions: (params) => client.get("/decisions", { params }),
   decision: (type, id) => client.get(`/decisions/${type}/${id}`),
   proposeProfile: (id, data) =>

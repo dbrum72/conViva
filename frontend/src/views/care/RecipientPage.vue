@@ -7,8 +7,8 @@
       ><RouterLink class="btn btn--outline" :to="{ name: 'recipients' }"
         >Voltar aos assistidos</RouterLink
       ></template
-    ><template v-if="store.recipient"
-      ><nav class="care-tabs" aria-label="Áreas de cuidados">
+    ><template v-if="store.recipient">
+      <nav class="care-tabs" aria-label="Áreas de cuidados">
         <button
           v-for="t in tabs"
           :key="t.key"
@@ -66,6 +66,7 @@
               <dd>{{ value }}</dd></template
             >
           </dl>
+          <p v-if="e.execution_block" role="status">{{ e.execution_block }}</p>
           <AppButton
             variant="modal"
             v-if="e.can_execute"

@@ -1,6 +1,6 @@
 # conViva — pesquisa de referência e cronograma de evolução
 
-Data da pesquisa: 18/09/2026. E00 e E01 concluídas em 18/09/2026; E02 concluída em 27/09/2026. E03 e E04 concluídas em 28/09/2026. Próxima etapa sequencial: E05. Evidências em `docs/BASELINE-E00.md`, `docs/ENTREGA-E01.md`, `docs/ENTREGA-E02.md` e no registro de execução abaixo.
+Data da pesquisa: 18/09/2026. E00 e E01 concluídas em 18/09/2026; E02 concluída em 27/09/2026. E03 e E04 concluídas em 28/09/2026. E04A implementada em 02/10/2026; contrato e limites em `docs/ENTREGA-E04A.md`. Próxima etapa sequencial: E05 — medicamentos e vacinas. Evidências em `docs/BASELINE-E00.md`, `docs/ENTREGA-E01.md`, `docs/ENTREGA-E02.md` e no registro de execução abaixo.
 
 Ajuste solicitado antes de E02: sidebar com seleção/criação de grupos somente em Meus assistidos e avatar pessoal do assistido por responsável. Entrega descrita em `docs/AVATAR-PESSOAL.md`, preservada na E02.
 
@@ -90,20 +90,21 @@ P0 = base necessária para piloto confiável; P1 = evolução funcional priorit�
 | E02 | Central de decisões e revisão cadastral | P0 | E01 | 6–10 dias |
 | E03 | Ficha e experiência por tipo de assistido | P1 | E02 | 4–6 dias |
 | E04 | Agenda e motor de ocorrências | P0 | E02 | 8–12 dias |
-| E05 | Programação e execução de medicamentos | P0 | E03, E04 | 6–10 dias |
-| E06 | Lembretes e operação assíncrona | P0 | E04, E05 | 6–9 dias |
+| E04A | Indisponibilidade/afastamento de responsável ou cuidador | P0 | E02, E04 | 4–7 dias |
+| E05 | Programação e execução de medicamentos | P0 | E03, E04, E04A | 6–10 dias |
+| E06 | Lembretes e operação assíncrona | P0 | E04, E04A, E05 | 6–9 dias |
 | E07 | Rotina rápida e passagem de cuidados | P1 | E03, E04, E06 | 4–6 dias |
 | E08 | Despesas e documentos contextualizados | P1 | E02, E03 | 5–8 dias |
 | E09 | Histórico, exportação e privacidade | P0 | E05–E08 | 5–8 dias |
 | E10 | Piloto e preparação operacional | P0 | E01–E09 | 5–8 dias |
 | E11 | Integrações e expansão validada | P2 | E10 | estimar após piloto |
 
-E00–E10 somam **56–88 dias úteis**, aproximadamente **12–18 semanas**, sem reserva. Planejar mais 20% para ajustes do piloto e imprevistos: envelope aproximado de **14–22 semanas**. Esta soma assume execução sequencial; dependências permitem reorganização se houver equipe adicional.
+E00–E10, incluindo E04A, somam **60–95 dias úteis**, aproximadamente **12–19 semanas**, sem reserva. Planejar mais 20% para ajustes do piloto e imprevistos: envelope aproximado de **15–23 semanas**. A faixa de esforço da E04A foi estimada antes da implementação; as evidências da entrega estão em `docs/ENTREGA-E04A.md`. Esta soma assume execução sequencial; dependências permitem reorganização se houver equipe adicional.
 
 Marcos de entrega:
 
 - **M1 — base utilizável:** E00–E03 concluídas; convite, ficha e decisão compreensíveis.
-- **M2 — rotina confiável:** E04–E07 concluídas; ocorrência aceita, execução e lembrete coerentes.
+- **M2 — rotina confiável:** E04–E07, incluindo E04A, concluídas; afastamento respeitado, ocorrência aceita, execução e lembrete coerentes.
 - **M3 — piloto completo:** E08–E10 concluídas; finanças, histórico, privacidade e operação validados.
 - **M4 — expansão:** somente após evidências do piloto e nova priorização de E11.
 
@@ -172,6 +173,28 @@ Marcos de entrega:
 **API/UI:** ampliar a agenda com `from`, `to`, filtros e paginação; criar ações Pinia e componentes de navegação. Começar no grupo selecionado. Visão entre grupos, se feita depois, deve revalidar cada contexto como `ListCareGroups`, sem remover o isolamento globalmente.
 
 **Aceite:** duas execuções do gerador não duplicam ocorrência; mudança de fuso e virada de dia preservam horário esperado; exceção não altera histórico; revisão não aceita não modifica ocorrências vigentes. Validar concorrência também em MySQL, seguindo a proteção de destino e a política de banco descartável descritas na seção 7.
+
+### E04A — Indisponibilidade/afastamento de responsável ou cuidador
+
+**Implementada em 02/10/2026**, incluída por solicitação do usuário; evidências e limites em `docs/ENTREGA-E04A.md`. O identificador E04A preserva a numeração existente das etapas E05–E11 e as referências históricas.
+
+- [x] Permitir prever e registrar períodos de indisponibilidade/afastamento de responsável ou cuidador, com início, término e fuso explícitos; definir os limites do intervalo e validar as datas.
+- [x] Quando o próprio usuário informar indisponibilidade ou afastamento, impedir que ele execute cuidados durante o período defeso, inclusive cuidados já aprovados e ocorrências de séries recorrentes.
+- [x] Impedir a inclusão de responsabilidade compartilhada atribuída a outro usuário quando o período do cuidado coincidir, total ou parcialmente, com a indisponibilidade/afastamento informado por esse usuário. Informar ao solicitante a impossibilidade de compartilhar o cuidado no período e identificar o participante indisponível e o intervalo conflitante, incluindo o motivo opcional informado, visível aos participantes com permissão de consulta ao assistido.
+- [x] Aplicar o impedimento no Laravel, inclusive em chamadas diretas à API, revalidando a indisponibilidade na inclusão de responsabilidades compartilhadas e em toda operação de execução de cuidado; informar o período e o motivo do bloqueio na interface.
+- [x] Identificar conflitos com cuidados já aprovados, propostas pendentes e séries que atravessem o período, preservando histórico e execuções anteriores, sem transferir obrigações ou presumir aceite de substitutos.
+- [x] Permitir revisão/cancelamento do afastamento conforme as permissões definidas, preservando autoria e histórico; ao terminar o período, restaurar somente capacidades ainda autorizadas.
+- [x] Integrar disponibilidade à agenda e aos medicamentos/vacinas datados já existentes; documentar o contrato para programação por dose (E05), lembretes/jobs (E06) e passagem de cuidados (E07), a implementar nessas etapas.
+
+**Contrato confirmado e comportamento implementado:**
+
+1. Regra confirmada em 02/10/2026: o próprio usuário informa indisponibilidade/afastamento e fica impedido de executar cuidados durante o período defeso. Além do bloqueio de execução, impedir a inclusão de responsabilidade compartilhada com outro usuário indisponível no período do cuidado, informando a impossibilidade ao solicitante. Consulta e demais propostas/decisões seguem suas autorizações vigentes, respeitando esse impedimento de atribuição.
+2. Âmbito confirmado pelo usuário: somente o assistido/grupo selecionado. A autoria é do próprio usuário.
+3. Cuidados já aprovados: o afastamento é registrado, o histórico e a designação são preservados e a execução fica bloqueada. Conflitos de designação ficam visíveis na agenda; eventual substituição depende de revisão e dos aceites vigentes.
+
+**Codificação prevista:** entidade própria de períodos de indisponibilidade vinculada ao usuário e ao âmbito escolhido; migration de criação, FormRequests e serviço Laravel de domínio. Integrar a verificação às capacidades de `AccessControl`, inclusão de responsabilidades e decisões de `CareRecords` e ocorrências da E04. Validar o período do cuidado e cada ocorrência aplicável de séries recorrentes contra os intervalos de indisponibilidade do participante designado; rejeitar a inclusão conflitante antes de persistir responsabilidade ou proposta inválida. Coordenar afastamento e operações de cuidado em transações para impedir operações concorrentes incompatíveis. Manter o fluxo Vue → Pinia → Axios → controller → serviço Laravel; controles desabilitados na interface não substituem validação no backend.
+
+**Aceite:** inclusão de responsabilidade com usuário indisponível no período rejeitada também pela API, sem persistir atribuição ou proposta inválida, com mensagem clara de impossibilidade de compartilhamento; testar coincidência total, parcial e ocorrências recorrentes, além de inclusão concorrente com cadastro de afastamento; início e término respeitados no fuso definido; execução pelo usuário afastado bloqueada também pela API durante o período defeso, inclusive em cuidados já aprovados; ocorrências fora do período conservam as regras normais; séries têm conflitos identificados por ocorrência; cuidados já aprovados seguem a decisão de escopo; nenhuma substituição ou anuência automática; concorrência não permite operação incompatível; término/cancelamento não recupera acesso revogado ou expirado. Validar responsáveis e cuidadores, com isolamento por grupo ou aplicação global conforme o âmbito escolhido.
 
 ### E05 — Medicamentos e vacinas com execução identificada
 
@@ -314,7 +337,7 @@ As metas abaixo são propostas para o piloto, não resultados já obtidos. Instr
 | Arquivo visível numa área pode expor outra | Validar acesso combinado a documento e contexto; testar vínculos e exportação | E08/E09 |
 | Prazo depende da equipe e do piloto | Reestimar ao concluir E00 e cada marco, sem converter estimativa em promessa | Todos |
 
-Não há pergunta bloqueadora para elaborar este plano. Antes de iniciar E00, convém confirmar equipe disponível, público inicial do piloto e canal externo de notificações. Na ausência dessas definições, manter as premissas deste documento: três tipos de assistido contemplados, web responsiva, notificações internas/e-mail primeiro e uma pessoa desenvolvedora como referência de esforço.
+O escopo da E04A foi esclarecido e implementado em 02/10/2026; a próxima etapa é E05. Antes de iniciar E00, convém confirmar equipe disponível, público inicial do piloto e canal externo de notificações. Na ausência dessas definições, manter as premissas deste documento: três tipos de assistido contemplados, web responsiva, notificações internas/e-mail primeiro e uma pessoa desenvolvedora como referência de esforço.
 
 ## 10. Registro de execução
 
@@ -323,7 +346,7 @@ Usar as caixas de seleção de cada etapa como tarefas. Para concluir uma etapa,
 | Marco | Status inicial | Evidência necessária |
 | --- | --- | --- |
 | M1 — E00 a E03 | Concluído: E00, E01, E02 e E03 | Fluxo de entrada, decisão e ficha validado |
-| M2 — E04 a E07 | Em andamento: E04 concluída | Recorrência, execução e lembretes testados |
+| M2 — E04 a E07, incluindo E04A | Em andamento: E04 concluída; E04A implementada; próxima etapa E05 | Afastamento, recorrência, execução e lembretes testados |
 | M3 — E08 a E10 | Não iniciado | Relatórios, operação e piloto aprovados |
 | M4 — E11 | Aguardando piloto | Priorização baseada nas métricas e dificuldades observadas |
 
@@ -396,3 +419,50 @@ Usar as caixas de seleção de cada etapa como tarefas. Para concluir uma etapa,
 - Ordem da suíte corrigida para executar concorrência após testes transacionais, resolvendo a pendência de composição registrada na E03.
 - `conviva_db` reconstruído ao final com migrations e seeder. Contas e dados anteriores não foram preservados, conforme política do banco descartável; nenhum `.env` ou arquivo/banco do legalis alterado.
 - Contratos, limites e evidências em `docs/ENTREGA-E04.md`. Próxima etapa sequencial: **E05 — programação e execução de medicamentos**.
+
+### 02/10/2026 — Replanejamento: afastamento como próxima etapa
+
+- Incluída E04A antes da E05 para previsão de indisponibilidade/afastamento de responsável ou cuidador e impedimento de cuidado compartilhado para o usuário no período.
+- Dependências, marco M2 e estimativa total atualizados; medicamentos e vacinas permanecem na E05, agora dependente da E04A.
+- Esclarecimento do usuário em 02/10/2026: ao informar indisponibilidade/afastamento, o próprio usuário fica impedido de executar cuidados durante o período defeso. Âmbito entre grupos e tratamento dos conflitos com cuidados aprovados permanecem pendentes. Esta atualização é documental; a E04A ainda não foi implementada.
+- A indicação de E05 como próxima etapa no registro de 28/09/2026 representa o planejamento daquela data e é substituída por este replanejamento.
+
+### 02/10/2026 — Impedimento de compartilhamento durante indisponibilidade
+
+- Ao tentar inserir uma responsabilidade para outro usuário indisponível no período do cuidado, o solicitante deve ser impedido e informado da impossibilidade de compartilhamento.
+- E04A atualizada com bloqueio na inclusão, validação no backend/API, mensagem ao solicitante e critérios de aceite para conflitos de período e concorrência. Mantido o bloqueio de execução pelo usuário afastado.
+
+
+### 02/10/2026 — E04A implementada
+
+- Cadastro/cancelamento de indisponibilidade pelo próprio usuário, restrito ao assistido/grupo selecionado; painel expansível na tela de cuidados e histórico paginado.
+- Inclusão/revisão de responsabilidade conflitante rejeitada com mensagem de impossibilidade de compartilhamento; recorrências verificadas até o término; aceite revalidado após novo afastamento.
+- Execução avulsa/programada bloqueada no período; verificação do horário de realização e do período da ocorrência; cuidados aprovados preservados, sem substituição automática.
+- Nova migration aplicada isoladamente em `conviva_db`; testes desta entrega usam transações/rollback, sem reconstrução do banco.
+- Validação: 27 testes backend / 335 asserções com rollback; suíte frontend completa com 74 testes, mais 19 testes específicos após ajustes finais; build aprovado. Evidências, contratos e limites em `docs/ENTREGA-E04A.md`. Próxima etapa: **E05 — medicamentos e vacinas**.
+
+
+### 02/10/2026 — Disponibilidade transferida para modal na Agenda
+
+- Botão Minha disponibilidade na Agenda; cadastro, consulta e cancelamento no modal, com contexto explícito de assistido/grupo e fuso. Painel removido da tela de cuidados; avisos de impedimento preservados.
+- A agenda identifica o assistido autorizado mesmo sem ocorrências. Salvar/cancelar recarrega os avisos; troca de grupo fecha e limpa o modal.
+- Validação: 82 testes frontend, 14 testes específicos backend / 112 asserções com rollback, build e inspeção visual desktop/celular aprovados. Sem nova migration ou reconstrução do banco. Detalhes em `docs/ENTREGA-E04A.md`.
+
+
+### 02/10/2026 — Motivo opcional da indisponibilidade
+
+- Campo opcional no modal de disponibilidade, com limite de 2.000 caracteres. A visibilidade inicialmente pessoal foi corrigida por instrução do usuário: o motivo é visível a todos com permissão de consulta ao assistido, inclusive em conflitos e impedimentos.
+- Migration de criação atualizada; coluna aplicada exclusivamente em `conviva_db`, preservando registros existentes. 15 testes backend / 128 asserções, oito testes frontend específicos e build aprovados. Detalhes em `docs/ENTREGA-E04A.md`.
+
+
+### 02/10/2026 — Motivo compartilhado com participantes autorizados
+
+- Consulta dos afastamentos e motivos do grupo liberada aos participantes com permissão de visualizar o assistido, inclusive observadores. Autor identificado; formulário/cancelamento oferecidos somente quando autorizados, sem permitir cancelar período de terceiros.
+- Motivo incluído nas mensagens de impedimento e conflitos da agenda. Revogação/expiração impede consulta; isolamento por grupo/assistido preservado.
+- 16 testes backend / 140 asserções, 83 testes frontend e build aprovados. Sem alteração de banco.
+
+### Ajuste E04A — datas de indisponibilidade (02/10/2026)
+
+- Início e término passam a representar datas inclusivas, armazenadas como DATE e enviadas como YYYY-MM-DD. Períodos de um dia são permitidos.
+- Modal sem campos de horário; Agenda identifica afastamentos de dia inteiro. Bloqueio inclui todo o último dia no fuso informado, respeitando horário de verão.
+- Migration de criação e tabela existente atualizadas exclusivamente em conviva_db; registros preservados, sem reconstrução.

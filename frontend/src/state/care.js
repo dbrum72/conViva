@@ -4,6 +4,9 @@ import { careApi } from "@/services/care.js";
 export const useCareStore = defineStore("care", () => {
   const recipients = ref([]),
     recipient = ref(null),
+    unavailabilities = ref([]),
+    unavailabilityPage = ref(null),
+    unavailabilityError = ref(""),
     entries = ref([]),
     documents = ref([]),
     accesses = ref([]),
@@ -21,6 +24,8 @@ export const useCareStore = defineStore("care", () => {
     error = ref(""),
     pending = ref(0);
   let generation = 0;
+  let unavailabilityRequest = 0;
+  let unavailabilityRecipient = null;
   let decisionRequest = 0;
   let agendaRequest = 0;
   let unreadRequest = 0;
@@ -43,6 +48,55 @@ export const useCareStore = defineStore("care", () => {
     } finally {
       if (g === generation) pending.value = Math.max(0, pending.value - 1);
     }
+  }
+  async function loadUnavailabilities(id, page = 1) {
+    const g = generation,
+      request = ++unavailabilityRequest;
+    if (String(id) !== unavailabilityRecipient) {
+      unavailabilities.value = [];
+      unavailabilityPage.value = null;
+    }
+    unavailabilityRecipient = String(id);
+    unavailabilityError.value = "";
+    try {
+      const { data } = await run(
+        () => careApi.unavailabilities(id, page),
+        () => request === unavailabilityRequest,
+      );
+      if (g !== generation || request !== unavailabilityRequest) return false;
+      unavailabilities.value = data.data;
+      unavailabilityPage.value = data;
+      return true;
+    } catch (e) {
+      if (g === generation && request === unavailabilityRequest)
+        unavailabilityError.value = error.value;
+      throw e;
+    }
+  }
+  async function changeUnavailability(id, operation) {
+    const g = generation,
+      target = String(id);
+    unavailabilityError.value = "";
+    try {
+      await run(operation, () => target === unavailabilityRecipient);
+      if (g !== generation || target !== unavailabilityRecipient) return false;
+      await loadUnavailabilities(id);
+      if (g !== generation || target !== unavailabilityRecipient) return false;
+      if (String(recipient.value?.id) === target) await loadEntries(id);
+      return g === generation && target === unavailabilityRecipient;
+    } catch (e) {
+      if (g === generation && target === unavailabilityRecipient)
+        unavailabilityError.value = error.value;
+      throw e;
+    }
+  }
+  function saveUnavailability(id, data) {
+    return changeUnavailability(id, () => careApi.saveUnavailability(id, data));
+  }
+  function cancelUnavailability(id, period) {
+    return changeUnavailability(id, () =>
+      careApi.cancelUnavailability(id, period),
+    );
   }
   async function loadRecipients() {
     const g = generation;
@@ -320,6 +374,11 @@ export const useCareStore = defineStore("care", () => {
     decisions.value = null;
     decision.value = null;
     generation++;
+    unavailabilityRequest++;
+    unavailabilityRecipient = null;
+    unavailabilities.value = [];
+    unavailabilityPage.value = null;
+    unavailabilityError.value = "";
     recipients.value = [];
     recipient.value = null;
     entries.value = [];
@@ -341,6 +400,12 @@ export const useCareStore = defineStore("care", () => {
     pending.value = 0;
   }
   return {
+    unavailabilities,
+    unavailabilityPage,
+    unavailabilityError,
+    loadUnavailabilities,
+    saveUnavailability,
+    cancelUnavailability,
     decisions,
     decision,
     loadDecisions,

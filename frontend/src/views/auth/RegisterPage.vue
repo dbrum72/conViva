@@ -61,7 +61,7 @@
               type="text"
               name="organization_name"
               autocomplete="organization"
-              placeholder="Ex.: Silva Advocacia"
+              placeholder="Ex.: Grupo de Cuidados Milena"
               :disabled="loading"
             />
 
