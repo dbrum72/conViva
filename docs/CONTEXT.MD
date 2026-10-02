@@ -1,5 +1,7 @@
 # Contexto do conViva
 
+Ambiente local Windows: Vite deve escutar em `127.0.0.1:5173`, como os links de convite. `host: "localhost"` foi resolvido apenas para `::1`, causando conexão recusada em links IPv4. Correção e testes de aceite com rollback documentados em `VERIFICACAO-CONVITES.md` (30/09/2026).
+
 Cuidados compartilhados de crianças, pessoas adultas sob cuidados e pets, sem exigir conversa direta entre os responsáveis.
 
 Grupos (organizations) isolam dados. Usuários podem participar de vários grupos. Cada assistido pertence a um grupo. O backend verifica vínculo ativo pelo X-Tenant.
