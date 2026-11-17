@@ -13,7 +13,7 @@ export default [
   },
   {
     id: "dashboard",
-    label: "Visão geral",
+    label: "Hoje",
     name: "dashboard",
     icon: "dashboard",
   },

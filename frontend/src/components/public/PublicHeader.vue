@@ -77,7 +77,7 @@ import { RouterLink } from "vue-router";
 
 import { AppLogo } from "@/components/ui";
 
-import { useAuthStore } from "@/state/auth.js";
+import { useAuthStore } from "@/modules/auth";
 
 const authStore = useAuthStore();
 </script>

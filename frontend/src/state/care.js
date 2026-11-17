@@ -13,8 +13,7 @@ export const useCareStore = defineStore("care", () => {
     accessesLoaded = ref(false),
     agenda = ref([]),
     agendaPage = ref(null),
-    notifications = ref([]),
-    unreadNotifications = ref(null),
+    today = ref(null),
     expenses = ref([]),
     financeRecipients = ref([]),
     financeSummary = ref(null),
@@ -28,7 +27,7 @@ export const useCareStore = defineStore("care", () => {
   let unavailabilityRecipient = null;
   let decisionRequest = 0;
   let agendaRequest = 0;
-  let unreadRequest = 0;
+  let todayRequest = 0;
   let financeRequest = 0;
   async function run(fn, isCurrent = () => true) {
     const g = generation;
@@ -202,6 +201,30 @@ export const useCareStore = defineStore("care", () => {
     if (g !== generation) return;
     accesses.value = accesses.value.filter((a) => a.user_id !== user);
   }
+  async function loadToday() {
+    const g = generation;
+    const request = ++todayRequest;
+    const current = () => g === generation && request === todayRequest;
+    await run(async () => {
+      try {
+        const { data } = await careApi.today();
+        if (current()) today.value = data;
+      } catch (error) {
+        if (current()) today.value = null;
+        throw error;
+      }
+    }, current);
+  }
+  async function recordFact(id, data) {
+    const g = generation;
+    await run(() => careApi.recordFact(id, data));
+    return g === generation;
+  }
+  async function readHandover(id, version) {
+    const g = generation;
+    await run(() => careApi.readHandover(id, version));
+    if (g === generation) await loadToday();
+  }
   async function loadAgenda(filters = {}, { allPages = false } = {}) {
     const g = generation,
       request = ++agendaRequest;
@@ -227,42 +250,19 @@ export const useCareStore = defineStore("care", () => {
       }
     }, current);
   }
-  async function executeOccurrence(id, data) {
+  async function executeOccurrence(id, data, execution = null) {
     const g = generation;
-    await run(() => careApi.executeOccurrence(id, data));
+    await run(() =>
+      execution
+        ? careApi.correctOccurrence(id, execution, data)
+        : careApi.executeOccurrence(id, data),
+    );
     return g === generation;
   }
   async function cancelOccurrence(id, scope) {
     const g = generation;
     const { data } = await run(() => careApi.cancelOccurrence(id, scope));
     return g === generation ? data : null;
-  }
-  async function refreshUnreadNotifications() {
-    const g = generation,
-      request = ++unreadRequest;
-    try {
-      const { data } = await careApi.unreadCount();
-      if (g === generation && request === unreadRequest)
-        unreadNotifications.value = data.unread_count;
-    } catch {
-      if (g === generation && request === unreadRequest)
-        unreadNotifications.value = null;
-    }
-  }
-  async function loadNotifications() {
-    const g = generation;
-    const { data } = await run(() => careApi.notifications());
-    if (g !== generation) return;
-    notifications.value = data;
-    await refreshUnreadNotifications();
-  }
-  async function read(id) {
-    const g = generation;
-    await run(() => careApi.read(id));
-    if (g !== generation) return;
-    const n = notifications.value.find((n) => n.id === id);
-    if (n) n.read_at = new Date().toISOString();
-    await refreshUnreadNotifications();
   }
   async function loadExpenses(filters = {}) {
     const g = generation,
@@ -300,10 +300,12 @@ export const useCareStore = defineStore("care", () => {
     link.click();
     setTimeout(() => URL.revokeObjectURL(url), 1000);
   }
-  async function execute(id, entry, description, occurredAt) {
+  async function execute(id, entry, description, occurredAt, { refreshEntries = true } = {}) {
     const g = generation;
     await run(() => careApi.execute(id, entry, description, occurredAt));
-    if (g === generation) await loadEntries(id);
+    if (g !== generation) return false;
+    if (refreshEntries) await loadEntries(id);
+    return g === generation;
   }
   async function decide(id, entry, proposal, data) {
     const g = generation;
@@ -388,9 +390,8 @@ export const useCareStore = defineStore("care", () => {
     agenda.value = [];
     agendaPage.value = null;
     agendaRequest++;
-    notifications.value = [];
-    unreadNotifications.value = null;
-    unreadRequest++;
+    today.value = null;
+    todayRequest++;
     expenses.value = [];
     financeRecipients.value = [];
     financeSummary.value = null;
@@ -421,11 +422,12 @@ export const useCareStore = defineStore("care", () => {
     accessesLoaded,
     agenda,
     agendaPage,
+    today,
+    loadToday,
+    recordFact,
+    readHandover,
     executeOccurrence,
     cancelOccurrence,
-    notifications,
-    unreadNotifications,
-    refreshUnreadNotifications,
     expenses,
     financeRecipients,
     financeSummary,
@@ -449,8 +451,6 @@ export const useCareStore = defineStore("care", () => {
     grant,
     revoke,
     loadAgenda,
-    loadNotifications,
-    read,
     loadExpenses,
     pay,
     downloadPaymentReceipt,

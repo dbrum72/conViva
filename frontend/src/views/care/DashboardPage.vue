@@ -1,203 +1,242 @@
 <template>
-  <CareShell
-    class="care-dashboard"
-    title="Cuidar, juntos"
-    subtitle="Um olhar sobre quem precisa de você e os próximos cuidados."
-    ><template #actions
-      ><RouterLink
-        class="btn btn--primary"
-        :to="{ name: 'organizations.select' }"
-        >Ver assistidos</RouterLink
-      ></template
-    >
-    <div class="care-grid">
-      <AppCard
-        class="dashboard-stat dashboard-stat--blue"
-        title="Próximos cuidados"
-        ><span class="dashboard-icon"
-          ><AppIcon name="calendar" :size="24" decorative /></span
-        ><strong class="care-metric">{{ pending.length }}</strong>
-        <p class="care-muted">Compromissos e tarefas pendentes</p></AppCard
-      ><AppCard class="dashboard-stat dashboard-stat--pink" title="Novidades"
-        ><span class="dashboard-icon"
-          ><AppIcon name="email" :size="24" decorative /></span
-        ><strong class="care-metric">{{
-          store.notifications.filter((n) => !n.read_at).length
-        }}</strong>
-        <p class="care-muted">Atualizações para você</p></AppCard
-      >
-    </div>
-    <AppCard class="dashboard-agenda" title="Na sua agenda"
-      ><div v-for="e in pending.slice(0, 6)" :key="e.id" class="care-list-row">
-        <div>
-          <RouterLink
-            :to="{ name: 'recipient', params: { id: e.care_recipient_id } }"
-            ><strong>{{ e.title }}</strong></RouterLink
+  <CareShell title="Hoje" :subtitle="today?.recipient?.name" @retry="load">
+    <template #actions>
+      <RouterLink class="btn btn--outline" :to="{ name: 'organizations.select' }">
+        Meus assistidos
+      </RouterLink>
+    </template>
+    <p v-if="notice" role="status">{{ notice }}</p>
+    <p v-if="today && !today.recipient" class="care-muted">
+      Nenhum assistido ativo disponível neste grupo.
+    </p>
+    <template v-if="today?.recipient">
+      <AppCard v-if="today.quick_facts.length" title="Registro rápido">
+        <div class="care-actions">
+          <AppButton
+            v-for="kind in today.quick_facts"
+            :key="kind"
+            variant="outline"
+            :disabled="!!store.pending"
+            @click="openFact(kind)"
           >
-          <p class="care-muted">
-            {{ e.recipient.name }} · {{ entryKinds[e.kind] }}
-          </p>
+            {{ factTitles[kind] }}
+          </AppButton>
         </div>
-        <span>{{ dateTime(e.due_at) }}</span>
+      </AppCard>
+      <div class="care-grid">
+        <AppCard title="Próximos cuidados">
+          <p v-if="!today.upcoming.length" class="care-muted">
+            Nenhum cuidado programado nos próximos sete dias.
+          </p>
+          <div v-for="item in today.upcoming" :key="item.id" class="care-list-row">
+            <div>
+              <strong>{{ item.title }}</strong>
+              <p class="care-muted">{{ format(item.due_at) }}</p>
+              <p v-if="item.last_execution" class="care-muted">
+                Último registro por {{ item.last_execution.author || 'autor indisponível' }}
+                em {{ format(item.last_execution.occurred_at) }}
+                <span v-if="item.last_execution.outcome === 'not_administered'"> · Não administrado</span>
+              </p>
+              <p v-if="item.execution_block || item.availability_conflict" class="care-muted">
+                {{ item.execution_block || item.availability_conflict }}
+              </p>
+            </div>
+            <AppButton
+              v-if="item.can_execute"
+              variant="outline"
+              :disabled="!!store.pending"
+              @click="openExecution(item, true)"
+            >
+              Registrar execução
+            </AppButton>
+          </div>
+          <RouterLink :to="{ name: 'agenda' }">Abrir agenda</RouterLink>
+        </AppCard>
+        <AppCard title="Minhas decisões pendentes">
+          <p v-if="!today.decision_count" class="care-muted">Nenhuma decisão pendente para você.</p>
+          <ul v-else class="today-list">
+            <li v-for="proposal in today.decisions" :key="`${proposal.type}-${proposal.id}`">
+              <RouterLink :to="{ name: 'decisions', query: { type: proposal.type, proposal: proposal.id } }">
+                {{ proposal.title }}
+              </RouterLink>
+            </li>
+          </ul>
+          <RouterLink :to="{ name: 'decisions' }">
+            Abrir Central de Decisões<span v-if="today.decision_count"> ({{ today.decision_count }})</span>
+          </RouterLink>
+        </AppCard>
       </div>
-      <div v-if="!pending.length" class="dashboard-empty">
-        <span class="dashboard-empty__icon"
-          ><AppIcon name="calendar" :size="30" decorative
-        /></span>
-        <h2>Espaço para os próximos cuidados</h2>
-        <p>
-          Nenhum cuidado pendente por aqui. Consulte o perfil do assistido para
-          organizar os próximos passos.
-        </p>
-        <RouterLink class="dashboard-link" :to="{ name: 'recipients' }"
-          >Abrir perfil do assistido
-          <AppIcon name="arrow-right" :size="18" decorative
-        /></RouterLink></div></AppCard
-  ></CareShell>
+      <AppCard v-if="handover" title="Passagem de cuidados">
+        <div class="care-grid">
+          <section>
+            <h3>Últimas execuções e fatos</h3>
+            <p v-if="!recent.length" class="care-muted">Nenhum registro nos últimos sete dias.</p>
+            <ul v-else class="today-list">
+              <li v-for="item in recent" :key="item.key">
+                <strong>{{ item.title }}</strong>
+                <p class="care-muted">{{ item.author || 'Autor indisponível' }} · {{ format(item.occurred_at) }}</p>
+                <p v-if="item.outcome">{{ item.outcome === 'not_administered' ? 'Não administrado' : 'Administrado' }}</p>
+                <p v-if="item.description" class="today-description">{{ item.description }}</p>
+              </li>
+            </ul>
+          </section>
+          <section>
+            <h3>Pendências de cuidados</h3>
+            <p v-if="!handover.overdue.length && !handover.tasks.length" class="care-muted">
+              Nenhuma pendência neste resumo.
+            </p>
+            <div v-for="item in handover.overdue" :key="`occurrence-${item.id}`" class="care-list-row">
+              <div>
+                <strong>{{ item.title }}</strong>
+                <p class="care-muted">{{ format(item.due_at) }} · Sem execução registrada</p>
+                <p v-if="item.execution_block || item.availability_conflict" class="care-muted">
+                  {{ item.execution_block || item.availability_conflict }}
+                </p>
+              </div>
+              <AppButton
+                v-if="item.can_execute"
+                variant="outline"
+                :disabled="!!store.pending"
+                @click="openExecution(item, true)"
+              >
+                Registrar execução
+              </AppButton>
+            </div>
+            <div v-for="item in handover.tasks" :key="`task-${item.id}`" class="care-list-row">
+              <div>
+                <strong>{{ item.title }}</strong>
+                <p class="care-muted">{{ item.execution_block || 'Tarefa sem data' }}</p>
+              </div>
+              <AppButton
+                v-if="item.can_execute"
+                variant="outline"
+                :disabled="!!store.pending"
+                @click="openExecution(item, false)"
+              >
+                Registrar execução
+              </AppButton>
+            </div>
+          </section>
+        </div>
+        <div v-if="recent.length || handover.overdue.length || handover.tasks.length" class="care-actions">
+          <p v-if="handover.read_at" role="status">Leitura registrada em {{ format(handover.read_at) }}.</p>
+          <AppButton v-else variant="outline" :disabled="!!store.pending" @click="acknowledge">
+            Registrar ciência da leitura
+          </AppButton>
+        </div>
+      </AppCard>
+      <CareFactDialog
+        :kind="factKind"
+        :title="factTitles[factKind]"
+        :recipient-id="today.recipient.id"
+        @close="factKind = null"
+        @saved="saved('Registro salvo.')"
+      />
+      <CareExecutionDialog
+        :entry="execution?.item"
+        :occurrence="execution?.occurrence"
+        :recipient-id="today.recipient.id"
+        :refresh-entries="false"
+        @close="execution = null"
+        @saved="saved('Execução registrada.')"
+      />
+    </template>
+  </CareShell>
 </template>
+
 <script setup>
-import { computed, onMounted } from "vue";
+import { computed, ref, watch } from "vue";
+import CareExecutionDialog from "@/components/care/CareExecutionDialog.vue";
+import CareFactDialog from "@/components/care/CareFactDialog.vue";
 import CareShell from "@/components/care/CareShell.vue";
-import { AppCard, AppIcon } from "@/components/ui";
+import { AppButton, AppCard } from "@/components/ui";
+import { useAuthStore } from "@/modules/auth";
 import { useCareStore } from "@/state/care";
-import { entryKinds, dateTime } from "@/utils/care";
+
+const auth = useAuthStore();
 const store = useCareStore();
-const pending = computed(() =>
-  store.agenda.filter((e) => e.status === "scheduled"),
-);
-onMounted(() =>
-  Promise.all([store.loadAgenda(), store.loadNotifications()]).catch(() => {}),
-);
+const today = computed(() => store.today);
+const handover = computed(() => today.value?.handover);
+const execution = ref(null);
+const factKind = ref(null);
+const notice = ref("");
+const factLabels = { feeding: "Alimentação", walk: "Passeio", observation: "Observação" };
+const factTitles = {
+  feeding: "Registrar alimentação",
+  walk: "Registrar passeio",
+  observation: "Registrar observação",
+};
+
+const recent = computed(() => [
+  ...(handover.value?.executions ?? []).map((item) => ({ ...item, key: `execution-${item.id}` })),
+  ...(handover.value?.facts ?? []).map((item) => ({
+    ...item,
+    title: factLabels[item.kind],
+    key: `fact-${item.id}`,
+  })),
+].sort((a, b) => Date.parse(b.occurred_at) - Date.parse(a.occurred_at)));
+
+function format(value) {
+  return new Date(value).toLocaleString("pt-BR", {
+    timeZone: today.value.timezone,
+    dateStyle: "short",
+    timeStyle: "short",
+  });
+}
+
+function openFact(kind) {
+  store.error = "";
+  factKind.value = kind;
+}
+
+function openExecution(item, occurrence) {
+  store.error = "";
+  execution.value = { item, occurrence };
+}
+
+async function load() {
+  try {
+    await store.loadToday();
+  } catch {
+    // CareShell displays the error and provides a retry.
+  }
+}
+
+function saved(message) {
+  notice.value = message;
+  store.today = null;
+  return load();
+}
+
+async function acknowledge() {
+  try {
+    await store.readHandover(today.value.recipient.id, handover.value.version);
+  } catch {
+    // A stale summary can be refreshed using the retry in CareShell.
+  }
+}
+
+watch(() => auth.currentTenant, () => {
+  execution.value = null;
+  factKind.value = null;
+  notice.value = "";
+  load();
+}, { immediate: true });
 </script>
 
 <style scoped>
-.care-dashboard :deep(.care-heading) {
-  position: relative;
-  padding: clamp(1.25rem, 3vw, 2rem);
-  border-radius: 1.5rem;
-  background: linear-gradient(
-    110deg,
-    var(--palette-baby-green),
-    #eef5eb 48%,
-    var(--palette-baby-blue)
-  );
-  border: 1px solid rgb(86 88 115 / 10%);
-  border-bottom: 4px solid var(--palette-care-yellow);
-}
-.care-dashboard :deep(.care-muted) {
-  color: var(--color-text-soft);
-}
-.dashboard-stat {
-  position: relative;
-  border: 1px solid rgb(86 88 115 / 12%);
-  border-radius: 1.25rem;
-}
-.dashboard-stat--blue {
-  background: var(--palette-baby-blue);
-}
-.dashboard-stat--pink {
-  background: var(--palette-baby-pink);
-}
-.dashboard-stat :deep(.card__header) {
-  border: 0;
-  padding-bottom: 0;
-}
-.dashboard-stat :deep(.card__title) {
-  color: var(--color-text);
-  font-size: 1rem;
-}
-.dashboard-stat :deep(.card__body) {
-  position: relative;
-  padding-top: 1rem;
-}
-.dashboard-stat .care-metric {
-  display: block;
-  font-size: 3rem;
-  line-height: 1.15;
-  color: var(--color-brand-active);
-}
-.dashboard-stat .care-muted {
-  margin: 0.7rem 0 0;
-  padding-right: 2rem;
-}
-.dashboard-icon {
-  position: absolute;
-  right: 1.25rem;
-  top: 0.75rem;
+.today-list {
   display: grid;
-  place-items: center;
-  width: 3rem;
-  height: 3rem;
-  border-radius: 1rem;
-  background: rgb(255 255 255 / 60%);
-  color: var(--color-brand);
+  gap: 0.75rem;
+  padding-inline-start: 1.2rem;
 }
-.dashboard-agenda {
-  border-radius: 1.25rem;
+
+.today-description {
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
 }
-.dashboard-agenda :deep(.card__header) {
-  background: var(--color-surface-warning-soft);
-  border-bottom: 1px solid var(--palette-care-yellow);
-}
-.dashboard-agenda .care-list-row {
-  padding: 1rem;
-  border-radius: 0.75rem;
-  margin-bottom: 0.5rem;
-  background: #f1f7fb;
-  border: 0;
-}
-.dashboard-empty {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-  padding: 1.5rem 1rem 2rem;
-}
-.dashboard-empty__icon {
-  display: grid;
-  place-items: center;
-  width: 4.5rem;
-  height: 4.5rem;
-  border-radius: 1.5rem;
-  color: var(--color-brand);
-  background: var(--palette-baby-blue);
-  box-shadow:
-    -12px 6px 0 -3px var(--palette-baby-pink),
-    12px -6px 0 -3px var(--palette-baby-green);
-  margin: 0.5rem 0 1.25rem;
-}
-.dashboard-empty h2 {
-  font-size: 1.15rem;
-  color: var(--color-brand);
-  margin: 0;
-}
-.dashboard-empty p {
-  max-width: 34rem;
-  color: var(--color-text-soft);
-  line-height: 1.7;
-  margin: 0.65rem 0 1rem;
-}
-.dashboard-link {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.6rem;
-  color: var(--color-brand-active);
-  font-weight: 600;
-  text-underline-offset: 4px;
-}
-.dashboard-link:focus-visible {
-  outline: 2px solid var(--color-brand);
-  outline-offset: 5px;
-  border-radius: 4px;
-}
-@media (max-width: 600px) {
-  .care-dashboard :deep(.care-heading) {
-    align-items: flex-start;
-    flex-direction: column;
-  }
-  .dashboard-agenda .care-list-row {
-    align-items: flex-start;
-    flex-direction: column;
-  }
+
+.care-list-row {
+  flex-wrap: wrap;
 }
 </style>

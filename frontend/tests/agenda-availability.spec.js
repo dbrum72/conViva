@@ -1,13 +1,16 @@
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
 import { createPinia, setActivePinia } from "pinia";
 import { mount, flushPromises, enableAutoUnmount } from "@vue/test-utils";
-import { useAuthStore } from "@/state/auth";
+import { useAuthStore } from "@/modules/auth";
 import { useCareStore } from "@/state/care";
 import { careApi } from "@/services/care";
 import AgendaPage from "@/views/care/AgendaPage.vue";
 import CareUnavailabilityDialog from "@/components/care/CareUnavailabilityDialog.vue";
 
-vi.mock("vue-router", () => ({ useRouter: () => ({ push: vi.fn() }) }));
+vi.mock("vue-router", () => ({
+  useRoute: () => ({ query: {} }),
+  useRouter: () => ({ push: vi.fn() }),
+}));
 vi.mock("@/services/care", () => ({
   careApi: {
     agenda: vi.fn(),

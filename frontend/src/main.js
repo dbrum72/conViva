@@ -7,8 +7,8 @@ import router from "./router";
 import "./assets/styles/app.css";
 
 import AppIcon from "@/components/ui/AppIcon/index.vue";
-import { useAuthStore } from "@/state/auth.js";
-import { setSessionExpiredHandler } from "@/services/client.js";
+import { useAuthStore } from "@/modules/auth";
+import { setSessionExpiredHandler } from "@/modules/http";
 
 const app = createApp(App);
 const pinia = createPinia();

@@ -1,4 +1,6 @@
 export const inputControlProps = {
+  suggestions: Array,
+
   modelValue: {
     type: [String, Number],
     default: "",

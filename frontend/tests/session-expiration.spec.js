@@ -1,7 +1,10 @@
 import { beforeEach, expect, it, vi } from "vitest";
-import client, { setSessionExpiredHandler } from "@/services/client.js";
-import { getAccessToken, setAccessToken } from "@/services/auth-token.js";
-import { getCurrentTenant, setCurrentTenant } from "@/services/tenant.js";
+import {
+  authenticatedClient as client,
+  setSessionExpiredHandler,
+} from "@/modules/http";
+import { getAccessToken, setAccessToken } from "@/modules/auth/session/token.js";
+import { getCurrentTenant, setCurrentTenant } from "@/modules/groups/context/tenant.js";
 
 beforeEach(() => {
   sessionStorage.clear();

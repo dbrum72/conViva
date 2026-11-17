@@ -12,8 +12,11 @@
     :error="store.error"
     @close="$emit('close')"
   >
-    <form class="care-form" @submit.prevent="saveEntry">
-      <fieldset class="care-form care-form-fields" :disabled="!!store.pending">
+    <AppForm class="care-form" @submit.prevent="saveEntry">
+      <AppFieldset
+        class="care-form care-form-fields"
+        :disabled="!!store.pending"
+      >
         <p v-if="entryForm.kind === 'expense'" class="care-muted">
           Informe o valor e o rateio. Participantes afetados precisam aceitar a
           proposta antes do pagamento. Sem rateio, a despesa fica com quem a
@@ -24,8 +27,8 @@
           aceite dos demais responsáveis. Alterações não substituem o que já foi
           acordado até todos aceitarem. Recusas exigem motivo.
         </p>
-        <fieldset v-if="members.length" class="care-form">
-          <legend>Outros participantes afetados</legend>
+        <AppFieldset v-if="members.length" class="care-form">
+          <template #legend>Outros participantes afetados</template>
           <AppCheckbox
             v-for="member in members.filter(
               (m) => m.id !== auth.user.id && m.role !== 'observador',
@@ -44,42 +47,36 @@
             acesso à área. Participantes de rateios são incluídos
             automaticamente.</small
           >
-        </fieldset>
-        <label
+        </AppFieldset>
+        <AppSelect
           v-if="members.length && entryForm.kind !== 'expense'"
-          class="care-field"
-          >Prestador designado (opcional)<select
-            v-model="entryForm.assigned_user_id"
-          >
-            <option :value="null">Sem designação</option>
-            <option
-              v-for="member in members.filter((m) => m.role !== 'observador')"
-              :key="member.id"
-              :value="member.id"
-            >
-              {{ member.name }}
-            </option>
-          </select></label
-        >
-        <label class="care-field"
-          >Tipo<select v-model="entryForm.kind" :disabled="!!entryForm.id">
-            <option v-for="key in availableKinds" :value="key">
-              {{ entryKinds[key] }}
-            </option>
-          </select></label
-        ><label class="care-field"
-          >Título<input
-            v-model="entryForm.title"
-            required
-            maxlength="200" /></label
-        ><label class="care-field"
-          >Descrição<textarea
-            v-model="entryForm.description"
-            rows="3"
-          ></textarea></label
-        ><CareScheduleFields
-          v-if="['event', 'task', 'feeding'].includes(entryForm.kind)"
+          id="care-entry-assignee"
+          v-model="assignee"
+          label="Prestador designado (opcional)"
+          :options="assigneeOptions"
+        />
+        <AppSelect
+          id="care-entry-kind"
+          v-model="entryForm.kind"
+          label="Tipo"
+          :options="kindOptions"
+          :disabled="!!entryForm.id"
+        />
+        <AppInput
+          label="Título"
+          :id="fieldId + '-1'"
+          v-model="entryForm.title"
+          required
+          :maxlength="200"
+        /><AppTextarea
+          label="Descrição"
+          :id="fieldId + '-2'"
+          v-model="entryForm.description"
+          :rows="3"
+        /><CareScheduleFields
+          v-if="scheduleKinds.includes(entryForm.kind)"
           v-model="entryForm.schedule"
+          :kind="entryForm.kind"
           :timezone="auth.organization?.timezone || 'America/Sao_Paulo'"
         />
         <AppCheckbox
@@ -89,22 +86,26 @@
           hint="Visível na agenda para todos com permissão nesta área, após os aceites necessários. Informe uma data ou programação."
           :disabled="!!store.pending"
         />
-        <label v-if="!entryForm.schedule" class="care-field"
-          >Quando (horário deste dispositivo)<input
-            type="datetime-local"
-            v-model="entryForm.due_at"
-            :required="entryForm.publish_to_agenda" /></label
-        ><label
+        <AppInput
+          v-if="!entryForm.schedule"
+          label="Quando (horário deste dispositivo)"
+          :id="fieldId + '-3'"
+          type="datetime-local"
+          v-model="entryForm.due_at"
+          :required="entryForm.publish_to_agenda"
+        /><AppInput
           v-if="entryForm.kind === 'event' && !entryForm.schedule"
-          class="care-field"
-          >Término<input
-            type="datetime-local"
-            v-model="entryForm.ends_at" /></label
-        ><template
+          label="Término"
+          :id="fieldId + '-4'"
+          type="datetime-local"
+          v-model="entryForm.ends_at"
+        /><template
           v-if="['medication', 'vaccine', 'feeding'].includes(entryForm.kind)"
-          ><label v-for="key in detailFields" class="care-field"
-            >{{ detailLabels[key]
-            }}<input v-model="entryForm.details[key]" /></label></template
+          ><AppInput
+            v-for="key in detailFields"
+            :label="detailLabels[key]"
+            :id="fieldId + '-5' + '-' + key"
+            v-model="entryForm.details[key]" /></template
         ><template v-if="entryForm.kind === 'expense'"
           ><AppCurrency
             id="care-entry-amount"
@@ -121,13 +122,16 @@
               :key="index"
               class="care-share"
             >
-              <label class="care-field"
-                >Responsável<select v-model="share.user_id" required>
-                  <option v-for="m in members" :value="m.id">
-                    {{ m.name }}
-                  </option>
-                </select></label
-              ><AppCurrency
+              <AppSelect
+                :id="`care-entry-share-user-${index}`"
+                v-model="share.user_id"
+                label="Responsável"
+                :options="members"
+                option-label="name"
+                option-value="id"
+                required
+              />
+              <AppCurrency
                 :id="`care-entry-share-${index}`"
                 :name="`shares[${index}][amount]`"
                 label="Parcela (R$)"
@@ -163,17 +167,27 @@
             >Salvar registro</AppButton
           >
         </div>
-      </fieldset>
-    </form>
+      </AppFieldset>
+    </AppForm>
   </AppDialog>
 </template>
 <script setup>
+import { useId } from "vue";
+const fieldId = useId();
 import CareScheduleFields from "./CareScheduleFields.vue";
 import { ref, computed, watch } from "vue";
 import { AppDialog, AppButton } from "@/components/ui";
-import { AppCurrency, AppCheckbox } from "@/components/forms";
+import {
+  AppForm,
+  AppFieldset,
+  AppCurrency,
+  AppCheckbox,
+  AppSelect,
+  AppInput,
+  AppTextarea,
+} from "@/components/forms";
 import { useCareStore } from "@/state/care";
-import { useAuthStore } from "@/state/auth";
+import { useAuthStore } from "@/modules/auth";
 import { entryKinds } from "@/utils/care";
 const props = defineProps({
   open: Boolean,
@@ -186,9 +200,28 @@ const emit = defineEmits(["close", "saved"]);
 const store = useCareStore(),
   auth = useAuthStore();
 const entryForm = ref({ details: {}, shares: [] });
+const assignee = computed({
+  get: () => entryForm.value.assigned_user_id ?? "",
+  set: (value) => {
+    entryForm.value.assigned_user_id = value === "" ? null : value;
+  },
+});
+const assigneeOptions = computed(() => [
+  { label: "Sem designação", value: "" },
+  ...props.members
+    .filter((member) => member.role !== "observador")
+    .map((member) => ({ label: member.name, value: member.id })),
+]);
+const kindOptions = computed(() =>
+  props.availableKinds.map((kind) => ({
+    label: entryKinds[kind],
+    value: kind,
+  })),
+);
+const scheduleKinds = ["event", "task", "feeding", "medication", "vaccine"];
 const detailLabels = {
   dose: "Dose informada",
-  frequency: "Frequência informada",
+  frequency: "Frequência informada (texto de referência)",
   route: "Via de administração",
   food: "Alimento",
   quantity: "Quantidade",
@@ -238,6 +271,11 @@ function initialize(e) {
         amount: null,
         shares: [],
       };
+  if (entryForm.value.schedule?.times) {
+    entryForm.value.schedule.times = entryForm.value.schedule.times.filter(
+      (time) => time !== entryForm.value.schedule.local_start.slice(11),
+    );
+  }
 }
 function setAffectedMember(id, checked) {
   const selected = entryForm.value.affected_user_ids || [];
@@ -260,7 +298,19 @@ async function saveEntry() {
       affected_user_ids: e.affected_user_ids || [],
       due_at: e.due_at ? new Date(e.due_at).toISOString() : null,
       ends_at: e.ends_at ? new Date(e.ends_at).toISOString() : null,
-      schedule: e.schedule || null,
+      schedule: e.schedule && {
+        ...e.schedule,
+        until:
+          e.schedule.frequency === "once"
+            ? e.schedule.local_start.slice(0, 10)
+            : e.schedule.until,
+        ...(e.kind === "medication" && {
+          times: [
+            e.schedule.local_start.slice(11),
+            ...(e.schedule.frequency === "once" ? [] : e.schedule.times || []),
+          ],
+        }),
+      },
       details: e.details,
       amount_cents:
         e.kind === "expense" ? Math.round(Number(e.amount) * 100) : null,
@@ -279,8 +329,14 @@ async function saveEntry() {
 
 watch(
   () => entryForm.value.kind,
-  () => {
-    if (!["event", "task", "feeding"].includes(entryForm.value.kind))
+  (kind, previous) => {
+    if (
+      !scheduleKinds.includes(kind) ||
+      (!props.entry &&
+        [kind, previous].some((value) =>
+          ["medication", "vaccine"].includes(value),
+        ))
+    )
       entryForm.value.schedule = null;
   },
 );
@@ -299,12 +355,10 @@ watch(
 <style scoped>
 .care-share-group {
   display: grid;
-  gap: 1rem;
-  margin-block: 1.25rem 1.5rem;
+  gap: var(--space-4);
 }
 .care-share-add {
   justify-self: start;
-  margin-top: 0.25rem;
 }
 
 .care-form-fields {

@@ -35,20 +35,16 @@
     <div class="care-grid">
       <AppCard v-for="p in store.recipients" :key="p.id"
         ><div class="care-person">
-          <span class="care-avatar" aria-hidden="true">
-            <img
-              v-if="
-                avatar.url &&
-                auth.organization?.can_manage_avatar &&
-                p.organization_id === auth.organization?.id
-              "
-              :src="avatar.url"
-              alt=""
-            />
-            <template v-else>{{
-              p.kind === "pet" ? "🐾" : p.name.slice(0, 1)
-            }}</template>
-          </span>
+          <RecipientAvatar
+            class="care-avatar"
+            :src="
+              auth.organization?.can_manage_avatar &&
+              p.organization_id === auth.organization?.id
+                ? avatar.url
+                : undefined
+            "
+            :initials="p.kind === 'pet' ? '🐾' : p.name.slice(0, 1)"
+          />
           <div>
             <h2>{{ p.name }}</h2>
             <p class="care-muted">{{ recipientKinds[p.kind] }}</p>
@@ -95,33 +91,45 @@
       :error="store.error"
       @close="dialogOpen = false"
     >
-      <form @submit.prevent="save">
+      <AppForm @submit.prevent="save">
         <p v-if="form.id">
           Qualquer responsável com acesso pode propor esta revisão. Se você for
           o único responsável, ela será aplicada imediatamente. Caso contrário,
           o cadastro vigente será preservado até o aceite de todos os demais.
           Acompanhe a proposta na central de decisões.
         </p>
-        <label class="care-field"
-          >Nome<input v-model="form.name" required maxlength="150" /></label
-        ><label class="care-field"
-          >Tipo<select v-model="form.kind">
-            <option v-for="(label, key) in recipientKinds" :value="key">
-              {{ label }}
-            </option>
-          </select></label
-        ><label class="care-field"
-          >Data de nascimento<input
-            type="date"
-            v-model="form.birth_date" /></label
-        ><template v-if="form.kind === 'pet'"
-          ><label class="care-field"
-            >Espécie<input
-              v-model="form.species"
-              required
-              placeholder="Cachorro, gato…" /></label
-          ><label class="care-field">Raça<input v-model="form.breed" /></label
-        ></template>
+        <AppInput
+          label="Nome"
+          :id="fieldId + '-1'"
+          v-model="form.name"
+          required
+          :maxlength="150"
+        /><AppSelect
+          label="Tipo"
+          :id="fieldId + '-2'"
+          v-model="form.kind"
+          :options="
+            Object.entries(recipientKinds).map(([value, label]) => ({
+              value,
+              label,
+            }))
+          "
+        /><AppDate
+          label="Data de nascimento"
+          :id="fieldId + '-3'"
+          v-model="form.birth_date"
+          :show-icon="false"
+        /><template v-if="form.kind === 'pet'"
+          ><AppInput
+            label="Espécie"
+            :id="fieldId + '-4'"
+            v-model="form.species"
+            required
+            placeholder="Cachorro, gato…" /><AppInput
+            label="Raça"
+            :id="fieldId + '-5'"
+            v-model="form.breed"
+        /></template>
         <RecipientProfileFields
           v-model="form"
           :kind="form.kind"
@@ -140,7 +148,7 @@
             >Salvar</AppButton
           >
         </div>
-      </form>
+      </AppForm>
     </AppDialog>
     <AppConfirmDialog
       :open="!!archiving"
@@ -158,10 +166,14 @@
   </CareShell>
 </template>
 <script setup>
+import { AppForm, AppInput, AppSelect, AppDate } from "@/components/forms";
+import { useId } from "vue";
+const fieldId = useId();
 import { ref, onMounted, watch } from "vue";
 import { useRouter } from "vue-router";
 const router = useRouter();
 import RecipientProfileCard from "@/components/care/RecipientProfileCard.vue";
+import RecipientAvatar from "@/components/care/RecipientAvatar.vue";
 import RecipientProfileFields from "@/components/care/RecipientProfileFields.vue";
 import CareShell from "@/components/care/CareShell.vue";
 import {
@@ -170,7 +182,7 @@ import {
   AppDialog,
   AppConfirmDialog,
 } from "@/components/ui";
-import { useAuthStore } from "@/state/auth";
+import { useAuthStore } from "@/modules/auth";
 import { useCareStore } from "@/state/care";
 import { useRecipientAvatarStore } from "@/state/recipient-avatar";
 import { recipientKinds } from "@/utils/care";

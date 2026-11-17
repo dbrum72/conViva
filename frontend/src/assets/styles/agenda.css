@@ -1,15 +1,9 @@
 .agenda-page {
   min-width: 0;
   --agenda-muted: var(--color-text-muted);
-  --agenda-green: var(--color-accent);
   --agenda-yellow: var(--color-warning);
   --agenda-overdue: var(--color-danger);
   --agenda-lavender: var(--palette-care-lavender);
-  --agenda-lavender-soft: color-mix(
-    in srgb,
-    var(--agenda-lavender) 22%,
-    var(--color-surface)
-  );
 }
 .agenda-page button,
 .agenda-page select,
@@ -107,28 +101,10 @@
   border-top: 1px solid
     color-mix(in srgb, var(--color-brand-secondary) 18%, transparent);
 }
-.agenda-toolbar-filters label,
-.agenda-list-range label {
-  display: flex;
+.agenda-toolbar-filters > .app-field,
+.agenda-list-range > .app-field {
   flex: 1;
   min-width: 145px;
-  flex-direction: column;
-  gap: 0.35rem;
-  font-size: 0.7rem;
-  font-weight: 600;
-  color: var(--agenda-muted);
-}
-.agenda-toolbar-filters select,
-.agenda-toolbar-filters input,
-.agenda-list-range input {
-  width: 100%;
-  min-height: 2.4rem;
-  padding: 0.45rem 0.6rem;
-  border: 1px solid var(--color-border);
-  border-radius: 0.5rem;
-  background: var(--color-surface);
-  color: var(--color-text);
-  font-size: 0.8rem;
 }
 .agenda-context {
   display: flex;
@@ -624,7 +600,7 @@
   gap: 0.75rem;
   padding-bottom: 1.25rem;
 }
-.agenda-list-range label {
+.agenda-list-range > .app-field {
   max-width: 220px;
 }
 .agenda-list-group {
@@ -684,7 +660,7 @@
   .agenda-toolbar-filters {
     gap: 0.6rem;
   }
-  .agenda-toolbar-filters label {
+  .agenda-toolbar-filters > .app-field {
     min-width: calc(50% - 0.6rem);
     flex-basis: calc(50% - 0.6rem);
   }

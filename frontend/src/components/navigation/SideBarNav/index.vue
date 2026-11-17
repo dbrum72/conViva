@@ -12,7 +12,7 @@ import SideBarItem from "@/components/navigation/SideBarItem/index.vue";
 import menuItems from "@/config/menu.js";
 import { permits } from "@/config/settings.js";
 
-import { useAuthStore } from "@/state/auth.js";
+import { useAuthStore } from "@/modules/auth";
 
 const authStore = useAuthStore();
 

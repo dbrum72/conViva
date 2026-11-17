@@ -35,6 +35,12 @@
       >
     </p>
     <h3>{{ item.title }}</h3>
+    <p
+      v-if="item.details?.dose || item.details?.route"
+      class="agenda-occurrence-note"
+    >
+      {{ [item.details.dose, item.details.route].filter(Boolean).join(" · ") }}
+    </p>
     <p class="agenda-occurrence-executor">
       {{ item.participant_name || executor || "Sem executor designado" }}
     </p>
@@ -74,11 +80,41 @@
       Cadastro encerrado. A execução de cada ocorrência é registrada
       separadamente.
     </p>
-    <p v-if="item.execution" class="agenda-occurrence-note">
-      Executado por {{ item.execution.author }} em
-      {{ stamp(item.execution.occurred_at) }}. Registrado em
-      {{ stamp(item.execution.recorded_at) }}.
-    </p>
+    <ol
+      v-if="item.execution"
+      class="agenda-occurrence-note"
+      aria-label="Histórico da ocorrência"
+    >
+      <li
+        v-for="(record, index) in [item.execution, ...(item.corrections || [])]"
+        :key="record.id || index"
+      >
+        <strong v-if="index"
+          >Correção{{ index === item.corrections.length ? " vigente" : "" }} ·
+        </strong>
+        {{
+          record.outcome === "not_administered"
+            ? "Não administrada"
+            : record.outcome
+              ? item.kind === "vaccine"
+                ? "Aplicada"
+                : "Administrada"
+              : "Executado"
+        }}
+        · {{ record.author }} · {{ stamp(record.occurred_at) }}. Registrado em
+        {{ stamp(record.recorded_at) }}.
+        <p v-if="record.description" class="care-pre">
+          {{ record.description }}
+        </p>
+        <p v-if="record.next_date">
+          Próxima data informada:
+          {{ dateLabel(record.next_date, { dateStyle: "short" }) }}
+        </p>
+        <p v-if="record.reason" class="care-pre">
+          Justificativa: {{ record.reason }}
+        </p>
+      </li>
+    </ol>
     <div
       v-if="item.kind !== 'unavailability'"
       class="agenda-occurrence-actions"
@@ -91,25 +127,40 @@
         "
         >Ver {{ item.kind === "expense" ? "despesa" : "cuidado" }} de
         {{ item.recipient.name }} <span aria-hidden="true">↗</span></RouterLink
-      ><button
+      ><AppButton
+        bare
         v-if="item.can_execute"
         type="button"
         :disabled="busy"
         @click="$emit('execute', item)"
       >
-        Registrar execução</button
-      ><button
+        {{
+          ["medication", "vaccine"].includes(item.kind)
+            ? "Registrar administração"
+            : "Registrar execução"
+        }}</AppButton
+      ><AppButton
+        bare
+        v-if="item.can_correct"
+        type="button"
+        :disabled="busy"
+        @click="$emit('correct', item)"
+      >
+        Corrigir registro</AppButton
+      ><AppButton
+        bare
         v-if="item.can_cancel"
         type="button"
         :disabled="busy"
         @click="$emit('cancel', item)"
       >
         Propor cancelamento
-      </button>
+      </AppButton>
     </div>
   </article>
 </template>
 <script setup>
+import { AppButton } from "@/components/ui";
 import { entryKinds } from "@/utils/care";
 import { agendaStates, dateKey, dateLabel, timeLabel } from "@/utils/agenda";
 const props = defineProps({
@@ -118,7 +169,7 @@ const props = defineProps({
   executor: String,
   busy: Boolean,
 });
-defineEmits(["execute", "cancel"]);
+defineEmits(["execute", "correct", "cancel"]);
 function stamp(value) {
   return new Date(value).toLocaleString("pt-BR", {
     timeZone: props.timezone,

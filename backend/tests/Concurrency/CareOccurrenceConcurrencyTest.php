@@ -14,7 +14,7 @@ class CareOccurrenceConcurrencyTest extends TestCase
 
     public static function actions(): array
     {
-        return [['generation'], ['execution'], ['approval']];
+        return [['generation'], ['execution'], ['approval'], ['administration']];
     }
 
     #[DataProvider('actions')]
@@ -26,20 +26,35 @@ class CareOccurrenceConcurrencyTest extends TestCase
         $this->seed();
         ['group' => $group, 'owner' => $owner, 'recipient' => $recipient] = CareScenario::create('child');
         $peer = null;
-        if ($action === 'approval') {
+        if (in_array($action, ['approval', 'administration'])) {
             $peer = CareScenario::member($group, 'responsavel');
-            CareScenario::grant($recipient, $peer, ['routine']);
+            CareScenario::grant($recipient, $peer, [$action === 'administration' ? 'health' : 'routine']);
         }
         $this->actingAs($owner, 'api')->withHeader('X-Tenant', $group->slug);
         $day = now()->addDays(2)->format('Y-m-d');
         $path = '/api/recipients/'.$recipient->id.'/entries';
-        $entry = $this->postJson($path, ['kind' => 'task', 'title' => 'Série concorrente', 'publish_to_agenda' => true, 'assigned_user_id' => $owner->id, 'schedule' => ['frequency' => 'daily', 'timezone' => 'UTC', 'local_start' => $day.'T10:00', 'until' => $day, 'duration_minutes' => 30]])->assertCreated()->json();
+        $administration = $action === 'administration';
+        $entry = $this->postJson($path, [
+            'kind' => $administration ? 'medication' : 'task',
+            'title' => 'Série concorrente', 'publish_to_agenda' => true,
+            'assigned_user_id' => $administration ? null : $owner->id,
+            'schedule' => [
+                'frequency' => 'daily', 'timezone' => 'UTC', 'local_start' => $day.'T10:00',
+                'until' => $day, 'duration_minutes' => 30,
+                ...($administration ? ['times' => ['10:00', '16:00']] : []),
+            ],
+        ])->assertCreated()->json();
+        $decisionUrl = $path.'/'.$entry['id'].'/proposals/'.$entry['proposals'][0]['id'].'/decision';
+        if ($administration) {
+            $this->actingAs($peer, 'api')->postJson($decisionUrl, ['decision' => 'accepted'])->assertOk();
+            $this->actingAs($owner, 'api');
+        }
         $url = '/api/agenda?from='.$day.'&to='.$day;
-        if ($action === 'execution') {
+        if (in_array($action, ['execution', 'administration'])) {
             $id = $this->getJson($url)->assertOk()->json('data.0.id');
             $url = '/api/occurrences/'.$id.'/execution';
         } elseif ($action === 'approval') {
-            $url = $path.'/'.$entry['id'].'/proposals/'.$entry['proposals'][0]['id'].'/decision';
+            $url = $decisionUrl;
         }
         $files = [tempnam(sys_get_temp_dir(), 'conviva-occurrence-'), tempnam(sys_get_temp_dir(), 'conviva-occurrence-')];
         $start = microtime(true) + 0.3;
@@ -57,10 +72,12 @@ class CareOccurrenceConcurrencyTest extends TestCase
                         usleep(1000);
                     }
                     try {
-                        $this->actingAs(($peer ?? $owner)->fresh(), 'api');
+                        $actor = $administration && $file === $files[0] ? $owner : ($peer ?? $owner);
+                        $this->actingAs($actor->fresh(), 'api');
                         $response = match ($action) {
                             'generation' => $this->getJson($url),
                             'execution' => $this->postJson($url, ['occurred_at' => now()->subMinute()->toISOString()]),
+                            'administration' => $this->postJson($url, ['occurred_at' => now()->subMinute()->toISOString(), 'outcome' => 'administered']),
                             'approval' => $this->postJson($url, ['decision' => 'accepted']),
                         };
                         file_put_contents($file, (string) $response->status().($response->status() >= 500 ? ': '.$response->json('message') : ''));
@@ -79,13 +96,13 @@ class CareOccurrenceConcurrencyTest extends TestCase
             $statuses = array_map(fn ($file) => file_get_contents($file), $files);
             sort($statuses);
             $this->assertSame(match ($action) {
-                'generation' => ['200', '200'], 'execution' => ['201', '409'], 'approval' => ['200', '409']
+                'generation' => ['200', '200'], 'execution', 'administration' => ['201', '409'], 'approval' => ['200', '409']
             }, $statuses);
             $this->assertDatabaseCount('care_schedules', 1);
             if ($action !== 'approval') {
-                $this->assertDatabaseCount('care_occurrences', 1);
+                $this->assertDatabaseCount('care_occurrences', $administration ? 2 : 1);
             }
-            if ($action === 'execution') {
+            if (in_array($action, ['execution', 'administration'])) {
                 $this->assertSame(1, DB::table('care_entries')->where('related_entry_id', $entry['id'])->count());
             }
         } finally {

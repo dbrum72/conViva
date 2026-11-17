@@ -3,18 +3,23 @@ import { createPinia, setActivePinia } from "pinia";
 import { mount, flushPromises, enableAutoUnmount } from "@vue/test-utils";
 import { defineComponent } from "vue";
 import { useCareStore } from "@/state/care";
-import { useAuthStore } from "@/state/auth";
+import { useAuthStore } from "@/modules/auth";
 import { careApi } from "@/services/care";
 import AgendaPage from "@/views/care/AgendaPage.vue";
 import CareExecutionDialog from "@/components/care/CareExecutionDialog.vue";
 import CareEntryDialog from "@/components/care/CareEntryDialog.vue";
 import CareScheduleFields from "@/components/care/CareScheduleFields.vue";
 import ProposalComparison from "@/components/care/ProposalComparison.vue";
-vi.mock("vue-router", () => ({ useRouter: () => ({ push: vi.fn() }) }));
+const route = vi.hoisted(() => ({ query: {} }));
+vi.mock("vue-router", () => ({
+  useRoute: () => route,
+  useRouter: () => ({ push: vi.fn() }),
+}));
 vi.mock("@/services/care", () => ({
   careApi: {
     agenda: vi.fn(),
     executeOccurrence: vi.fn(),
+    correctOccurrence: vi.fn(),
     cancelOccurrence: vi.fn(),
   },
 }));
@@ -51,6 +56,7 @@ beforeEach(() => {
   vi.setSystemTime(new Date("2026-10-01T12:00:00Z"));
   setActivePinia(createPinia());
   vi.clearAllMocks();
+  route.query = {};
   careApi.agenda.mockResolvedValue(page());
 });
 it("descarta páginas atrasadas e respostas de outro grupo", async () => {
@@ -144,6 +150,74 @@ const Button = defineComponent({ template: "<button><slot /></button>" });
 const Dialog = defineComponent({
   props: ["open"],
   template: '<div v-if="open"><slot /></div>',
+});
+it("registra vacina e encaminha a correção para a versão exibida no histórico", async () => {
+  route.query = { health_entry: "2", date: occurrence.due_at };
+  const vaccine = { ...occurrence, kind: "vaccine", title: "Vacina" };
+  careApi.agenda.mockResolvedValue(page([vaccine]));
+  careApi.executeOccurrence.mockResolvedValue({});
+  careApi.correctOccurrence.mockResolvedValue({});
+  const wrapper = mount(AgendaPage, {
+    global: {
+      stubs: {
+        Teleport: true,
+        Transition: false,
+        CareShell: { template: "<div><slot /></div>" },
+        AppDialog: Dialog,
+        RouterLink: { template: "<a><slot /></a>" },
+      },
+    },
+  });
+  await flushPromises();
+  expect(careApi.agenda).toHaveBeenLastCalledWith(
+    expect.objectContaining({ health_entry: "2", status: "all" }),
+  );
+  await clickText(wrapper, "Registrar administração");
+  await wrapper.get("#administration-outcome").setValue("administered");
+  await wrapper.get('form input[type="date"]').setValue("2026-10-20");
+  const execution = {
+    id: 10,
+    outcome: "administered",
+    author: "Ana",
+    next_date: "2026-10-20",
+    occurred_at: "2026-10-01T11:00:00Z",
+    recorded_at: "2026-10-01T12:00:00Z",
+  };
+  careApi.agenda.mockResolvedValue(
+    page([
+      {
+        ...vaccine,
+        status: "executed",
+        can_execute: false,
+        can_correct: true,
+        execution,
+        corrections: [
+          { ...execution, id: 11, reason: "Justificativa anterior" },
+        ],
+      },
+    ]),
+  );
+  await wrapper.get("form").trigger("submit");
+  await flushPromises();
+  expect(careApi.executeOccurrence).toHaveBeenCalledWith(
+    1,
+    expect.objectContaining({
+      outcome: "administered",
+      next_date: "2026-10-20",
+    }),
+  );
+  expect(wrapper.text()).toContain("Justificativa anterior");
+  await clickText(wrapper, "Corrigir registro");
+  await wrapper.get("#administration-outcome").setValue("not_administered");
+  await wrapper.get("#correction-reason").setValue("Retificação");
+  await wrapper.get("form").trigger("submit");
+  await flushPromises();
+  expect(careApi.correctOccurrence).toHaveBeenCalledWith(1, 11, {
+    description: "",
+    occurred_at: execution.occurred_at.replace("Z", ".000Z"),
+    outcome: "not_administered",
+    reason: "Retificação",
+  });
 });
 it("apresenta conflitos, conclusão administrativa e ações autorizadas; envia filtros ao servidor", async () => {
   careApi.agenda.mockResolvedValue(
@@ -471,18 +545,32 @@ it("usa AppCheckbox em nova despesa e preserva os participantes selecionados", a
   const save = vi.spyOn(store, "saveEntry").mockResolvedValue({});
   useAuthStore().user = { id: 1 };
   const wrapper = mount(CareEntryDialog, {
-    props: { open: true, recipientId: 1, availableKinds: ["expense"], members: [
-      { id: 1, name: "Autor", role: "responsavel" },
-      { id: 2, name: "Outro responsável", role: "responsavel" },
-    ] },
+    props: {
+      open: true,
+      recipientId: 1,
+      availableKinds: ["expense"],
+      members: [
+        { id: 1, name: "Autor", role: "responsavel" },
+        { id: 2, name: "Outro responsável", role: "responsavel" },
+      ],
+    },
     global: { stubs: { teleport: true } },
   });
   expect(wrapper.findAll(".app-checkbox")).toHaveLength(2);
   await wrapper.find("#care-affected-member-2").setValue(true);
   await wrapper.find("#care-publish-to-agenda").setValue(true);
   await wrapper.find("form").trigger("submit");
-  expect(save).toHaveBeenLastCalledWith(1, expect.objectContaining({ affected_user_ids: [2], publish_to_agenda: true }));
+  expect(save).toHaveBeenLastCalledWith(
+    1,
+    expect.objectContaining({
+      affected_user_ids: [2],
+      publish_to_agenda: true,
+    }),
+  );
   await wrapper.find("#care-affected-member-2").setValue(false);
   await wrapper.find("form").trigger("submit");
-  expect(save).toHaveBeenLastCalledWith(1, expect.objectContaining({ affected_user_ids: [] }));
+  expect(save).toHaveBeenLastCalledWith(
+    1,
+    expect.objectContaining({ affected_user_ids: [] }),
+  );
 });

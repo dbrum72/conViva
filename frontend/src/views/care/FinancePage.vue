@@ -14,49 +14,48 @@
       >
     </template>
     <p v-if="recipient" class="care-muted">{{ recipient.name }}</p>
-    <form class="finance-filters" @submit.prevent="applyPeriod">
-      <label class="care-field" for="finance-period"
-        >Período
-        <select
-          id="finance-period"
-          v-model="period"
-          :disabled="!!store.pending"
-          @change="changePeriod"
-        >
-          <option value="month">Este mês</option>
-          <option value="today">Hoje</option>
-          <option value="week">Esta semana</option>
-          <option value="last_7">Últimos 7 dias</option>
-          <option value="last_30">Últimos 30 dias</option>
-          <option value="last_month">Mês anterior</option>
-          <option value="year">Este ano</option>
-          <option value="all">Todo o período</option>
-          <option value="custom">Personalizado</option>
-        </select>
-      </label>
+    <AppForm class="finance-filters" @submit.prevent="applyPeriod">
+      <AppSelect
+        label="Período"
+        id="finance-period"
+        v-model="period"
+        :disabled="!!store.pending"
+        @update:model-value="changePeriod"
+        :options="[
+          { value: 'month', label: 'Este mês' },
+          { value: 'today', label: 'Hoje' },
+          { value: 'week', label: 'Esta semana' },
+          { value: 'last_7', label: 'Últimos 7 dias' },
+          { value: 'last_30', label: 'Últimos 30 dias' },
+          { value: 'last_month', label: 'Mês anterior' },
+          { value: 'year', label: 'Este ano' },
+          { value: 'all', label: 'Todo o período' },
+          { value: 'custom', label: 'Personalizado' },
+        ]"
+      />
       <template v-if="period === 'custom'">
-        <label class="care-field" for="finance-from"
-          >De<input
-            id="finance-from"
-            type="date"
-            v-model="from"
-            required
-            :disabled="!!store.pending"
-        /></label>
-        <label class="care-field" for="finance-to"
-          >Até<input
-            id="finance-to"
-            type="date"
-            v-model="to"
-            :min="from"
-            required
-            :disabled="!!store.pending"
-        /></label>
+        <AppDate
+          label="De"
+          id="finance-from"
+          v-model="from"
+          required
+          :disabled="!!store.pending"
+          :show-icon="false"
+        />
+        <AppDate
+          label="Até"
+          id="finance-to"
+          v-model="to"
+          :min="from"
+          required
+          :disabled="!!store.pending"
+          :show-icon="false"
+        />
         <AppButton type="submit" variant="outline" :disabled="!!store.pending"
           >Consultar</AppButton
         >
       </template>
-    </form>
+    </AppForm>
     <p v-if="store.financePeriod" class="care-muted">
       {{
         store.financePeriod.from
@@ -150,6 +149,7 @@
   </CareShell>
 </template>
 <script setup>
+import { AppForm, AppSelect, AppDate } from "@/components/forms";
 import { ref, computed, watch } from "vue";
 import CareShell from "@/components/care/CareShell.vue";
 import ExpenseCard from "@/components/care/ExpenseCard.vue";
@@ -157,8 +157,8 @@ import CareEntryDialog from "@/components/care/CareEntryDialog.vue";
 import CarePaymentDialog from "@/components/care/CarePaymentDialog.vue";
 import { AppCard, AppButton, AppConfirmDialog } from "@/components/ui";
 import { useCareStore } from "@/state/care";
-import { useAuthStore } from "@/state/auth";
-import { useOrganizationMembersStore } from "@/state/organization-members";
+import { useAuthStore } from "@/modules/auth";
+import { useOrganizationMembersStore } from "@/modules/groups";
 import { money } from "@/utils/care";
 const store = useCareStore(),
   auth = useAuthStore(),
@@ -254,14 +254,12 @@ watch(
   gap: 1rem;
   align-items: end;
 }
-.finance-filters .care-field {
+.finance-filters > .app-field {
   flex: 1 1 12rem;
   min-width: 0;
   margin: 0;
 }
-.finance-filters input,
-.finance-filters select,
-.finance-filters :deep(.btn) {
+.finance-filters > .btn {
   box-sizing: border-box;
   height: 3rem;
   min-height: 3rem;

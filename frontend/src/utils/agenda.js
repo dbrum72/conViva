@@ -2,6 +2,7 @@
 export const weekdays = ["Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom"];
 export const agendaStates = {
   scheduled: "Programada",
+  not_administered: "Não administrada",
   executed: "Execução registrada",
   cancelled: "Cancelada",
   superseded: "Substituída por revisão",

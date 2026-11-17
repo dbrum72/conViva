@@ -8,30 +8,39 @@
       Esta proposta anterior à central não possui uma cópia da versão original
       para comparação. Os valores apresentados são os propostos.
     </p>
-    <div class="comparison-scroll">
-      <table v-if="proposal.changes.length">
-        <thead>
-          <tr>
-            <th>Campo</th>
-            <th>Antes</th>
-            <th>Proposto</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="change in proposal.changes" :key="change.field">
-            <th>{{ fields[change.field] || change.field }}</th>
-            <td>{{ display(change.field, change.before) }}</td>
-            <td>{{ display(change.field, change.after) }}</td>
-          </tr>
-        </tbody>
-      </table>
-      <p v-else>Nenhuma diferença de conteúdo registrada.</p>
-    </div>
+    <AppTable
+      v-if="proposal.changes.length"
+      class="proposal-comparison-table"
+      :columns="columns"
+      :rows="proposal.changes"
+      row-key="field"
+    >
+      <template #cell-field="{ value }">{{ fields[value] || value }}</template>
+      <template #cell-before="{ row, value }">{{
+        display(row.field, value)
+      }}</template>
+      <template #cell-after="{ row, value }">{{
+        display(row.field, value)
+      }}</template>
+    </AppTable>
+    <p v-else>Nenhuma diferença de conteúdo registrada.</p>
   </section>
 </template>
 <script setup>
-import { dateTime, money, recipientKinds, entryKinds } from "@/utils/care";
+import { AppTable } from "@/components/ui";
+import {
+  dateTime,
+  money,
+  recipientKinds,
+  entryKinds,
+  formatSchedule,
+} from "@/utils/care";
 const props = defineProps({ proposal: { type: Object, required: true } });
+const columns = [
+  { key: "field", label: "Campo", rowHeader: true },
+  { key: "before", label: "Antes" },
+  { key: "after", label: "Proposto" },
+];
 const fields = {
   publish_to_agenda: "Publicar na agenda",
   schedule: "Programação",
@@ -67,8 +76,7 @@ function display(field, value) {
   if (field === "publish_to_agenda") return value ? "Sim" : "Não";
   if (field === "exception")
     return `${value.scope === "future" ? "Esta e as futuras" : "Somente esta"}: ${dateTime(value.starts_at)}`;
-  if (field === "schedule")
-    return `${{ once: "Data isolada", daily: "Diária", weekly: "Semanal" }[value.frequency]} · ${value.local_start.replace("T", " ")} · ${value.timezone} · até ${value.until} · ${value.duration_minutes} minutos${value.frequency === "weekly" ? " · dias: " + value.weekdays.map((d) => ["Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom"][d - 1]).join(", ") : ""}`;
+  if (field === "schedule") return formatSchedule(value);
   if (field === "amount_cents") return money(value);
   if (field === "assigned_user_id") return participant(value);
   if (field === "affected_user_ids")
@@ -123,19 +131,10 @@ function display(field, value) {
 }
 </script>
 <style scoped>
-.comparison-scroll {
-  overflow-x: auto;
-}
-table {
-  border-collapse: collapse;
-  width: 100%;
+.proposal-comparison-table {
   margin-block: 1rem;
 }
-th,
-td {
-  padding: 0.75rem;
-  text-align: left;
-  border-bottom: 1px solid var(--color-border);
+.proposal-comparison-table :deep(.app-table__cell) {
   vertical-align: top;
   white-space: pre-wrap;
   overflow-wrap: anywhere;

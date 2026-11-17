@@ -1,5 +1,7 @@
 # E00 — contratos e baseline do conViva
 
+A baseline vigente para retomada é a [baseline após a E06](BASELINE-E06.md).
+
 Verificado em 18/09/2026 por Codex. Escopo: comportamento atual, cenários sintéticos e evidências para iniciar E01. Este documento não antecipa como implementados os recursos futuros do cronograma.
 
 ## Fonte das regras

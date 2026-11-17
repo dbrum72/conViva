@@ -1,6 +1,7 @@
 <template>
   <div class="app-tabs" role="tablist" :aria-label="ariaLabel">
-    <button
+    <AppButton
+      bare
       v-for="item in items"
       :key="item.value"
       ref="tabRefs"
@@ -16,12 +17,13 @@
       @keydown="handleKeydown($event, item.value)"
     >
       {{ item.label }}
-    </button>
+    </AppButton>
   </div>
 </template>
 
 <script setup>
 import { nextTick, ref } from "vue";
+import AppButton from "@/components/ui/AppButton/index.vue";
 
 import { appTabsProps } from "./props.js";
 

@@ -21,8 +21,11 @@ class GenerateCareOccurrences
         }
         if (! empty($data['schedule'])) {
             $rule = $data['schedule'];
-            if (! in_array($data['kind'], ['event', 'task', 'feeding'])) {
-                throw ValidationException::withMessages(['schedule' => 'Recorrência disponível para compromissos, tarefas e alimentação. Programação de medicamentos terá fluxo próprio.']);
+            if (! in_array($data['kind'], ['event', 'task', 'feeding', 'medication', 'vaccine'])) {
+                throw ValidationException::withMessages(['schedule' => 'Este tipo de cuidado não admite programação.']);
+            }
+            if ($data['kind'] === 'vaccine' && $rule['frequency'] !== 'once') {
+                throw ValidationException::withMessages(['schedule.frequency' => 'Use uma data isolada para cada aplicação de vacina.']);
             }
             $start = CarbonImmutable::createFromFormat('!Y-m-d\TH:i', $rule['local_start'], $rule['timezone']);
             if ($start->format('Y-m-d\TH:i') !== $rule['local_start']) {
@@ -34,6 +37,16 @@ class GenerateCareOccurrences
             $rule['weekdays'] = array_values(array_unique(array_map('intval', $rule['weekdays'] ?? [])));
             if ($rule['frequency'] === 'weekly' && ! $rule['weekdays']) {
                 throw ValidationException::withMessages(['schedule.weekdays' => 'Escolha ao menos um dia da semana.']);
+            }
+            if ($data['kind'] === 'medication') {
+                $times = $rule['times'] ?? [];
+                sort($times);
+                if (! $times || $times[0] !== $start->format('H:i') || ($rule['frequency'] === 'once' && count($times) !== 1)) {
+                    throw ValidationException::withMessages(['schedule.times' => 'Informe horários de dose distintos, começando pelo horário de início. Uma data isolada admite uma única dose.']);
+                }
+                $rule['times'] = $times;
+            } elseif (array_key_exists('times', $rule)) {
+                throw ValidationException::withMessages(['schedule.times' => 'Horários de doses são exclusivos de medicamentos.']);
             }
             $data['schedule'] = $rule;
             $data['due_at'] = $start->utc()->toISOString();
@@ -102,31 +115,40 @@ class GenerateCareOccurrences
                 if ($rule['frequency'] === 'weekly' && ! in_array($day->dayOfWeekIso, $rule['weekdays'])) {
                     continue;
                 }
-                $wall = $date.'T'.$start->format('H:i');
-                $local = CarbonImmutable::parse($wall, $zone);
-                // DST gap: skip a nonexistent wall time; overlap: Carbon's first offset is used once.
-                if ($local->format('Y-m-d\TH:i') !== $wall) {
-                    continue;
+                foreach ($this->intervalsForDay($rule, $day) as [$instant, $end]) {
+                    if (($instant < $from && $end <= $from) || $instant >= $to
+                        || ($schedule->valid_from && $instant < $schedule->valid_from)
+                        || ($schedule->valid_until && $instant >= $schedule->valid_until)) {
+                        continue;
+                    }
+                    // An early execution remains the execution of this instant across revisions.
+                    if (CareOccurrence::whereHas('schedule', fn ($q) => $q->where('care_entry_id', $entry->id))
+                        ->where('care_schedule_id', '!=', $schedule->id)->where('starts_at', $instant)
+                        ->whereNotNull('execution_entry_id')->lockForUpdate()->exists()) {
+                        continue;
+                    }
+                    $schedule->occurrences()->lockForUpdate()->firstOrCreate(['starts_at' => $instant], [
+                        'organization_id' => $schedule->organization_id,
+                        'execution_entry_id' => $schedule->snapshot['legacy_execution_id'] ?? null,
+                        'status' => ! empty($schedule->snapshot['legacy_execution_id']) ? 'executed' : 'scheduled',
+                        'ends_at' => $end,
+                    ]);
                 }
-                $instant = isset($rule['instant']) ? CarbonImmutable::parse($rule['instant']) : $local->utc();
-                if ($instant < $start->utc() || ($instant < $from && $instant->addMinutes($rule['duration_minutes']) <= $from) || $instant >= $to
-                    || ($schedule->valid_from && $instant < $schedule->valid_from)
-                    || ($schedule->valid_until && $instant >= $schedule->valid_until)) {
-                    continue;
-                }
-                // An early execution remains the execution of this instant across revisions.
-                if (CareOccurrence::whereHas('schedule', fn ($q) => $q->where('care_entry_id', $entry->id))
-                    ->where('care_schedule_id', '!=', $schedule->id)->where('starts_at', $instant)
-                    ->whereNotNull('execution_entry_id')->lockForUpdate()->exists()) {
-                    continue;
-                }
-                $schedule->occurrences()->lockForUpdate()->firstOrCreate(['starts_at' => $instant], [
-                    'organization_id' => $schedule->organization_id,
-                    'execution_entry_id' => $schedule->snapshot['legacy_execution_id'] ?? null,
-                    'status' => ! empty($schedule->snapshot['legacy_execution_id']) ? 'executed' : 'scheduled',
-                    'ends_at' => $instant->addMinutes($rule['duration_minutes']),
-                ]);
             }
         });
+    }
+
+    public function intervalsForDay(array $rule, CarbonImmutable $day): iterable
+    {
+        foreach ($rule['times'] ?? [substr($rule['local_start'], 11, 5)] as $time) {
+            $wall = $day->format('Y-m-d').'T'.$time;
+            $local = CarbonImmutable::parse($wall, $rule['timezone']);
+            // Skip nonexistent wall times. Carbon resolves repeated times to a single instant.
+            if ($local->format('Y-m-d\TH:i') !== $wall) {
+                continue;
+            }
+            $instant = isset($rule['instant']) ? CarbonImmutable::parse($rule['instant']) : $local->utc();
+            yield [$instant, $instant->addMinutes($rule['duration_minutes'])];
+        }
     }
 }

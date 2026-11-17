@@ -1,48 +1,18 @@
 import { createRouter, createWebHistory } from "vue-router";
-import { authGuard } from "./guards/auth.js";
+import { authGuard, authRoutes } from "@/modules/auth";
+import { groupEntryRoutes, groupMemberRoute } from "@/modules/groups";
 import { permissionGuard } from "./guards/permission.js";
 import DefaultLayout from "@/layouts/DefaultLayout.vue";
 const router = createRouter({
   history: createWebHistory(),
   routes: [
-    {
-      path: "/forgot-password",
-      name: "password.forgot",
-      component: () => import("@/views/auth/PasswordRecoveryPage.vue"),
-    },
-    {
-      path: "/reset-password",
-      name: "password.reset",
-      component: () => import("@/views/auth/PasswordRecoveryPage.vue"),
-    },
+    ...authRoutes,
     {
       path: "/",
       name: "home",
       component: () => import("@/views/public/LandingPage.vue"),
     },
-    {
-      path: "/login",
-      name: "login",
-      component: () => import("@/views/auth/LoginPage.vue"),
-      meta: { guestOnly: true },
-    },
-    {
-      path: "/register",
-      name: "register",
-      component: () => import("@/views/auth/RegisterPage.vue"),
-      meta: { guestOnly: true },
-    },
-    {
-      path: "/invitations/accept/:token",
-      name: "invitations.accept",
-      component: () => import("@/views/auth/InvitationAcceptPage.vue"),
-    },
-    {
-      path: "/organizations/select",
-      name: "organizations.select",
-      component: () => import("@/views/auth/OrganizationSelectPage.vue"),
-      meta: { requiresAuth: true },
-    },
+    ...groupEntryRoutes,
     {
       path: "/",
       component: DefaultLayout,
@@ -64,7 +34,7 @@ const router = createRouter({
           path: "dashboard",
           name: "dashboard",
           component: () => import("@/views/care/DashboardPage.vue"),
-          meta: { breadcrumb: "Visão geral" },
+          meta: { breadcrumb: "Hoje" },
         },
         {
           path: "recipients",
@@ -93,19 +63,10 @@ const router = createRouter({
         {
           path: "notifications",
           name: "notifications",
-          component: () => import("@/views/care/NotificationsPage.vue"),
+          component: () => import("@/modules/notifications/pages/NotificationsPage.vue"),
           meta: { breadcrumb: "Notificações" },
         },
-        {
-          path: "organization-members",
-          name: "organization-members",
-          component: () =>
-            import("@/views/organization-members/OrganizationMemberListPage.vue"),
-          meta: {
-            permission: "organization-members.view",
-            breadcrumb: "Grupo e cuidadores",
-          },
-        },
+        groupMemberRoute,
         {
           path: "settings",
           name: "settings",

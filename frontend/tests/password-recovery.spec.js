@@ -1,19 +1,19 @@
 import { beforeEach, expect, it, vi } from "vitest";
 import { createPinia, setActivePinia } from "pinia";
 import { mount, flushPromises } from "@vue/test-utils";
-import PasswordRecoveryPage from "@/views/auth/PasswordRecoveryPage.vue";
+import PasswordRecoveryPage from "@/modules/auth/pages/PasswordRecoveryPage.vue";
 import {
   requestPasswordLink,
   resetPassword,
-} from "@/services/password-recovery.js";
+} from "@/modules/auth/api/password-recovery.js";
 
 const { route, clearAuth } = vi.hoisted(() => ({
   route: { name: "password.forgot", fullPath: "/forgot-password", query: {} },
   clearAuth: vi.fn(),
 }));
 vi.mock("vue-router", () => ({ useRoute: () => route }));
-vi.mock("@/state/auth.js", () => ({ useAuthStore: () => ({ clearAuth }) }));
-vi.mock("@/services/password-recovery.js", () => ({
+vi.mock("@/modules/auth/state/auth.js", () => ({ useAuthStore: () => ({ clearAuth }) }));
+vi.mock("@/modules/auth/api/password-recovery.js", () => ({
   requestPasswordLink: vi.fn(),
   resetPassword: vi.fn(),
 }));

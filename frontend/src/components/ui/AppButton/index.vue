@@ -1,8 +1,8 @@
 <template>
   <button
+    ref="button"
     :type="type"
-    class="btn"
-    :class="buttonClasses"
+    :class="bare ? undefined : ['btn', buttonClasses]"
     :disabled="isDisabled"
     :aria-busy="loading || undefined"
     :aria-label="ariaLabel"
@@ -18,7 +18,8 @@
         decorative
       />
 
-      <span v-if="$slots.default" class="app-button__label">
+      <slot v-if="bare" />
+      <span v-else-if="$slots.default" class="app-button__label">
         <slot />
       </span>
 
@@ -33,7 +34,7 @@
 </template>
 
 <script setup>
-import { computed, useSlots } from "vue";
+import { computed, ref, useSlots } from "vue";
 
 import AppIcon from "@/components/ui/AppIcon/index.vue";
 import { appButtonProps } from "./props.js";
@@ -41,6 +42,8 @@ import { appButtonProps } from "./props.js";
 const props = defineProps(appButtonProps);
 
 const emit = defineEmits(["click"]);
+const button = ref(null);
+defineExpose({ focus: () => button.value?.focus() });
 
 const isDisabled = computed(() => props.disabled || props.loading);
 

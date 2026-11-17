@@ -159,12 +159,7 @@ class CareAvailability
             if ($rule['frequency'] === 'weekly' && ! in_array($day->dayOfWeekIso, $rule['weekdays'])) {
                 continue;
             }
-            $wall = $day->format('Y-m-d').'T'.$start->format('H:i');
-            $local = CarbonImmutable::parse($wall, $rule['timezone']);
-            if ($local->format('Y-m-d\\TH:i') !== $wall) {
-                continue;
-            }
-            yield [$local->utc(), $local->addMinutes($rule['duration_minutes'])->utc()];
+            yield from app(GenerateCareOccurrences::class)->intervalsForDay($rule, $day);
         }
     }
 }

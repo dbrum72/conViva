@@ -19,32 +19,41 @@
         Consulte os períodos e motivos de indisponibilidade dos participantes
         deste assistido. Apenas o próprio autor pode cancelar seu afastamento.
       </p>
-      <form v-if="canManage" class="availability-form" @submit.prevent="save">
-        <fieldset class="availability-fields" :disabled="!!store.pending">
-          <legend>Novo período de indisponibilidade</legend>
+      <AppForm
+        v-if="canManage"
+        class="availability-form"
+        @submit.prevent="save"
+      >
+        <AppFieldset class="availability-fields" :disabled="!!store.pending">
+          <template #legend>Novo período de indisponibilidade</template>
           <div class="availability-dates">
-            <label class="care-field"
-              >Início<input v-model="start" type="date" required
-            /></label>
-            <label class="care-field"
-              >Término<input
-                v-model="end"
-                type="date"
-                :min="start || undefined"
-                required
-            /></label>
+            <AppDate
+              label="Início"
+              :id="fieldId + '-1'"
+              v-model="start"
+              required
+              :show-icon="false"
+            />
+            <AppDate
+              label="Término"
+              :id="fieldId + '-2'"
+              v-model="end"
+              :min="start || undefined"
+              required
+              :show-icon="false"
+            />
           </div>
           <p class="care-muted availability-timezone">
             O bloqueio abrange dias completos, incluindo as datas de início e
             término, no fuso {{ timezone }}.
           </p>
-          <label class="care-field"
-            >Motivo da indisponibilidade (opcional)<textarea
-              v-model="reason"
-              rows="3"
-              maxlength="2000"
-            />
-          </label>
+          <AppTextarea
+            label="Motivo da indisponibilidade (opcional)"
+            :id="fieldId + '-3'"
+            v-model="reason"
+            :rows="3"
+            :maxlength="2000"
+          />
           <small class="care-muted availability-hint"
             >Visível para todos com permissão de consulta a este assistido. Até
             2.000 caracteres.</small
@@ -54,8 +63,8 @@
               >Informar indisponibilidade</AppButton
             >
           </div>
-        </fieldset>
-      </form>
+        </AppFieldset>
+      </AppForm>
       <p
         v-if="store.unavailabilityError"
         role="alert"
@@ -145,6 +154,9 @@
   </AppDialog>
 </template>
 <script setup>
+import { AppForm, AppFieldset, AppDate, AppTextarea } from "@/components/forms";
+import { useId } from "vue";
+const fieldId = useId();
 import { ref, watch } from "vue";
 import { AppDialog, AppButton, AppConfirmDialog } from "@/components/ui";
 import { useCareStore } from "@/state/care";
@@ -242,7 +254,7 @@ watch(
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
 }
-.availability-fields legend {
+.availability-fields :deep(legend) {
   padding: 0 0.4rem;
   font-size: 0.9rem;
   font-weight: 600;
@@ -253,19 +265,7 @@ watch(
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 1rem;
 }
-.availability-fields .care-field {
-  display: grid;
-  gap: 0.45rem;
-  min-width: 0;
-  font-size: 0.9rem;
-}
-.availability-fields input,
-.availability-fields textarea {
-  width: 100%;
-  min-width: 0;
-  box-sizing: border-box;
-}
-.availability-fields textarea {
+.availability-fields :deep(.textarea-control) {
   resize: vertical;
   min-height: 6rem;
 }

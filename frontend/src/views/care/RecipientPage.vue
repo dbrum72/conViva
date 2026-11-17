@@ -8,16 +8,12 @@
         >Voltar aos assistidos</RouterLink
       ></template
     ><template v-if="store.recipient">
-      <nav class="care-tabs" aria-label="Áreas de cuidados">
-        <button
-          v-for="t in tabs"
-          :key="t.key"
-          :class="{ active: tab === t.key }"
-          @click="tab = t.key"
-        >
-          {{ t.label }}
-        </button>
-      </nav>
+      <AppTabs
+        v-model="tab"
+        class="care-tabs"
+        aria-label="Áreas de cuidados"
+        :items="tabs.map(({ key, label }) => ({ value: key, label }))"
+      />
       <template v-if="!['documents', 'access'].includes(tab)"
         ><div class="care-toolbar">
           <h2>{{ tabs.find((t) => t.key === tab)?.label }}</h2>
@@ -43,7 +39,13 @@
               ]"
               >{{
                 e.related_entry_id && e.status === "completed"
-                  ? "Executado"
+                  ? e.details?.outcome === "not_administered"
+                    ? "Não administrada"
+                    : areaFor(e.kind) === "health"
+                      ? e.kind === "vaccine"
+                        ? "Aplicada"
+                        : "Administrada"
+                      : "Executado"
                   : statusLabels[e.status] || e.status
               }}</span
             >
@@ -61,11 +63,19 @@
           </p>
           <p class="care-pre">{{ e.description }}</p>
           <dl v-if="e.details" class="care-details">
-            <template v-for="(value, key) in e.details" :key="key"
+            <template
+              v-for="(value, key) in visibleDetails(e.details)"
+              :key="key"
               ><dt>{{ detailLabels[key] }}</dt>
               <dd>{{ value }}</dd></template
             >
           </dl>
+          <p
+            v-if="e.schedule && areaFor(e.kind) === 'health'"
+            class="care-muted"
+          >
+            {{ formatSchedule(e.schedule) }}
+          </p>
           <p v-if="e.execution_block" role="status">{{ e.execution_block }}</p>
           <AppButton
             variant="modal"
@@ -74,9 +84,18 @@
             >Registrar minha execução</AppButton
           >
           <RouterLink
-            v-if="e.has_occurrences && e.publish_to_agenda"
-            :to="{ name: 'agenda' }"
-            >Consultar ocorrências e registrar execução na agenda</RouterLink
+            v-if="
+              e.has_occurrences &&
+              (e.publish_to_agenda || areaFor(e.kind) === 'health')
+            "
+            :to="{
+              name: 'agenda',
+              query:
+                areaFor(e.kind) === 'health'
+                  ? { health_entry: e.id, date: e.due_at }
+                  : {},
+            }"
+            >Consultar ocorrências</RouterLink
           >
           <CareDecisions :entry="e" :user-id="auth.user.id" />
           <div
@@ -114,12 +133,14 @@
       >
       <template v-if="tab === 'documents'"
         ><AppCard title="Documentos privados"
-          ><label v-if="canEdit" class="care-field"
-            >Adicionar documento (até 20 MB)<input
-              type="file"
+          ><AppFileUpload
+              v-if="canEdit"
+              id="recipient-document"
+              label="Adicionar documento (até 20 MB)"
               accept=".pdf,.png,.jpg,.jpeg,.webp,.txt,.docx,.xlsx"
-              @change="upload"
-          /></label>
+              :disabled="!!store.pending"
+              @select="upload"
+          />
           <div v-for="d in store.documents" :key="d.id" class="care-list-row">
             <span>{{ d.filename }}</span>
             <div class="care-actions">
@@ -210,11 +231,18 @@ import CareDecisions from "@/components/care/CareDecisions.vue";
 import CareShell from "@/components/care/CareShell.vue";
 import CareEntryDialog from "@/components/care/CareEntryDialog.vue";
 import CareExecutionDialog from "@/components/care/CareExecutionDialog.vue";
-import { AppCard, AppButton, AppConfirmDialog } from "@/components/ui";
+import { AppCard, AppButton, AppConfirmDialog, AppTabs } from "@/components/ui";
+import { AppFileUpload } from "@/components/forms";
 import { useCareStore } from "@/state/care";
-import { useAuthStore } from "@/state/auth";
-import { useOrganizationMembersStore } from "@/state/organization-members";
-import { entryKinds, areas, areaFor, dateTime } from "@/utils/care";
+import { useAuthStore } from "@/modules/auth";
+import { useOrganizationMembersStore } from "@/modules/groups";
+import {
+  entryKinds,
+  areas,
+  areaFor,
+  dateTime,
+  formatSchedule,
+} from "@/utils/care";
 const route = useRoute(),
   store = useCareStore(),
   auth = useAuthStore(),
@@ -258,7 +286,16 @@ const detailLabels = {
   food: "Alimento",
   quantity: "Quantidade",
   provider: "Profissional ou local",
+  next_date: "Próxima data informada",
+  correction_reason: "Justificativa da correção",
 };
+function visibleDetails(details) {
+  return Object.fromEntries(
+    Object.entries(details).filter(
+      ([key, value]) => detailLabels[key] && value,
+    ),
+  );
+}
 function openEntry(entry = null) {
   selectedEntry.value = entry;
   entryOpen.value = true;
@@ -303,10 +340,8 @@ async function confirmAction() {
     /* Store exposes the error inside the dialog. */
   }
 }
-async function upload(e) {
-  const f = e.target.files[0];
+async function upload([f]) {
   if (f) await store.upload(id.value, f).catch(() => {});
-  e.target.value = "";
 }
 watch(
   id,

@@ -6,7 +6,7 @@ use App\Models\CareAccess;
 use App\Models\CareRecipient;
 use App\Models\Organization;
 use App\Models\User;
-use App\Services\Organizations\ProvisionOrganizationRoles;
+use App\Modules\Groups\Services\Organizations\ProvisionOrganizationRoles;
 use App\Support\Tenancy\CurrentOrganization;
 use Spatie\Permission\Models\Role;
 

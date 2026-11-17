@@ -275,6 +275,7 @@ class CareRecords
             $this->access->authorize($user, $recipient, $this->access->area($task->kind), true);
             abort_if($task->related_entry_id, 422, 'Este registro já representa uma execução.');
             abort_if($task->due_at || CareSchedule::where('care_entry_id', $task->id)->exists(), 422, 'Registre a execução da ocorrência na agenda.');
+            abort_if(in_array($task->kind, ['medication', 'vaccine']), 422, 'Defina uma programação de saúde para registrar a administração por ocorrência.');
             abort_if(in_array($task->kind, ['expense', 'journal']), 422, 'Este registro não representa um serviço de cuidado.');
             abort_unless($this->access->canExecuteCare($user, $recipient, $task->kind, $task->assigned_user_id), 403, 'Você não pode registrar esta execução.');
             abort_unless(in_array($task->status, ['pending', 'completed']) && ! $task->proposals()->where('status', 'pending')->exists(), 409, 'O cuidado precisa estar confirmado e sem alterações pendentes.');
@@ -300,12 +301,12 @@ class CareRecords
         $user = auth()->user();
         $executionBlock = $user && ! $entry->related_entry_id && ! $entry->has_occurrences
             && in_array($entry->status, ['pending', 'completed']) && ! $entry->proposals->contains('status', 'pending')
-            && ! in_array($entry->kind, ['expense', 'journal'])
+            && ! in_array($entry->kind, ['expense', 'journal', 'medication', 'vaccine'])
             && $this->access->canExecuteCare($user, $entry->recipient, $entry->kind, $entry->assigned_user_id)
             ? app(CareAvailability::class)->executionBlock($entry->recipient, (int) $user->id) : null;
         $entry->setAttribute('execution_block', $executionBlock);
         $entry->setAttribute('can_execute', $user && ! $entry->has_occurrences && ! $entry->related_entry_id
-            && ! in_array($entry->kind, ['expense', 'journal']) && in_array($entry->status, ['pending', 'completed'])
+            && ! in_array($entry->kind, ['expense', 'journal', 'medication', 'vaccine']) && in_array($entry->status, ['pending', 'completed'])
             && ! $entry->proposals->contains('status', 'pending')
             && $this->access->canExecuteCare($user, $entry->recipient, $entry->kind, $entry->assigned_user_id)
             && ! $executionBlock

@@ -48,7 +48,7 @@ import { computed } from "vue";
 import PersonalRecipientAvatar from "@/components/care/PersonalRecipientAvatar.vue";
 import convivaSidebarLogo from "@/assets/brand/conviva-sidebar-logo.svg";
 import SideBarNav from "@/components/navigation/SideBarNav/index.vue";
-import { useAuthStore } from "@/state/auth.js";
+import { useAuthStore } from "@/modules/auth";
 
 const authStore = useAuthStore();
 const groupInitials = computed(() =>

@@ -22,20 +22,20 @@
       >Retirar minha proposta</AppButton
     >
   </div>
-  <form
+  <AppForm
     v-if="proposal.can_reject && rejecting"
     class="care-form"
     @submit.prevent="reject"
   >
-    <label class="care-field"
-      >Motivo da recusa<textarea
-        v-model="reason"
-        required
-        maxlength="2000"
-        rows="3"
-        :disabled="busy"
-      />
-    </label>
+    <AppTextarea
+      label="Motivo da recusa"
+      :id="fieldId + '-1'"
+      v-model="reason"
+      required
+      :maxlength="2000"
+      :rows="3"
+      :disabled="busy"
+    />
     <p>
       A justificativa ficará registrada junto à sua decisão. A versão vigente
       será preservada.
@@ -51,9 +51,12 @@
         >Cancelar</AppButton
       >
     </div>
-  </form>
+  </AppForm>
 </template>
 <script setup>
+import { AppForm, AppTextarea } from "@/components/forms";
+import { useId } from "vue";
+const fieldId = useId();
 import { ref } from "vue";
 import { AppButton } from "@/components/ui";
 const props = defineProps({

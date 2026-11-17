@@ -1,7 +1,11 @@
-import apiClient from "./client.js";
+import { authenticatedClient as apiClient } from "@/modules/http";
 
-export function fetchAvatar() {
-  return apiClient.get("/my-recipient-avatar", { responseType: "blob" });
+export function fetchAvatar({ tenant, signal } = {}) {
+  return apiClient.get("/my-recipient-avatar", {
+    responseType: "blob",
+    ...(tenant ? { headers: { "X-Tenant": tenant } } : {}),
+    signal,
+  });
 }
 
 export function uploadAvatar(file) {

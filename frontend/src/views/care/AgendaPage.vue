@@ -2,12 +2,16 @@
   <CareShell
     class="agenda-page"
     title="Agenda"
-    subtitle="Acompanhe os cuidados do grupo em uma visão de calendário."
+    :subtitle="
+      healthEntry
+        ? 'Consulte as ocorrências e o histórico deste cuidado de saúde.'
+        : 'Acompanhe os cuidados do grupo em uma visão de calendário.'
+    "
     @retry="load()"
   >
     <template #actions>
       <AppButton
-        v-if="store.agendaPage?.availability_recipient"
+        v-if="!healthEntry && store.agendaPage?.availability_recipient"
         variant="modal"
         :disabled="!!store.pending"
         @click="openAvailability"
@@ -21,18 +25,29 @@
     <section class="agenda-toolbar" aria-label="Controles da agenda">
       <div class="agenda-period">
         <div class="agenda-navigation">
-          <button type="button" aria-label="Período anterior" @click="move(-1)">
-            ‹</button
-          ><button type="button" class="agenda-today" @click="goToday">
-            Hoje</button
-          ><button type="button" aria-label="Próximo período" @click="move(1)">
+          <AppButton
+            bare
+            type="button"
+            aria-label="Período anterior"
+            @click="move(-1)"
+          >
+            ‹</AppButton
+          ><AppButton bare type="button" class="agenda-today" @click="goToday">
+            Hoje</AppButton
+          ><AppButton
+            bare
+            type="button"
+            aria-label="Próximo período"
+            @click="move(1)"
+          >
             ›
-          </button>
+          </AppButton>
         </div>
         <h2 aria-live="polite">{{ periodLabel }}</h2>
       </div>
       <div class="agenda-view-switcher" aria-label="Visualização da agenda">
-        <button
+        <AppButton
+          bare
           v-for="(label, key) in views"
           :key="key"
           type="button"
@@ -41,47 +56,54 @@
           @click="setView(key)"
         >
           {{ label }}
-        </button>
+        </AppButton>
       </div>
       <div class="agenda-toolbar-filters">
-        <label for="agenda-kind"
-          >Tipo<select id="agenda-kind" v-model="filters.kind">
-            <option value="">Todos os tipos</option>
-            <option v-for="(label, key) in entryKinds" :key="key" :value="key">
-              {{ label }}
-            </option>
-          </select></label
-        >
-        <label for="agenda-executor"
-          >Executor<select id="agenda-executor" v-model="filters.executor">
-            <option value="">Todos os executores</option>
-            <option
-              v-for="member in executors"
-              :key="member.id"
-              :value="member.id"
-            >
-              {{ member.name }}
-            </option>
-          </select></label
-        >
-        <label for="agenda-status"
-          >Situação<select id="agenda-status" v-model="filters.status">
-            <option
-              v-for="(label, key) in agendaStates"
-              :key="key"
-              :value="key"
-            >
-              {{ label }}
-            </option>
-          </select></label
-        >
-        <label for="agenda-jump"
-          >Ir para a data<input
-            id="agenda-jump"
-            type="date"
-            :value="selectedDate"
-            @change="jump($event.target.value)"
-        /></label>
+        <AppSelect
+          label="Tipo"
+          id="agenda-kind"
+          v-model="filters.kind"
+          :options="[
+            { value: '', label: 'Todos os tipos' },
+            ...Object.entries(entryKinds).map(([value, label]) => ({
+              value,
+              label,
+            })),
+          ]"
+        />
+        <AppSelect
+          label="Executor"
+          id="agenda-executor"
+          v-model="filters.executor"
+          :options="[
+            { value: '', label: 'Todos os executores' },
+            ...executors.map((member) => ({
+              value: member.id,
+              label: member.name,
+            })),
+          ]"
+        />
+        <AppSelect
+          label="Situação"
+          id="agenda-status"
+          v-model="filters.status"
+          :options="[
+            ...(healthEntry
+              ? [{ value: 'all', label: 'Todas as situações' }]
+              : []),
+            ...Object.entries(agendaStates).map(([value, label]) => ({
+              value,
+              label,
+            })),
+          ]"
+        />
+        <AppDate
+          label="Ir para a data"
+          id="agenda-jump"
+          :model-value="selectedDate"
+          @change="jump($event.target.value)"
+          :show-icon="false"
+        />
       </div>
     </section>
     <div class="agenda-context">
@@ -157,6 +179,7 @@
             :executor="executor(item.assigned_user_id)"
             :busy="!!store.pending"
             @execute="open($event, 'execute')"
+            @correct="open($event, 'correct')"
             @cancel="open($event, 'cancel')"
           />
         </div>
@@ -177,15 +200,17 @@
         >
           <header>
             <span>{{ dateLabel(date, { weekday: "short" }) }}</span
-            ><button
+            ><AppButton
+              bare
               type="button"
               :aria-label="`Abrir ${dateLabel(date, { dateStyle: 'full' })}`"
               @click="showDay(date)"
             >
-              {{ Number(date.slice(-2)) }}</button
+              {{ Number(date.slice(-2)) }}</AppButton
             ><small>{{ groups[date]?.length || 0 }} registros</small>
           </header>
-          <button
+          <AppButton
+            bare
             v-for="item in groups[date]"
             :key="item.id"
             type="button"
@@ -216,7 +241,7 @@
             ><span v-if="item.conflict" class="agenda-week-warning"
               >Sobreposição de horários</span
             >
-          </button>
+          </AppButton>
           <p
             v-if="!groups[date]?.length && !store.pending && !store.error"
             class="agenda-week-empty"
@@ -232,17 +257,27 @@
       :aria-label="view === 'day' ? 'Cuidados do dia' : 'Agenda em lista'"
       :aria-busy="!!store.pending"
     >
-      <form
+      <AppForm
         v-if="view === 'list'"
         class="agenda-list-range"
         @submit.prevent="applyRange"
       >
-        <label>De<input type="date" v-model="rangeDraft.from" required /></label
-        ><label>Até<input type="date" v-model="rangeDraft.to" required /></label
-        ><AppButton type="submit" variant="outline" :disabled="!!store.pending"
+        <AppDate
+          label="De"
+          :id="fieldId + '-1'"
+          v-model="rangeDraft.from"
+          required
+          :show-icon="false"
+        /><AppDate
+          label="Até"
+          :id="fieldId + '-2'"
+          v-model="rangeDraft.to"
+          required
+          :show-icon="false"
+        /><AppButton type="submit" variant="outline" :disabled="!!store.pending"
           >Aplicar período</AppButton
         >
-      </form>
+      </AppForm>
       <div
         v-if="!visibleGroups.length && !store.pending && !store.error"
         class="agenda-empty"
@@ -269,6 +304,7 @@
             :executor="executor(item.assigned_user_id)"
             :busy="!!store.pending"
             @execute="open($event, 'execute')"
+            @correct="open($event, 'correct')"
             @cancel="open($event, 'cancel')"
           />
         </div>
@@ -311,65 +347,101 @@
     <AppDialog
       :open="!!selected"
       :title="
-        action === 'execute'
-          ? 'Registrar execução da ocorrência'
-          : 'Propor cancelamento'
+        action === 'correct'
+          ? 'Corrigir registro de administração'
+          : action === 'execute'
+            ? healthAction
+              ? 'Registrar administração'
+              : 'Registrar execução da ocorrência'
+            : 'Propor cancelamento'
       "
       :busy="!!store.pending"
       :error="store.error"
       @close="selected = null"
     >
-      <form class="care-form" @submit.prevent="submit">
+      <AppForm class="care-form" @submit.prevent="submit">
         <p>
           {{ selected?.title }} · {{ selected ? format(selected.due_at) : "" }}
         </p>
-        <template v-if="action === 'execute'"
-          ><p>
-            Execução realizada por {{ auth.user?.name }}. Sua identificação será
-            registrada automaticamente.
-          </p>
-          <label class="care-field"
-            >Quando ocorreu (horário deste dispositivo)<input
-              type="datetime-local"
-              v-model="occurredAt"
-              required /></label
-          ><label class="care-field"
-            >Observação<textarea
-              v-model="description"
-              maxlength="10000"
-            /></label
-        ></template>
+        <template v-if="action !== 'cancel'"
+          ><p>Registro por {{ auth.user?.name }}.</p>
+          <AppSelect
+            v-if="healthAction"
+            id="administration-outcome"
+            v-model="outcome"
+            label="Resultado"
+            :options="outcomes"
+            required
+          />
+          <AppInput
+            label="Quando ocorreu (horário deste dispositivo)"
+            :id="fieldId + '-3'"
+            type="datetime-local"
+            v-model="occurredAt"
+            required
+          /><AppTextarea
+            label="Observação"
+            :id="fieldId + '-4'"
+            v-model="description"
+            :maxlength="10000"
+          />
+          <AppDate
+            v-if="selected?.kind === 'vaccine' && outcome === 'administered'"
+            label="Próxima data informada (opcional)"
+            :id="fieldId + '-5'"
+            v-model="nextDate"
+            :show-icon="false"
+          />
+          <AppTextarea
+            v-if="action === 'correct'"
+            id="correction-reason"
+            v-model="reason"
+            label="Justificativa da correção"
+            required
+            :maxlength="2000"
+          />
+        </template>
         <template v-else
-          ><label class="care-field"
-            >Cancelar<select v-model="scope">
-              <option value="one">Somente esta ocorrência</option>
-              <option value="future">
-                Esta e todas as futuras desta série
-              </option>
-            </select></label
-          >
+          ><AppSelect
+            label="Cancelar"
+            :id="fieldId + '-6'"
+            v-model="scope"
+            :options="[
+              { value: 'one', label: 'Somente esta ocorrência' },
+              { value: 'future', label: 'Esta e todas as futuras desta série' },
+            ]"
+          />
           <p>
             O cancelamento depende dos aceites necessários na Central. O
             histórico é preservado.
           </p></template
         >
         <AppButton type="submit" :disabled="!!store.pending">{{
-          action === "execute" ? "Confirmar execução" : "Enviar proposta"
+          action === "cancel" ? "Enviar proposta" : "Salvar registro"
         }}</AppButton>
-      </form>
+      </AppForm>
     </AppDialog>
   </CareShell>
 </template>
 <script setup>
+import { useId } from "vue";
+const fieldId = useId();
 import { computed, ref, watch } from "vue";
-import { useRouter } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
 import CareUnavailabilityDialog from "@/components/care/CareUnavailabilityDialog.vue";
 import CareShell from "@/components/care/CareShell.vue";
 import AgendaMonth from "@/components/care/agenda/AgendaMonth.vue";
 import AgendaOccurrence from "@/components/care/agenda/AgendaOccurrence.vue";
 import { AppButton, AppDialog } from "@/components/ui";
+import {
+  AppForm,
+  AppSelect,
+  AppTextarea,
+  AppDate,
+  AppInput,
+} from "@/components/forms";
 import { useCareStore } from "@/state/care";
-import { useAuthStore } from "@/state/auth";
+import { useAuthStore } from "@/modules/auth";
 import { entryKinds } from "@/utils/care";
 import {
   addDays,
@@ -386,7 +458,13 @@ import {
 import "@/assets/styles/agenda.css";
 const store = useCareStore(),
   auth = useAuthStore(),
+  route = useRoute(),
   router = useRouter();
+const healthEntry = computed(() => route?.query.health_entry);
+const outcomes = [
+  { value: "administered", label: "Administrada" },
+  { value: "not_administered", label: "Não administrada" },
+];
 const zone = computed(
   () =>
     auth.organization?.timezone ||
@@ -394,14 +472,33 @@ const zone = computed(
     "America/Sao_Paulo",
 );
 const today = computed(() => dateKey(new Date(), zone.value));
+const initialDate = computed(() => {
+  const date = route?.query.date;
+  if (
+    typeof date === "string" &&
+    /^\d{4}-\d{2}-\d{2}$/.test(date) &&
+    Number.isFinite(Date.parse(date))
+  ) {
+    return date;
+  }
+  return healthEntry.value &&
+    typeof date === "string" &&
+    Number.isFinite(Date.parse(date))
+    ? dateKey(date, zone.value)
+    : today.value;
+});
 const views = { month: "Mês", week: "Semana", day: "Dia", list: "Lista" };
 const view = ref("month"),
-  anchor = ref(today.value),
-  selectedDate = ref(today.value);
-const filters = ref({ kind: "", executor: "", status: "scheduled" });
+  anchor = ref(initialDate.value),
+  selectedDate = ref(initialDate.value);
+const filters = ref({
+  kind: "",
+  executor: "",
+  status: healthEntry.value ? "all" : "scheduled",
+});
 const range = ref({
-  from: monthStart(today.value),
-  to: addDays(shiftMonth(today.value, 1), -1),
+  from: monthStart(initialDate.value),
+  to: addDays(shiftMonth(initialDate.value, 1), -1),
 });
 const rangeDraft = ref({ ...range.value });
 const dates = computed(() => {
@@ -457,8 +554,14 @@ const selected = ref(null),
   action = ref(""),
   scope = ref("one"),
   description = ref(""),
+  outcome = ref(null),
+  nextDate = ref(""),
+  reason = ref(""),
   occurredAt = ref(""),
   notice = ref("");
+const healthAction = computed(() =>
+  ["medication", "vaccine"].includes(selected.value?.kind),
+);
 function setView(value) {
   anchor.value = selectedDate.value;
   if (value === "list") {
@@ -519,6 +622,7 @@ async function load(page = 1) {
       {
         ...bounds.value,
         ...filters.value,
+        ...(healthEntry.value ? { health_entry: healthEntry.value } : {}),
         page,
         per_page: view.value === "list" ? 50 : 100,
       },
@@ -549,9 +653,13 @@ function open(item, type) {
   selected.value = item;
   action.value = type;
   scope.value = "one";
-  description.value = "";
+  const previous = item.corrections?.at(-1) || item.execution;
+  description.value = type === "correct" ? previous.description || "" : "";
+  outcome.value = type === "correct" ? previous.outcome : null;
+  nextDate.value = type === "correct" ? previous.next_date || "" : "";
+  reason.value = "";
   store.error = "";
-  const d = new Date();
+  const d = type === "correct" ? new Date(previous.occurred_at) : new Date();
   occurredAt.value = new Date(d.getTime() - d.getTimezoneOffset() * 60000)
     .toISOString()
     .slice(0, 16);
@@ -560,17 +668,33 @@ async function submit() {
   if (store.pending || !selected.value) return;
   try {
     const ok =
-      action.value === "execute"
-        ? await store.executeOccurrence(selected.value.id, {
-            description: description.value,
-            occurred_at: new Date(occurredAt.value).toISOString(),
-          })
+      action.value !== "cancel"
+        ? await store.executeOccurrence(
+            selected.value.id,
+            {
+              description: description.value,
+              occurred_at: new Date(occurredAt.value).toISOString(),
+              ...(healthAction.value ? { outcome: outcome.value } : {}),
+              ...(selected.value.kind === "vaccine" &&
+              outcome.value === "administered" &&
+              nextDate.value
+                ? { next_date: nextDate.value }
+                : {}),
+              ...(action.value === "correct" ? { reason: reason.value } : {}),
+            },
+            action.value === "correct"
+              ? (selected.value.corrections.at(-1) || selected.value.execution)
+                  .id
+              : null,
+          )
         : await store.cancelOccurrence(selected.value.id, scope.value);
     if (!ok) return;
     notice.value =
-      action.value === "execute"
-        ? "Execução registrada."
-        : "Proposta enviada. Consulte as decisões na Central.";
+      action.value === "cancel"
+        ? "Proposta enviada. Consulte as decisões na Central."
+        : action.value === "correct"
+          ? "Correção registrada."
+          : "Execução registrada.";
     selected.value = null;
     if (action.value === "cancel") {
       await router.push({
@@ -583,17 +707,21 @@ async function submit() {
   } catch {}
 }
 watch(
-  () => auth.currentTenant,
+  () => [auth.currentTenant, healthEntry.value, route?.query.date],
   () => {
     selected.value = null;
     availabilityTarget.value = null;
     notice.value = "";
-    anchor.value = today.value;
-    selectedDate.value = today.value;
-    filters.value = { kind: "", executor: "", status: "scheduled" };
+    anchor.value = initialDate.value;
+    selectedDate.value = initialDate.value;
+    filters.value = {
+      kind: "",
+      executor: "",
+      status: healthEntry.value ? "all" : "scheduled",
+    };
     range.value = {
-      from: monthStart(today.value),
-      to: addDays(shiftMonth(today.value, 1), -1),
+      from: monthStart(initialDate.value),
+      to: addDays(shiftMonth(initialDate.value, 1), -1),
     };
     rangeDraft.value = { ...range.value };
   },
@@ -607,6 +735,7 @@ watch(
     filters.value.executor,
     filters.value.status,
     auth.currentTenant,
+    healthEntry.value,
   ],
   () => load(),
   { immediate: true },

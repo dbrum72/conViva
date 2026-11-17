@@ -4,7 +4,8 @@
       <span v-for="day in weekdays" :key="day">{{ day }}</span>
     </div>
     <div ref="grid" class="agenda-month-grid">
-      <button
+      <AppButton
+        bare
         v-for="date in dates"
         :key="date"
         type="button"
@@ -47,11 +48,12 @@
             >+{{ items[date].length - 3 }} registros</span
           ></span
         >
-      </button>
+      </AppButton>
     </div>
   </section>
 </template>
 <script setup>
+import { AppButton } from "@/components/ui";
 import { computed, nextTick, ref } from "vue";
 import { addDays, dateLabel, timeLabel, weekdays } from "@/utils/agenda";
 const props = defineProps({

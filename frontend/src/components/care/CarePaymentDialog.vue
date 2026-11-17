@@ -8,7 +8,7 @@
     :error="store.error"
     @close="$emit('close')"
   >
-    <form class="care-form" @submit.prevent="submit">
+    <AppForm class="care-form" @submit.prevent="submit">
       <p>
         {{ payment?.entry.title }} · {{ money(payment?.share.amount_cents) }}
       </p>
@@ -56,13 +56,13 @@
           }}</AppButton
         >
       </div>
-    </form>
+    </AppForm>
   </AppDialog>
 </template>
 <script setup>
 import { ref, watch } from "vue";
 import { AppDialog, AppButton } from "@/components/ui";
-import { AppFileUpload } from "@/components/forms";
+import { AppForm, AppFileUpload } from "@/components/forms";
 import { useCareStore } from "@/state/care";
 import { money } from "@/utils/care";
 const props = defineProps({ payment: Object, recipientId: [Number, String] });

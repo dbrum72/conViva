@@ -4,42 +4,45 @@
     subtitle="Responda por você e acompanhe as propostas do grupo."
     @retry="load()"
   >
-    <div class="care-form">
-      <label class="care-field"
-        >Mostrar<select
-          :disabled="!!store.pending"
-          v-model="scope"
-          @change="load(1)"
-        >
-          <option value="mine">Minhas decisões pendentes</option>
-          <option value="sent">Propostas enviadas</option>
-          <option value="all">Todas as propostas acessíveis</option>
-        </select></label
-      >
-      <label class="care-field"
-        >Situação<select
-          :disabled="!!store.pending"
-          v-model="status"
-          @change="load(1)"
-        >
-          <option value="">Todas</option>
-          <option value="pending">Aguardando aceite</option>
-          <option value="accepted">Aceitas</option>
-          <option value="rejected">Recusadas</option>
-          <option value="withdrawn">Retiradas</option>
-        </select></label
-      >
-      <label class="care-field"
-        >Tipo<select
-          :disabled="!!store.pending"
-          v-model="type"
-          @change="load(1)"
-        >
-          <option value="">Todos</option>
-          <option value="entry">Cuidado</option>
-          <option value="profile">Cadastro</option>
-        </select></label
-      >
+    <div class="decision-filters">
+      <AppSelect
+        label="Mostrar"
+        :id="fieldId + '-1'"
+        :disabled="!!store.pending"
+        v-model="scope"
+        @update:model-value="load(1)"
+        :options="[
+          { value: 'mine', label: 'Minhas decisões pendentes' },
+          { value: 'sent', label: 'Propostas enviadas' },
+          { value: 'all', label: 'Todas as propostas acessíveis' },
+        ]"
+      />
+      <AppSelect
+        label="Situação"
+        :id="fieldId + '-2'"
+        :disabled="!!store.pending"
+        v-model="status"
+        @update:model-value="load(1)"
+        :options="[
+          { value: '', label: 'Todas' },
+          { value: 'pending', label: 'Aguardando aceite' },
+          { value: 'accepted', label: 'Aceitas' },
+          { value: 'rejected', label: 'Recusadas' },
+          { value: 'withdrawn', label: 'Retiradas' },
+        ]"
+      />
+      <AppSelect
+        label="Tipo"
+        :id="fieldId + '-3'"
+        :disabled="!!store.pending"
+        v-model="type"
+        @update:model-value="load(1)"
+        :options="[
+          { value: '', label: 'Todos' },
+          { value: 'entry', label: 'Cuidado' },
+          { value: 'profile', label: 'Cadastro' },
+        ]"
+      />
     </div>
     <p v-if="feedback" role="status">{{ feedback }}</p>
     <AppCard
@@ -128,9 +131,12 @@
   </CareShell>
 </template>
 <script setup>
+import { AppSelect } from "@/components/forms";
+import { useId } from "vue";
+const fieldId = useId();
 import { ref, computed, watch, onBeforeUnmount } from "vue";
 import { useRoute } from "vue-router";
-import { useAuthStore } from "@/state/auth";
+import { useAuthStore } from "@/modules/auth";
 import ProposalActions from "@/components/care/ProposalActions.vue";
 import DecisionStatusBadge from "@/components/care/DecisionStatusBadge.vue";
 import ProposalComparison from "@/components/care/ProposalComparison.vue";
@@ -240,6 +246,11 @@ onBeforeUnmount(() => context++);
 </script>
 
 <style scoped>
+.decision-filters {
+  display: grid;
+  gap: var(--space-4);
+}
+
 .proposal-decisions {
   display: grid;
   gap: 0.75rem;

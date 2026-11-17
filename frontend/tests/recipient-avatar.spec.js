@@ -1,5 +1,7 @@
 import { beforeEach, expect, it, vi } from "vitest";
 import { createPinia, setActivePinia } from "pinia";
+import { flushPromises, mount } from "@vue/test-utils";
+import PersonalRecipientAvatar from "@/components/care/PersonalRecipientAvatar.vue";
 import { useRecipientAvatarStore } from "@/state/recipient-avatar.js";
 import {
   fetchAvatar,
@@ -63,4 +65,44 @@ it("mantém a foto anterior ao falhar e libera a URL ao remover", async () => {
   expect(deleteAvatar).toHaveBeenCalledOnce();
   expect(URL.revokeObjectURL).toHaveBeenCalledWith("blob:personal-photo");
   expect(store.url).toBe("");
+});
+
+it("salva o recorte enquadrado pelos controles como a foto pessoal", async () => {
+  fetchAvatar.mockResolvedValue({ status: 204 });
+  uploadAvatar.mockResolvedValue({});
+  const drawImage = vi.fn();
+  const context = vi.spyOn(HTMLCanvasElement.prototype, "getContext")
+    .mockReturnValue({ drawImage });
+  const encode = vi.spyOn(HTMLCanvasElement.prototype, "toBlob")
+    .mockImplementation((done) => done(new Blob(["crop"], { type: "image/png" })));
+  const wrapper = mount(PersonalRecipientAvatar, {
+    props: { enabled: true, initials: "A", contextKey: "1:1" },
+    global: { stubs: { teleport: true } },
+  });
+  try {
+    await flushPromises();
+    await wrapper.get("button.personal-avatar").trigger("click");
+    const input = wrapper.get("input[type=file]");
+    Object.defineProperty(input.element, "files", {
+      value: [new File(["photo"], "original.jpeg", { type: "image/jpeg" })],
+    });
+    await input.trigger("change");
+    const preview = wrapper.get(".avatar-crop img");
+    Object.defineProperties(preview.element, {
+      naturalWidth: { value: 1200 },
+      naturalHeight: { value: 800 },
+    });
+    await preview.trigger("load");
+    await wrapper.get('input[id$="-zoom"]').setValue("200");
+    await wrapper.get('input[id$="-horizontal"]').setValue("100");
+    await wrapper.get('input[id$="-vertical"]').setValue("25");
+    await wrapper.get("form").trigger("submit");
+    await flushPromises();
+    expect(drawImage).toHaveBeenCalledWith(preview.element, 800, 100, 400, 400, 0, 0, 400, 400);
+    expect(uploadAvatar.mock.calls[0][0]).toMatchObject({ name: "avatar.png", type: "image/png" });
+  } finally {
+    wrapper.unmount();
+    context.mockRestore();
+    encode.mockRestore();
+  }
 });

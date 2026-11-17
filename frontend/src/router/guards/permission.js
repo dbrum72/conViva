@@ -1,4 +1,4 @@
-import { useAuthStore } from "@/state/auth.js";
+import { useAuthStore } from "@/modules/auth";
 import { permits } from "@/config/settings.js";
 
 export function permissionGuard(to) {

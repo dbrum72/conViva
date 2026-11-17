@@ -1,4 +1,6 @@
 export const appButtonProps = {
+  bare: Boolean,
+
   type: {
     type: String,
     default: "button",

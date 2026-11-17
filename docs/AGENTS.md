@@ -31,12 +31,32 @@ app/Http/Controllers
 routes/api.php
 database/migrations
 
+Authentication lives in `backend/app/Modules/Auth`, with controllers, requests,
+middleware, services and its service provider. API routes are composed in
+`backend/routes/api.php`.
+
 Frontend
 
 frontend/src/components
 frontend/src/views
 frontend/src/state
 frontend/src/services
+
+Authentication lives in `frontend/src/modules/auth`. Its public entry point
+exports the Pinia store, route definitions and guard. Its HTTP requests and
+token storage live in the module.
+
+Groups live in `frontend/src/modules/groups` and `backend/app/Modules/Groups`.
+The module owns group selection and context, members, roles and invitations.
+The Auth store exposes the existing group context interface to callers.
+
+Notifications live in `frontend/src/modules/notifications` and
+`backend/app/Modules/Notifications`. The module owns the inbox, unread count,
+reminder preferences and reminder delivery.
+
+Use `frontend/src/modules/http` for Axios clients. Import the authenticated or
+public client from its public entry point. Keep endpoint definitions in the
+domain service that consumes the client.
 
 ---
 
@@ -136,6 +156,7 @@ Plural names (users, products, dependents)
 
 Vue
 
+* Sempre utilizar componentes ao invés de HTML nativo.
 * Components must be small and reusable
 * Avoid business logic inside components
 * Use Pinia for shared or global state
@@ -155,9 +176,8 @@ camelCase
 
 # API Communication
 
-All API requests must be implemented in:
-
-frontend/src/services
+Implement API requests in `frontend/src/services` or in the owning module's
+`api` directory.
 
 Use axios for HTTP requests.
 

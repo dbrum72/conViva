@@ -1,21 +1,21 @@
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
 import { createPinia, setActivePinia } from "pinia";
 import { mount, flushPromises } from "@vue/test-utils";
-import InvitationAcceptPage from "@/views/auth/InvitationAcceptPage.vue";
+import InvitationAcceptPage from "@/modules/groups/pages/InvitationAcceptPage.vue";
 import {
   getInvitationAcceptance,
   acceptOrganizationInvitation,
-} from "@/services/organization-invitations.js";
+} from "@/modules/groups/api/organization-invitations.js";
 
 vi.mock("vue-router", () => ({
   RouterLink: { template: "<a><slot /></a>" },
   useRoute: () => ({ params: { token: "synthetic" } }),
   useRouter: () => ({ push: vi.fn(), replace: vi.fn() }),
 }));
-vi.mock("@/state/auth.js", () => ({
+vi.mock("@/modules/auth", () => ({
   useAuthStore: () => ({ user: null, clearAuth: vi.fn() }),
 }));
-vi.mock("@/services/organization-invitations.js", () => ({
+vi.mock("@/modules/groups/api/organization-invitations.js", () => ({
   getInvitationAcceptance: vi.fn(),
   acceptOrganizationInvitation: vi.fn(),
 }));

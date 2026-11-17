@@ -1,8 +1,11 @@
+import { useNotificationsStore } from "@/modules/notifications";
+import { notificationApi } from "@/modules/notifications/api.js";
+vi.mock("@/modules/notifications/api.js", () => ({ notificationApi: { read: vi.fn(), unreadCount: vi.fn() } }));
 import {beforeEach,describe,it,expect,vi} from 'vitest'
 import {createPinia,setActivePinia} from 'pinia'
 import {useCareStore} from '@/state/care.js'
 import {careApi} from '@/services/care.js'
-vi.mock('@/services/care.js',()=>({careApi:{recipients:vi.fn(),recipient:vi.fn(),entries:vi.fn(),notifications:vi.fn(),read:vi.fn(),saveEntry:vi.fn()}}))
+vi.mock('@/services/care.js',()=>({careApi:{recipients:vi.fn(),recipient:vi.fn(),entries:vi.fn(),notifications:vi.fn(),read:vi.fn(),saveEntry:vi.fn(),today:vi.fn()}}))
 beforeEach(()=>{setActivePinia(createPinia());vi.clearAllMocks()})
 describe('estado dos cuidados',()=>{
  it('descarta a resposta do grupo anterior após limpar o contexto',async()=>{
@@ -15,7 +18,7 @@ describe('estado dos cuidados',()=>{
   careApi.saveEntry.mockRejectedValue({response:{data:{errors:{shares:['O rateio não corresponde ao total.']}}}});const store=useCareStore();await expect(store.saveEntry(1,{kind:'expense'})).rejects.toBeDefined();expect(store.error).toContain('rateio');expect(store.pending).toBe(0)
  })
  it('só marca a notificação como lida após resposta do servidor',async()=>{
-  const store=useCareStore();store.notifications=[{id:1,read_at:null}];careApi.read.mockRejectedValue(new Error('offline'));await expect(store.read(1)).rejects.toThrow();expect(store.notifications[0].read_at).toBeNull();careApi.read.mockResolvedValue({});await store.read(1);expect(store.notifications[0].read_at).toBeTruthy()
+  const store=useNotificationsStore();store.notifications=[{id:1,read_at:null}];notificationApi.read.mockRejectedValue(new Error('offline'));await expect(store.read(1)).rejects.toThrow();expect(store.notifications[0].read_at).toBeNull();notificationApi.read.mockResolvedValue({});await store.read(1);expect(store.notifications[0].read_at).toBeTruthy()
  })
  it('não solicita documentos nem acessos sem a capacidade correspondente',async()=>{
   const store=useCareStore();careApi.recipient.mockResolvedValue({data:{id:1,capabilities:{documents:{view:false}},can_manage_access:false}});careApi.entries.mockResolvedValue({data:[]});await store.loadRecipient(1);expect(store.recipient.id).toBe(1);expect(store.documents).toEqual([]);expect(store.accesses).toEqual([])
@@ -27,4 +30,17 @@ it('não recarrega registros do grupo antigo após uma gravação atrasada',asyn
 });
 it('ignora erros atrasados do grupo anterior',async()=>{
  let fail;careApi.recipients.mockReturnValue(new Promise((resolve,reject)=>{fail=reject}));const store=useCareStore();const request=store.loadRecipients();store.clear();fail(new Error('offline'));await expect(request).rejects.toThrow();expect(store.error).toBe('');expect(store.pending).toBe(0)
+});
+
+it("não exibe a passagem de cuidados do grupo anterior", async () => {
+  let finish;
+  careApi.today.mockReturnValueOnce(new Promise((resolve) => { finish = resolve; }));
+  careApi.today.mockResolvedValueOnce({ data: { recipient: { id: 2 } } });
+  const store = useCareStore();
+  const old = store.loadToday();
+  store.clear();
+  await store.loadToday();
+  finish({ data: { recipient: { id: 1 }, handover: { facts: [{ id: 10 }] } } });
+  await old;
+  expect(store.today).toEqual({ recipient: { id: 2 } });
 });

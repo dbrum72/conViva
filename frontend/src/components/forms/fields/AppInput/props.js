@@ -54,4 +54,6 @@ export const appInputProps = {
     type: String,
     default: "text",
   },
+
+  suggestions: Array,
 };

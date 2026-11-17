@@ -24,9 +24,11 @@
       <tbody class="app-table__body">
         <template v-if="rows.length">
           <tr v-for="row in rows" :key="row[rowKey]" class="app-table__row">
-            <td
+            <component
               v-for="column in columns"
+              :is="column.rowHeader ? 'th' : 'td'"
               :key="column.key"
+              :scope="column.rowHeader ? 'row' : undefined"
               class="app-table__cell"
               :class="alignmentClass(column)"
             >
@@ -37,7 +39,7 @@
               >
                 {{ row[column.key] ?? "—" }}
               </slot>
-            </td>
+            </component>
           </tr>
         </template>
 

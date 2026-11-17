@@ -1,6 +1,6 @@
 # conViva — pesquisa de referência e cronograma de evolução
 
-Data da pesquisa: 18/09/2026. E00 e E01 concluídas em 18/09/2026; E02 concluída em 27/09/2026. E03 e E04 concluídas em 28/09/2026. E04A implementada em 02/10/2026; contrato e limites em `docs/ENTREGA-E04A.md`. Próxima etapa sequencial: E05 — medicamentos e vacinas. Evidências em `docs/BASELINE-E00.md`, `docs/ENTREGA-E01.md`, `docs/ENTREGA-E02.md` e no registro de execução abaixo.
+Data da pesquisa: 18/09/2026. O cronograma registra as entregas E00 a E07, incluindo a E04A. A E07 foi implementada em 15/11/2026. A próxima etapa é E08 — Despesas e documentos contextualizados. As evidências constam no registro de execução abaixo.
 
 Ajuste solicitado antes de E02: sidebar com seleção/criação de grupos somente em Meus assistidos e avatar pessoal do assistido por responsável. Entrega descrita em `docs/AVATAR-PESSOAL.md`, preservada na E02.
 
@@ -198,11 +198,13 @@ Marcos de entrega:
 
 ### E05 — Medicamentos e vacinas com execução identificada
 
-- [ ] Separar instrução informada, programação aprovada e registro efetivo de administração.
-- [ ] Solicitar horários estruturados para novas programações; manter frequência textual anterior como informação, sem interpretação automática.
-- [ ] Registrar execução com autor, horário ocorrido, horário de registro e observação; distinguir administrado, não administrado e ausência de registro.
-- [ ] Bloquear duplo registro acidental da mesma ocorrência; oferecer correção vinculada com justificativa, sem apagar autoria.
-- [ ] Registrar vacina aplicada e próxima data informada, sem calcular calendário clínico automaticamente.
+**Implementada em 14/11/2026.** Contrato e limites em docs/ENTREGA-E05.md.
+
+- [x] Separar instrução informada, programação aprovada e registro efetivo de administração.
+- [x] Solicitar horários estruturados para novas programações; manter frequência textual anterior como informação, sem interpretação automática.
+- [x] Registrar execução com autor, horário ocorrido, horário de registro e observação; distinguir administrado, não administrado e ausência de registro.
+- [x] Bloquear duplo registro acidental da mesma ocorrência; oferecer correção vinculada com justificativa, sem apagar autoria.
+- [x] Registrar vacina aplicada e próxima data informada, sem calcular calendário clínico automaticamente.
 
 **Codificação:** modelos de programação/administração ou especialização das ocorrências de E04; Requests específicos por tipo, serviço transacional e índices de unicidade. Interface de confirmação curta e histórico por ocorrência. Não reutilizar a atual restrição de uma execução por tarefa inteira para séries com várias doses.
 
@@ -210,11 +212,11 @@ Marcos de entrega:
 
 ### E06 — Lembretes confiáveis e preferências
 
-- [ ] Entregar primeiro notificações internas e e-mail; acrescentar push web quando a infraestrutura e compatibilidade forem validadas.
-- [ ] Configurar antecedência, canal, resumo e horários de silêncio; adesão a alertas de terceiros deve ser explícita.
-- [ ] Notificar pendência de aceite e ocorrência próxima; tratar atraso como falta de registro, sem inferir falha de cuidado.
-- [ ] Exibir destino interno da notificação e situação de envio quando útil; paginar histórico.
-- [ ] Cancelar envios futuros de ocorrências canceladas; suprimir envio após execução ou perda de acesso.
+- [x] Entregar notificações internas e e-mail. Push web segue condicionado à infraestrutura e compatibilidade.
+- [x] Configurar antecedência, canal, resumo e horários de silêncio; adesão a alertas de terceiros deve ser explícita.
+- [x] Notificar pendência de aceite e ocorrência próxima; tratar atraso como falta de registro, sem inferir falha de cuidado.
+- [x] Exibir destino interno da notificação e situação de envio quando útil; paginar histórico.
+- [x] Cancelar envios futuros de ocorrências canceladas; suprimir envio após execução ou perda de acesso.
 
 **Codificação:** preferências, entregas com chave idempotente, jobs com tentativas limitadas e retentativa; dispatcher pelo scheduler em `backend/routes/console.php`. Revalidar vínculo, área, versão e ocorrência no momento de envio. Definir explicitamente contexto da organização em jobs e limpá-lo ao terminar, inclusive em falhas. Evitar conteúdo sensível na tela bloqueada e nos logs.
 
@@ -224,11 +226,11 @@ Marcos de entrega:
 
 ### E07 — Rotina rápida e passagem de cuidados
 
-- [ ] Criar painel Hoje com próximos cuidados, últimas execuções, pendências e decisões necessárias.
-- [ ] Disponibilizar atalhos de registro adequados ao assistido: alimentação, passeio, observação e execução de tarefa.
-- [ ] Exibir quem fez o quê e quando antes de oferecer nova execução, reduzindo duplicidade.
-- [ ] Criar resumo de passagem de cuidados com fatos recentes e pendências; ciência de leitura não deve equivaler a aceite de obrigação.
-- [ ] Separar fato já ocorrido de proposta futura: registrar observação não pode confirmar compromisso de outra pessoa.
+- [x] Criar painel Hoje com próximos cuidados, últimas execuções, pendências e decisões necessárias.
+- [x] Disponibilizar atalhos de registro adequados ao assistido: alimentação, passeio, observação e execução de tarefa.
+- [x] Exibir quem fez o quê e quando antes de oferecer nova execução, reduzindo duplicidade.
+- [x] Criar resumo de passagem de cuidados com fatos recentes e pendências; ciência de leitura não deve equivaler a aceite de obrigação.
+- [x] Separar fato já ocorrido de proposta futura: registrar observação não pode confirmar compromisso de outra pessoa.
 
 **Codificação:** serviço Laravel para resumo autorizado do dia; componentes `TodayCareList`, `CareExecutionForm` e `CareHandover` ou equivalentes. Agregações e indicadores de estado no backend; Pinia mantém dados compartilhados. Extensões de tipos de registro exigem revisão conjunta de `CareEntryRequest` e `AccessControl::area`.
 
@@ -337,7 +339,7 @@ As metas abaixo são propostas para o piloto, não resultados já obtidos. Instr
 | Arquivo visível numa área pode expor outra | Validar acesso combinado a documento e contexto; testar vínculos e exportação | E08/E09 |
 | Prazo depende da equipe e do piloto | Reestimar ao concluir E00 e cada marco, sem converter estimativa em promessa | Todos |
 
-O escopo da E04A foi esclarecido e implementado em 02/10/2026; a próxima etapa é E05. Antes de iniciar E00, convém confirmar equipe disponível, público inicial do piloto e canal externo de notificações. Na ausência dessas definições, manter as premissas deste documento: três tipos de assistido contemplados, web responsiva, notificações internas/e-mail primeiro e uma pessoa desenvolvedora como referência de esforço.
+O escopo da E04A foi implementado em 02/10/2026. Com a E07 implementada, a próxima etapa é E08. O planejamento considera três tipos de assistido, web responsiva, notificações internas e e-mail primeiro, e uma pessoa desenvolvedora como referência de esforço. Equipe disponível, público inicial do piloto e canal externo de notificações dependem de confirmação.
 
 ## 10. Registro de execução
 
@@ -346,7 +348,7 @@ Usar as caixas de seleção de cada etapa como tarefas. Para concluir uma etapa,
 | Marco | Status inicial | Evidência necessária |
 | --- | --- | --- |
 | M1 — E00 a E03 | Concluído: E00, E01, E02 e E03 | Fluxo de entrada, decisão e ficha validado |
-| M2 — E04 a E07, incluindo E04A | Em andamento: E04 concluída; E04A implementada; próxima etapa E05 | Afastamento, recorrência, execução e lembretes testados |
+| M2 — E04 a E07, incluindo E04A | Implementado. Próxima etapa E08 | Afastamento, recorrência, execução, lembretes e passagem de cuidados testados |
 | M3 — E08 a E10 | Não iniciado | Relatórios, operação e piloto aprovados |
 | M4 — E11 | Aguardando piloto | Priorização baseada nas métricas e dificuldades observadas |
 
@@ -466,3 +468,30 @@ Usar as caixas de seleção de cada etapa como tarefas. Para concluir uma etapa,
 - Início e término passam a representar datas inclusivas, armazenadas como DATE e enviadas como YYYY-MM-DD. Períodos de um dia são permitidos.
 - Modal sem campos de horário; Agenda identifica afastamentos de dia inteiro. Bloqueio inclui todo o último dia no fuso informado, respeitando horário de verão.
 - Migration de criação e tabela existente atualizadas exclusivamente em conviva_db; registros preservados, sem reconstrução.
+
+### 14/11/2026 — E05 implementada
+
+- Doses com horários estruturados após os aceites, consulta por cuidado de Saúde, confirmação de administração e correções vinculadas. Aplicação de vacina com próxima data informada e sem programação automática.
+- Registros, programações e ocorrências existentes reaproveitados, com testes MySQL em transações e rollback. O cenário de concorrência real requer PHP com pcntl. Contrato e evidências em docs/ENTREGA-E05.md.
+- E06 implementada. Próxima etapa sequencial: E07 — rotina rápida e passagem de cuidados.
+
+### 14/11/2026 — E06 implementada
+
+- Módulo Notifications com histórico paginado, adesão por grupo, preferências e jobs de lembretes. Operação e limites em docs/ENTREGA-E06.md.
+
+### 15/11/2026 — E07 implementada
+
+- Painel Hoje com cuidados programados, execução, registro rápido, decisões pessoais e resumo autorizado de passagem com ciência de leitura por versão.
+- Migration aplicada em `conviva_db` com preservação dos dados. Dois testes backend com 35 asserções em transações com rollback, 86 testes frontend e build aprovados. Contratos em [ENTREGA-E07.md](ENTREGA-E07.md).
+
+### 15/11/2026 — Sidebar e foto pessoal
+
+- Item ativo da sidebar com fundo lavanda suave, contorno verde de 3 px e destaque interno à esquerda. Os dois tokens estão no tema global.
+- Meus assistidos mostra a foto pessoal por grupo ou a inicial do nome. O componente `RecipientAvatar` também é usado na sidebar e no cartão Assistido do grupo. O editor permite enquadrar a foto com zoom e posição antes de enviar o recorte pela rota privada.
+- Quatro testes do avatar e build de produção aprovados. Detalhes em [AVATAR-PESSOAL.md](AVATAR-PESSOAL.md).
+
+### 15/11/2026 — Componentes e espaçamento de formulários
+
+- Cadastro, cuidados e filtros passaram a usar os controles compartilhados. Formulários e grupos de campos usam `AppForm` e `AppFieldset`. A convenção Vue foi registrada em [AGENTS.md](AGENTS.md).
+- Intervalo vertical padrão de 1 rem e ajustes específicos na revisão cadastral, em Meus assistidos, nos filtros da Central, no rateio e no editor de foto.
+- A migração passou em 87 testes do frontend e no build. O ajuste de espaçamento passou no build e no `git diff --check`, com revisão estática. Detalhes em [AUDITORIA-DESIGN-SYSTEM.md](AUDITORIA-DESIGN-SYSTEM.md).

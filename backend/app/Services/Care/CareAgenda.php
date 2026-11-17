@@ -11,19 +11,27 @@ use App\Models\User;
 use App\Support\Tenancy\CurrentOrganization;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 
 class CareAgenda
 {
     public function __construct(private AccessControl $access, private GenerateCareOccurrences $generator, private ProposalGuard $guard) {}
 
-    public function listing(User $user, array $filters): array
+    public function listing(User $user, array $filters, ?string $todaySection = null): array
     {
         $zone = app(CurrentOrganization::class)->get()->timezone;
         $from = CarbonImmutable::parse(($filters['from'] ?? CarbonImmutable::now($zone)->format('Y-m-d')).' 00:00', $zone)->utc();
         $to = isset($filters['to']) ? CarbonImmutable::parse($filters['to'].' 00:00', $zone)->addDay()->utc() : $from->addDays(31);
         abort_if($to <= $from || $from->diffInDays($to) > 93, 422, 'Escolha um período de até 93 dias.');
         $recipients = $this->access->visible($user)->where('status', 'active')->get();
-        $entries = CareEntry::where('publish_to_agenda', true)->whereNull('related_entry_id')->where('revision', '>', 0)->where(function ($q) use ($recipients, $user) {
+        $healthEntry = $filters['health_entry'] ?? null;
+        $entries = CareEntry::when($healthEntry,
+            fn ($q) => $q->whereKey($healthEntry)->whereIn('kind', ['medication', 'vaccine']),
+            fn ($q) => $todaySection
+                ? $q->where(fn ($q) => $q->whereIn('kind', ['medication', 'vaccine'])
+                    ->orWhere(fn ($q) => $q->where('publish_to_agenda', true)->whereIn('kind', ['event', 'task', 'feeding'])))
+                : $q->where('publish_to_agenda', true)
+        )->whereNull('related_entry_id')->where('revision', '>', 0)->where(function ($q) use ($recipients, $user) {
             $q->whereRaw('1 = 0');
             foreach ($recipients as $recipient) {
                 foreach (['routine' => ['event', 'task', 'feeding', 'journal'], 'health' => ['medication', 'vaccine'], 'finance' => ['expense']] as $area => $kinds) {
@@ -33,6 +41,7 @@ class CareAgenda
                 }
             }
         })->get();
+        abort_if($healthEntry && $entries->isEmpty(), 404);
         foreach ($entries as $entry) {
             // Compatibility for approved records created before E04.
             if ($entry->due_at && $entry->status !== 'cancelled' && ! CareSchedule::where('care_entry_id', $entry->id)->exists()) {
@@ -53,16 +62,31 @@ class CareAgenda
             ->where('starts_at', '<', $to)->where(function ($q) use ($from) {
                 $q->where('ends_at', '>', $from)->orWhere('starts_at', '>=', $from);
             });
-        $conflicts = (clone $base)->whereIn('status', ['scheduled', 'executed'])->with('schedule')->get();
-        $query = (clone $base)->with('schedule.entry.recipient', 'schedule.entry.proposals', 'execution.author:id,name');
+        $conflicts = $todaySection
+            ? collect()
+            : (clone $base)->whereIn('status', ['scheduled', 'executed'])->with('schedule')->get();
+        $query = (clone $base)->with('schedule.entry.recipient', 'schedule.entry.proposals', 'execution.author:id,name', 'execution.corrections.author:id,name');
         if (! empty($filters['kind'])) {
             $query->whereHas('schedule', fn ($q) => $q->where('snapshot->kind', $filters['kind']));
         }
         if (! empty($filters['executor'])) {
             $query->whereHas('schedule', fn ($q) => $q->where('snapshot->assigned_user_id', (int) $filters['executor']));
         }
-        $query->where('status', $filters['status'] ?? 'scheduled');
-        $page = $query->orderBy('starts_at')->orderBy('id')->paginate($filters['per_page'] ?? 25);
+        $status = $filters['status'] ?? 'scheduled';
+        if ($status !== 'all' || ! $healthEntry) {
+            $query->where('status', $status === 'all' ? 'scheduled' : $status);
+        }
+        if ($todaySection) {
+            $query->whereNull('execution_entry_id');
+            if ($todaySection === 'overdue') {
+                $query->where('ends_at', '<', now());
+            } else {
+                $query->where('ends_at', '>=', now());
+            }
+        }
+        $direction = $todaySection === 'overdue' ? 'desc' : 'asc';
+        $query->orderBy('starts_at', $direction)->orderBy('id', $direction);
+        $page = $query->paginate($filters['per_page'] ?? 25, page: $todaySection ? 1 : null);
         $page->setCollection($page->getCollection()->map(function ($o) use ($user, $conflicts, $zone) {
             $entry = $o->schedule->entry;
             $snapshot = $o->schedule->snapshot;
@@ -91,6 +115,7 @@ class CareAgenda
                 'due_at' => $o->starts_at->toISOString(), 'ends_at' => $o->ends_at->toISOString(),
                 'local_date' => $o->starts_at->setTimezone($zone)->format('Y-m-d'),
                 'timezone' => $o->schedule->rule['timezone'], 'frequency' => $o->schedule->rule['frequency'],
+                'details' => in_array($snapshot['kind'], ['medication', 'vaccine']) ? $snapshot['details'] : null,
                 'is_overdue' => ! in_array($snapshot['kind'], ['expense', 'journal']) && $o->isOverdue(),
                 'status' => $o->status, 'administratively_completed' => $entry->status === 'completed',
                 'recipient' => $entry->recipient->only(['id', 'name']), 'conflict' => $overlap,
@@ -99,15 +124,22 @@ class CareAgenda
                 'execution_block' => $executionBlock,
                 'availability_conflict' => $assignedPeriod ? app(CareAvailability::class)->message($assignedPeriod, true) : null,
                 'can_cancel' => $ready && $entry->status === 'pending' && $o->starts_at->isFuture() && (int) $entry->created_by === (int) $user->id,
-                'execution' => $o->execution ? ['author' => $o->execution->author?->name, 'occurred_at' => $o->execution->due_at ?? $o->execution->completed_at, 'recorded_at' => $o->execution->created_at, 'description' => $o->execution->description] : null,
+                'can_correct' => $this->canCorrect($user, $entry, $o->execution),
+                'execution' => $o->execution ? $this->executionData($o->execution) : null,
+                'corrections' => $o->execution && in_array($snapshot['kind'], ['medication', 'vaccine'])
+                    ? $o->execution->corrections->map($this->executionData(...))->all() : [],
             ];
         }));
+
+        if ($todaySection) {
+            return $page->toArray();
+        }
 
         $availabilityRecipient = $recipients->first(fn ($recipient) => app(CareAvailability::class)->canView($user, $recipient));
         $participants = app(CurrentOrganization::class)->get()->users()->wherePivot('status', 'active')->get()
             ->reject(fn ($participant) => $participant->hasRole('observador'));
         $visibleRecipients = $recipients->filter(fn ($recipient) => app(CareAvailability::class)->canView($user, $recipient))->keyBy('id');
-        $unavailabilities = CareUnavailability::whereIn('care_recipient_id', $visibleRecipients->keys())
+        $unavailabilities = $healthEntry ? [] : CareUnavailability::whereIn('care_recipient_id', $visibleRecipients->keys())
             ->whereIn('user_id', $participants->pluck('id'))->whereNull('cancelled_at')
             ->where('starts_at', '<=', $to->addDay()->format('Y-m-d'))->where('ends_at', '>=', $from->subDay()->format('Y-m-d'))
             ->when(! empty($filters['executor']), fn ($q) => $q->where('user_id', (int) $filters['executor']))
@@ -139,9 +171,9 @@ class CareAgenda
         }
     }
 
-    public function execute(User $user, int $id, array $data): CareOccurrence
+    public function execute(User $user, int $id, array $data, ?int $correctedExecution = null): CareOccurrence
     {
-        return DB::transaction(function () use ($user, $id, $data) {
+        return DB::transaction(function () use ($user, $id, $data, $correctedExecution) {
             $o = CareOccurrence::with('schedule.entry.recipient')->findOrFail($id);
             $recipient = $this->guard->lock($o->schedule->entry->recipient);
             $user->unsetRelation('roles')->unsetRelation('permissions');
@@ -149,19 +181,73 @@ class CareAgenda
             $o = CareOccurrence::whereKey($id)->lockForUpdate()->firstOrFail();
             $snapshot = $o->schedule->snapshot;
             $this->access->authorize($user, $recipient, $this->access->area($snapshot['kind']), true);
-            abort_unless($this->access->canExecuteCare($user, $recipient, $snapshot['kind'], $snapshot['assigned_user_id']), 403);
-            abort_if(in_array($snapshot['kind'], ['expense', 'journal']), 422);
-            abort_unless($o->status === 'scheduled' && in_array($entry->status, ['pending', 'completed']) && ! $entry->proposals()->where('status', 'pending')->exists(), 409, 'Ocorrência indisponível ou alteração pendente.');
-            app(CareAvailability::class)->ensureExecution($recipient, (int) $user->id, CarbonImmutable::parse($data['occurred_at'])->utc(), $o->starts_at, $o->ends_at);
+            $occurredAt = CarbonImmutable::parse($data['occurred_at'])->utc();
+            $health = in_array($snapshot['kind'], ['medication', 'vaccine']);
+            $details = $snapshot['details'];
+            $outcome = $data['outcome'] ?? 'administered';
+
+            if ($correctedExecution !== null) {
+                $original = $o->execution;
+                abort_unless($this->canCorrect($user, $entry, $original), 403);
+                $latest = $original->corrections()->reorder('id', 'desc')->lockForUpdate()->first();
+                abort_unless(($latest?->id ?? $o->execution_entry_id) === $correctedExecution, 409, 'O registro vigente mudou. Atualize antes de corrigir.');
+                $details['correction_reason'] = $data['reason'];
+                $details['corrects_execution_id'] = $correctedExecution;
+            } else {
+                abort_unless($this->access->canExecuteCare($user, $recipient, $snapshot['kind'], $snapshot['assigned_user_id']), 403);
+                abort_if(in_array($snapshot['kind'], ['expense', 'journal']), 422);
+                abort_unless($o->status === 'scheduled' && ! $o->execution_entry_id && in_array($entry->status, ['pending', 'completed']) && ! $entry->proposals()->where('status', 'pending')->exists(), 409, 'Ocorrência indisponível ou alteração pendente.');
+                app(CareAvailability::class)->ensureExecution($recipient, (int) $user->id, $occurredAt, $o->starts_at, $o->ends_at);
+            }
+
+            if ($health) {
+                if (($correctedExecution || ! isset($o->schedule->rule['instant'])) && ! isset($data['outcome'])) {
+                    throw ValidationException::withMessages(['outcome' => 'Informe o resultado da administração.']);
+                }
+                $details['outcome'] = $outcome;
+            } elseif (isset($data['outcome'])) {
+                throw ValidationException::withMessages(['outcome' => 'Resultado de administração é exclusivo de saúde.']);
+            }
+            if (isset($data['next_date'])) {
+                if ($snapshot['kind'] !== 'vaccine' || $outcome !== 'administered'
+                    || $data['next_date'] <= $occurredAt->setTimezone($o->schedule->rule['timezone'])->format('Y-m-d')) {
+                    throw ValidationException::withMessages(['next_date' => 'Informe uma data posterior à aplicação da vacina.']);
+                }
+                $details['next_date'] = $data['next_date'];
+            }
+
             $record = $recipient->entries()->create([
-                'created_by' => $user->id, 'related_entry_id' => $entry->id, 'kind' => $snapshot['kind'],
-                'title' => 'Execução: '.$snapshot['title'], 'description' => $data['description'] ?? null,
-                'due_at' => CarbonImmutable::parse($data['occurred_at'])->utc(), 'completed_at' => now(), 'status' => 'completed', 'revision' => 1, 'details' => $snapshot['details'],
+                'created_by' => $user->id, 'related_entry_id' => $correctedExecution ? $o->execution_entry_id : $entry->id, 'kind' => $snapshot['kind'],
+                'title' => ($correctedExecution ? 'Correção: ' : 'Execução: ').$snapshot['title'], 'description' => $data['description'] ?? null,
+                'due_at' => $occurredAt, 'completed_at' => now(), 'status' => 'completed', 'revision' => 1, 'details' => $details,
             ]);
-            $record->proposals()->create(['created_by' => $user->id, 'version' => 1, 'operation' => 'save', 'status' => 'accepted', 'payload' => ['data' => $record->only(['title', 'description', 'due_at']), 'shares' => [], 'affected_user_ids' => []]]);
-            $o->update(['status' => 'executed', 'execution_entry_id' => $record->id]);
+            $record->proposals()->create(['created_by' => $user->id, 'version' => 1, 'operation' => 'save', 'status' => 'accepted', 'payload' => ['data' => $record->only(['title', 'description', 'due_at', 'details']), 'shares' => [], 'affected_user_ids' => []]]);
+            $o->update([
+                'status' => $outcome === 'not_administered' ? 'not_administered' : 'executed',
+                'execution_entry_id' => $o->execution_entry_id ?? $record->id,
+            ]);
 
             return $o;
         });
+    }
+
+    private function canCorrect(User $user, CareEntry $entry, ?CareEntry $execution): bool
+    {
+        return $execution && in_array($entry->kind, ['medication', 'vaccine'])
+            && (int) $execution->created_by === (int) $user->id
+            && $entry->recipient->status === 'active'
+            && $this->access->allowed($user, $entry->recipient, 'health', true);
+    }
+
+    private function executionData(CareEntry $entry): array
+    {
+        return [
+            'id' => $entry->id, 'author' => $entry->author?->name,
+            'occurred_at' => $entry->due_at ?? $entry->completed_at,
+            'recorded_at' => $entry->created_at, 'description' => $entry->description,
+            'outcome' => $entry->details['outcome'] ?? (in_array($entry->kind, ['medication', 'vaccine']) ? 'administered' : null),
+            'next_date' => $entry->details['next_date'] ?? null,
+            'reason' => $entry->details['correction_reason'] ?? null,
+        ];
     }
 }

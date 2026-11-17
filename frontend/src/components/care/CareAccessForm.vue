@@ -1,19 +1,24 @@
 <template>
-  <form class="care-form" @submit.prevent="submit">
-    <label class="care-field"
-      >Membro
-      <select v-model="selectedUser" required :disabled="!ready || busy">
-        <option value="">Selecione</option>
-        <option v-for="member in members" :key="member.id" :value="member.id">
-          {{ member.name }} · {{ member.email }}
-        </option>
-      </select>
-    </label>
+  <AppForm class="care-form" @submit.prevent="submit">
+    <AppSelect
+      label="Membro"
+      :id="fieldId + '-1'"
+      v-model="selectedUser"
+      required
+      :disabled="!ready || busy"
+      :options="[
+        { value: '', label: 'Selecione' },
+        ...members.map((member) => ({
+          value: member.id,
+          label: `${member.name} · ${member.email}`,
+        })),
+      ]"
+    />
     <p v-if="readOnly" role="status">
       As permissões de outro responsável estão disponíveis somente para leitura.
     </p>
-    <fieldset :disabled="!selectedUser || !ready || busy || readOnly">
-      <legend>Áreas disponíveis</legend>
+    <AppFieldset :disabled="!selectedUser || !ready || busy || readOnly">
+      <template #legend>Áreas disponíveis</template>
       <div class="access-areas">
         <AppCheckbox
           v-for="(label, key) in areas"
@@ -25,7 +30,7 @@
           @update:model-value="toggleArea(key, $event)"
         />
       </div>
-    </fieldset>
+    </AppFieldset>
     <AppCheckbox
       id="access-can-edit"
       class="access-edit-permission"
@@ -33,14 +38,13 @@
       label="Permitir edição (observadores continuam somente leitura)"
       :disabled="!selectedUser || !ready || busy || readOnly"
     />
-    <label class="care-field"
-      >Expira em (opcional)
-      <input
-        type="datetime-local"
-        v-model="form.expires_at"
-        :disabled="!selectedUser || !ready || busy || readOnly"
-      />
-    </label>
+    <AppInput
+      label="Expira em (opcional)"
+      :id="fieldId + '-2'"
+      type="datetime-local"
+      v-model="form.expires_at"
+      :disabled="!selectedUser || !ready || busy || readOnly"
+    />
     <AppButton
       variant="action"
       type="submit"
@@ -48,12 +52,20 @@
       :loading="busy"
       >Salvar acesso</AppButton
     >
-  </form>
+  </AppForm>
 </template>
 
 <script setup>
+import { useId } from "vue";
+const fieldId = useId();
 import { computed, ref, watch } from "vue";
-import { AppCheckbox } from "@/components/forms";
+import {
+  AppForm,
+  AppFieldset,
+  AppCheckbox,
+  AppSelect,
+  AppInput,
+} from "@/components/forms";
 import { AppButton } from "@/components/ui";
 import { areas } from "@/utils/care";
 

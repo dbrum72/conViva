@@ -35,4 +35,14 @@ class CareEntry extends Model
     {
         return $this->belongsTo(User::class, 'created_by');
     }
+
+    public function corrections()
+    {
+        return $this->hasMany(self::class, 'related_entry_id')->orderBy('id');
+    }
+
+    public function relatedEntry()
+    {
+        return $this->belongsTo(self::class, 'related_entry_id');
+    }
 }

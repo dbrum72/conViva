@@ -2,7 +2,7 @@ import { beforeEach, expect, it, vi } from "vitest";
 import { createPinia, setActivePinia } from "pinia";
 import { mount, flushPromises } from "@vue/test-utils";
 import { useCareStore } from "@/state/care";
-import { useAuthStore } from "@/state/auth";
+import { useAuthStore } from "@/modules/auth";
 import { careApi } from "@/services/care";
 import FinancePage from "@/views/care/FinancePage.vue";
 import CareEntryDialog from "@/components/care/CareEntryDialog.vue";

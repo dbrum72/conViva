@@ -12,7 +12,7 @@ class DecisionCenter
 {
     public function __construct(private AccessControl $access, private ProposalGuard $guard) {}
 
-    public function listing(User $user, array $filters)
+    public function listing(User $user, array $filters, ?int $page = null)
     {
         $recipients = $this->access->visible($user)->get();
         $entryIds = CareEntry::query()->where(function ($query) use ($recipients, $user) {
@@ -47,7 +47,7 @@ class DecisionCenter
         $union = $entries->selectRaw("id, created_at, 'entry' AS type")->toBase()
             ->unionAll($profiles->selectRaw("id, created_at, 'profile' AS type")->toBase());
         $page = DB::query()->fromSub($union, 'proposals')->orderByDesc('created_at')->orderByDesc('id')->orderBy('type')
-            ->paginate($filters['per_page'] ?? 10);
+            ->paginate($filters['per_page'] ?? 10, page: $page);
         $page->setCollection($page->getCollection()->map(fn ($row) => $this->show($user, $row->type, $row->id)));
 
         return $page;

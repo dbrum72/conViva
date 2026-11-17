@@ -1,3 +1,5 @@
+export { default as AppForm } from "./AppForm/index.vue";
+
 // Fields
 export { default as AppField } from "./fields/AppField/index.vue";
 export { default as AppInput } from "./fields/AppInput/index.vue";
@@ -11,6 +13,7 @@ export { default as AppRadio } from "./selection/AppRadio/index.vue";
 export { default as AppSwitch } from "./selection/AppSwitch/index.vue";
 
 // Groups
+export { default as AppFieldset } from "./groups/AppFieldset/index.vue";
 export { default as RadioGroup } from "./groups/RadioGroup/index.vue";
 export { default as CheckboxGroup } from "./groups/CheckboxGroup/index.vue";
 

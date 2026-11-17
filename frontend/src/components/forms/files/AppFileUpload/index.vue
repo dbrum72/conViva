@@ -35,14 +35,15 @@
       @blur="emit('blur', $event)"
     />
 
-    <button
+    <AppButton
+      bare
       type="button"
       class="app-file-upload__browse"
       :disabled="disabled"
       @click="openFileDialog"
     >
       {{ browseLabel }}
-    </button>
+    </AppButton>
 
     <ul
       v-if="modelValue.length"
@@ -64,7 +65,8 @@
           </span>
         </span>
 
-        <button
+        <AppButton
+          bare
           type="button"
           class="app-file-upload__remove"
           :aria-label="`${removeLabel}: ${file.name}`"
@@ -72,7 +74,7 @@
           @click="removeFile(index)"
         >
           {{ removeLabel }}
-        </button>
+        </AppButton>
       </li>
     </ul>
 
@@ -92,6 +94,7 @@
 
 <script setup>
 import { computed, ref } from "vue";
+import AppButton from "@/components/ui/AppButton/index.vue";
 
 import { appFileUploadProps } from "./props.js";
 

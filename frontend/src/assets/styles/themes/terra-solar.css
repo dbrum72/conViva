@@ -6,6 +6,12 @@
   --palette-care-yellow: #f3df8a;
   --palette-care-coral: #eb9486;
   --palette-care-lavender: #7e7f9a;
+  --agenda-green: var(--color-accent);
+  --agenda-lavender-soft: color-mix(
+    in srgb,
+    var(--palette-care-lavender) 22%,
+    var(--color-surface)
+  );
   /* Complementos suaves: petróleo, azul névoa e areia. */
   --palette-care-teal: #b8d8d3;
   --palette-care-mist: #c2d6e5;

@@ -1,21 +1,24 @@
 <?php
 
-use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CareDocumentController;
 use App\Http\Controllers\CareEntryController;
-use App\Http\Controllers\CareGroupController;
 use App\Http\Controllers\CareOccurrenceController;
 use App\Http\Controllers\CareOverviewController;
 use App\Http\Controllers\CareRecipientController;
+use App\Http\Controllers\CareTodayController;
 use App\Http\Controllers\CareUnavailabilityController;
 use App\Http\Controllers\DecisionCenterController;
-use App\Http\Controllers\OrganizationInvitationController;
-use App\Http\Controllers\OrganizationMemberController;
-use App\Http\Controllers\OrganizationRoleController;
-use App\Http\Controllers\PasswordRecoveryController;
 use App\Http\Controllers\ProfileRevisionController;
 use App\Http\Controllers\RecipientAvatarController;
-use App\Http\Middleware\VerifyPasswordToken;
+use App\Modules\Auth\Http\Controllers\AuthController;
+use App\Modules\Auth\Http\Controllers\PasswordRecoveryController;
+use App\Modules\Auth\Http\Middleware\VerifyPasswordToken;
+use App\Modules\Groups\Http\Controllers\CareGroupController;
+use App\Modules\Groups\Http\Controllers\GroupContextController;
+use App\Modules\Groups\Http\Controllers\OrganizationInvitationController;
+use App\Modules\Groups\Http\Controllers\OrganizationMemberController;
+use App\Modules\Groups\Http\Controllers\OrganizationRoleController;
+use App\Modules\Notifications\Http\NotificationsController;
 use Illuminate\Support\Facades\Route;
 
 Route::post('auth/login', [AuthController::class, 'login'])->middleware('throttle:auth-login');
@@ -36,7 +39,7 @@ Route::middleware(['auth:api', VerifyPasswordToken::class, 'tenant'])->group(fun
     Route::get('recipients/{recipient}/my-unavailabilities', [CareUnavailabilityController::class, 'index']);
     Route::post('recipients/{recipient}/my-unavailabilities', [CareUnavailabilityController::class, 'store']);
     Route::post('recipients/{recipient}/my-unavailabilities/{period}/cancel', [CareUnavailabilityController::class, 'cancel']);
-    Route::get('auth/context', [AuthController::class, 'context']);
+    Route::get('auth/context', [GroupContextController::class, 'context']);
     Route::get('my-recipient-avatar', [RecipientAvatarController::class, 'show']);
     Route::post('my-recipient-avatar', [RecipientAvatarController::class, 'store']);
     Route::delete('my-recipient-avatar', [RecipientAvatarController::class, 'destroy']);
@@ -72,10 +75,16 @@ Route::middleware(['auth:api', VerifyPasswordToken::class, 'tenant'])->group(fun
     Route::get('recipients/{recipient}/documents/{document}/download', [CareDocumentController::class, 'download']);
     Route::delete('recipients/{recipient}/documents/{document}', [CareDocumentController::class, 'destroy']);
     Route::post('occurrences/{occurrence}/execution', [CareOccurrenceController::class, 'execute']);
+    Route::post('occurrences/{occurrence}/execution/{execution}/corrections', [CareOccurrenceController::class, 'correct']);
     Route::post('occurrences/{occurrence}/cancellation', [CareOccurrenceController::class, 'cancel']);
     Route::get('agenda', [CareOverviewController::class, 'agenda']);
+    Route::get('today', [CareTodayController::class, 'show']);
+    Route::post('recipients/{recipient}/care-facts', [CareTodayController::class, 'record']);
+    Route::put('recipients/{recipient}/handover/read', [CareTodayController::class, 'acknowledge']);
     Route::get('finance', [CareOverviewController::class, 'finance']);
-    Route::get('notifications/unread-count', [CareOverviewController::class, 'unreadCount']);
-    Route::get('notifications', [CareOverviewController::class, 'notifications']);
-    Route::post('notifications/{notification}/read', [CareOverviewController::class, 'read']);
+    Route::get('notifications/unread-count', [NotificationsController::class, 'unreadCount']);
+    Route::get('notifications/preferences', [NotificationsController::class, 'preferences']);
+    Route::put('notifications/preferences', [NotificationsController::class, 'savePreferences']);
+    Route::get('notifications', [NotificationsController::class, 'notifications']);
+    Route::post('notifications/{notification}/read', [NotificationsController::class, 'read']);
 });

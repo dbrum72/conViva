@@ -1,5 +1,6 @@
 <template>
-  <button
+  <AppButton
+    bare
     type="button"
     class="input-icon-button"
     :disabled="disabled"
@@ -7,10 +8,11 @@
     @click="$emit('click', $event)"
   >
     <slot />
-  </button>
+  </AppButton>
 </template>
 
 <script setup>
+import AppButton from "@/components/ui/AppButton/index.vue";
 defineProps({
   ariaLabel: {
     type: String,

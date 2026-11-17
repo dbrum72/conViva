@@ -1,12 +1,14 @@
 import { beforeEach, expect, it, vi } from "vitest";
 import { createPinia, setActivePinia } from "pinia";
-import { useAuthStore } from "@/state/auth.js";
+import { useAuthStore } from "@/modules/auth";
 import { useCareStore } from "@/state/care.js";
-import { context, listCareGroups } from "@/services/auth.js";
-vi.mock("@/services/auth.js", () => ({
+import { context, listCareGroups } from "@/modules/groups/api/groups.js";
+vi.mock("@/modules/groups/api/groups.js", () => ({
   context: vi.fn(),
   listCareGroups: vi.fn(),
   createGroup: vi.fn(),
+}));
+vi.mock("@/modules/auth/api/auth.js", () => ({
   login: vi.fn(),
   logout: vi.fn(),
   me: vi.fn(),

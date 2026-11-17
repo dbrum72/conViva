@@ -12,6 +12,13 @@ Arquivos JPG, PNG e WebP até 2 MB e 4096 × 4096 pixels são validados no Larav
 
 Frontend segue componente → Pinia → Axios. A prévia local não substitui a foto persistida antes da confirmação do servidor. Troca de grupo/sessão limpa imagens e invalida respostas antigas; URLs de blob são revogadas.
 
-Validação: suíte backend de 48 testes/347 asserções aprovada antes da última ampliação; os quatro testes finais de avatar passaram com 62 asserções, cobrindo isolamento entre responsáveis e grupos, substituição/remoção, arquivo inválido, expiração, suspensão e falta de acesso. Frontend: 27 testes aprovados, incluindo respostas atrasadas e falha de upload. Build de produção aprovado. Testes PHP usam SQLite em memória e armazenamento simulado; não foi realizado envio pelo navegador nesta entrega.
+Validação original: suíte backend de 48 testes e 347 asserções. Quatro testes finais de avatar passaram com 62 asserções, cobrindo isolamento entre responsáveis e grupos, substituição, remoção, arquivo inválido, expiração, suspensão e falta de acesso. No frontend passaram 27 testes e o build. Os testes PHP dessa entrega usaram SQLite em memória e armazenamento simulado.
 
 Ajuste de 28/09/2026: o cartão em Assistido do grupo reutiliza a foto pessoal da sidebar pela mesma store Pinia. Substituir ou remover a foto atualiza ambas as exibições; o cartão só mostra a imagem no grupo ativo autorizado. Sem foto, mantém o marcador de identificação. Não há nova requisição ou URL pública.
+
+## Exibição e recorte em 15/11/2026
+
+- `frontend/src/components/care/RecipientAvatar.vue` compartilha a apresentação da foto na sidebar, em Meus assistidos e no cartão de Assistido do grupo. Em Meus assistidos, a alternativa à foto é a primeira letra do nome em maiúscula. A sidebar usa as iniciais do grupo e o cartão Assistido do grupo preserva seu marcador de identificação.
+- Meus assistidos consulta a foto pessoal de cada grupo elegível com o cabeçalho `X-Tenant` daquele grupo. A consulta preserva o grupo selecionado. A rota autenticada aplica a autorização já existente. A lista cancela consultas pendentes e revoga URLs locais ao atualizar os grupos ou sair da tela.
+- O editor `PersonalRecipientAvatar.vue` usa `AppFileUpload` e mantém a imagem escolhida no navegador durante o ajuste. Zoom e posição definem o recorte quadrado. Ao salvar, envia o recorte como PNG de até 512 × 512 pixels pela rota privada existente. Fotos anteriores permanecem disponíveis.
+- Os quatro testes do avatar passaram, incluindo a conversão do enquadramento em PNG. A suíte do frontend chegou a 87 testes após a migração de formulários. O build de produção passou.

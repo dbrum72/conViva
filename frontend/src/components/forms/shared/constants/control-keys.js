@@ -15,6 +15,7 @@ export const INPUT_CONTROL_KEYS = [
   "min",
   "max",
   "step",
+  "suggestions",
 ];
 
 export const TEXTAREA_CONTROL_KEYS = [

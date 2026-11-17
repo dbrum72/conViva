@@ -1,6 +1,7 @@
 <template>
   <header class="app-header app-header-bar">
-    <button
+    <AppButton
+      bare
       class="app-header-bar__menu"
       type="button"
       aria-label="Alternar menu lateral"
@@ -8,7 +9,7 @@
       @click="$emit('toggle-sidebar')"
     >
       <Menu :size="21" :stroke-width="1.8" aria-hidden="true" />
-    </button>
+    </AppButton>
 
     <div v-if="authStore.user" class="app-header-bar__welcome">
       <strong
@@ -19,7 +20,8 @@
     </div>
 
     <nav class="app-header-bar__actions" aria-label="Ações do usuário">
-      <button
+      <AppButton
+        bare
         class="app-header-bar__icon-button app-header-bar__notifications"
         type="button"
         v-if="authStore.user && authStore.currentTenant"
@@ -29,13 +31,14 @@
       >
         <Bell :size="21" :stroke-width="1.8" aria-hidden="true" />
         <span
-          v-if="careStore.unreadNotifications > 0"
+          v-if="notificationStore.unreadNotifications > 0"
           class="app-header-bar__badge"
           aria-hidden="true"
-          >{{ careStore.unreadNotifications }}</span
+          >{{ notificationStore.unreadNotifications }}</span
         >
-      </button>
-      <button
+      </AppButton>
+      <AppButton
+        bare
         v-if="canAccessSettings"
         class="app-header-bar__icon-button"
         type="button"
@@ -43,7 +46,7 @@
         @click="router.push({ name: 'settings' })"
       >
         <Settings :size="20" :stroke-width="1.8" aria-hidden="true" />
-      </button>
+      </AppButton>
       <div
         v-if="authStore.user"
         ref="profileRef"
@@ -56,7 +59,8 @@
           <strong>{{ authStore.userName }}</strong>
           <span>{{ roleLabel }}</span>
         </span>
-        <button
+        <AppButton
+          bare
           ref="profileMenuButtonRef"
           class="app-header-bar__profile-menu"
           type="button"
@@ -67,14 +71,15 @@
           @click="toggleProfileMenu"
         >
           <ChevronDown :size="16" :stroke-width="1.8" aria-hidden="true" />
-        </button>
+        </AppButton>
         <div
           v-if="profileMenuOpen"
           id="profile-menu"
           class="app-header-bar__profile-dropdown"
           role="menu"
         >
-          <button
+          <AppButton
+            bare
             class="app-header-bar__profile-dropdown-item"
             type="button"
             role="menuitem"
@@ -83,7 +88,7 @@
           >
             <LogOut :size="17" :stroke-width="1.8" aria-hidden="true" />
             <span>{{ loggingOut ? "Saindo..." : "Sair" }}</span>
-          </button>
+          </AppButton>
         </div>
       </div>
     </nav>
@@ -91,11 +96,12 @@
 </template>
 
 <script setup>
+import { AppButton } from "@/components/ui";
 import { computed, onBeforeUnmount, onMounted, ref, watch } from "vue";
 import { Bell, ChevronDown, LogOut, Menu, Settings } from "@lucide/vue";
 import { useRoute, useRouter } from "vue-router";
-import { useCareStore } from "@/state/care.js";
-import { useAuthStore } from "@/state/auth.js";
+import { useNotificationsStore } from "@/modules/notifications";
+import { useAuthStore } from "@/modules/auth";
 import { settingsPermissions } from "@/config/settings.js";
 
 defineProps({ sidebarOpen: { type: Boolean, default: true } });
@@ -103,10 +109,10 @@ defineEmits(["toggle-sidebar"]);
 
 const router = useRouter();
 const authStore = useAuthStore();
-const careStore = useCareStore();
+const notificationStore = useNotificationsStore();
 const route = useRoute();
 const notificationLabel = computed(() => {
-  const count = careStore.unreadNotifications;
+  const count = notificationStore.unreadNotifications;
   return count == null
     ? "Abrir notificações"
     : `Abrir notificações: ${count} ${count === 1 ? "não lida" : "não lidas"}`;
@@ -117,7 +123,7 @@ function refreshNotifications() {
     authStore.currentTenant &&
     document.visibilityState !== "hidden"
   )
-    careStore.refreshUnreadNotifications();
+    notificationStore.refreshUnreadNotifications();
 }
 watch(
   () => [authStore.user?.id, authStore.currentTenant, route.fullPath],
