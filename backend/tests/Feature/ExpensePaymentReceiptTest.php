@@ -44,12 +44,12 @@ class ExpensePaymentReceiptTest extends TestCase
         $this->getJson($path)->assertOk()->assertJsonPath('0.shares.0.receipt.filename', 'recibo.pdf')->assertJsonMissingPath('0.shares.0.receipt.path');
         $this->get($url.'/receipt')->assertOk()->assertHeader('X-Content-Type-Options', 'nosniff')->assertHeader('Cache-Control', 'no-store, private');
         $viewer = CareScenario::member($group, 'observador');
-        $access = CareScenario::grant($recipient, $viewer, ['finance'], false);
+        $access = CareScenario::grant($recipient, $viewer, ['expenses'], false);
         $this->actingAs($viewer, 'api')->getJson($path)->assertOk()->assertJsonPath('0.shares.0.receipt', null);
         $this->get($url.'/receipt')->assertForbidden();
         $access->update(['areas' => ['documents']]);
         $this->get($url.'/receipt')->assertForbidden();
-        $access->update(['areas' => ['finance', 'documents']]);
+        $access->update(['areas' => ['expenses', 'documents']]);
         $this->get($url.'/receipt')->assertOk();
         $access->update(['expires_at' => now()]);
         $this->get($url.'/receipt')->assertForbidden();
@@ -72,7 +72,7 @@ class ExpensePaymentReceiptTest extends TestCase
     {
         ['group' => $group, 'recipient' => $recipient, 'owner' => $owner, 'url' => $url, 'entry' => $entry, 'share' => $share] = $this->expense();
         $peer = CareScenario::member($group, 'responsavel');
-        CareScenario::grant($recipient, $peer, ['finance', 'documents']);
+        CareScenario::grant($recipient, $peer, ['expenses', 'documents']);
         $this->actingAs($peer, 'api')->postJson($url.'/pay', ['receipt' => $this->receipt()])->assertForbidden();
         $this->actingAs($owner, 'api')->postJson($url.'/pay', ['receipt' => $this->receipt()])->assertOk();
         ['group' => $other, 'owner' => $stranger, 'recipient' => $otherRecipient] = CareScenario::create('pet');
@@ -87,7 +87,7 @@ class ExpensePaymentReceiptTest extends TestCase
             $this->postJson($url.'/pay', ['receipt' => $file])->assertUnprocessable()->assertJsonValidationErrors('receipt');
         }
         $peer = CareScenario::member($group, 'responsavel');
-        CareScenario::grant($recipient, $peer, ['finance']);
+        CareScenario::grant($recipient, $peer, ['expenses']);
         $this->putJson($path.'/'.$entry['id'], ['kind' => 'expense', 'title' => 'Alteração pendente', 'amount_cents' => 12345, 'affected_user_ids' => [$peer->id]])->assertOk();
         $this->postJson($url.'/pay', ['receipt' => $this->receipt()])->assertConflict();
         $this->assertDatabaseHas('expense_shares', ['id' => $share['id'], 'paid_at' => null]);
@@ -113,11 +113,11 @@ class ExpensePaymentReceiptTest extends TestCase
         $this->assertSame([], Storage::disk('local')->allFiles());
     }
 
-    public function test_finance_only_participant_can_pay_but_cannot_upload(): void
+    public function test_expenses_only_participant_can_pay_but_cannot_upload(): void
     {
         ['group' => $group, 'recipient' => $recipient, 'path' => $path] = $this->expense();
         $carer = CareScenario::member($group, 'cuidador');
-        CareScenario::grant($recipient, $carer, ['finance']);
+        CareScenario::grant($recipient, $carer, ['expenses']);
         $entry = $this->actingAs($carer, 'api')->postJson($path, ['kind' => 'expense', 'title' => 'Parcela própria', 'amount_cents' => 1000])->assertCreated()->json();
         $url = $path.'/'.$entry['id'].'/shares/'.$entry['shares'][0]['id'].'/pay';
         $this->postJson($url, ['receipt' => $this->receipt()])->assertForbidden();

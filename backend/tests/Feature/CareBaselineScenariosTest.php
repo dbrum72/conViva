@@ -20,7 +20,7 @@ class CareBaselineScenariosTest extends TestCase
     {
         ['group' => $group, 'owner' => $owner, 'recipient' => $recipient] = CareScenario::create('child');
         $peer = CareScenario::member($group, 'responsavel');
-        CareScenario::grant($recipient, $peer, ['routine', 'health', 'documents', 'finance']);
+        CareScenario::grant($recipient, $peer, ['routine', 'health', 'documents', 'expenses']);
 
         $this->actingAs($owner, 'api')->withHeader('X-Tenant', $group->slug);
         $this->putJson('/api/recipients/'.$recipient->id, ['name' => 'Alterado', 'kind' => 'child'])->assertConflict();

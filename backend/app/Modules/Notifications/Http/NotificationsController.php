@@ -6,7 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\CareNotification;
 use App\Modules\Notifications\CareNotifications;
 use App\Modules\Notifications\ReminderPreferences;
-use App\Services\Care\AccessControl;
+use App\Modules\Care\Services\AccessControl;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 

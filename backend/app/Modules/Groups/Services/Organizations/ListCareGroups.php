@@ -3,7 +3,7 @@
 namespace App\Modules\Groups\Services\Organizations;
 
 use App\Models\User;
-use App\Services\Care\AccessControl;
+use App\Modules\Care\Services\AccessControl;
 use App\Support\Tenancy\CurrentOrganization;
 
 class ListCareGroups

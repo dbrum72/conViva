@@ -2,22 +2,24 @@ import { afterEach, beforeEach, expect, it, vi } from "vitest";
 import { createPinia, setActivePinia } from "pinia";
 import { mount, flushPromises, enableAutoUnmount } from "@vue/test-utils";
 import { defineComponent } from "vue";
-import { useCareStore } from "@/state/care";
+import { useCareStore } from "@/modules/care/state/care.js";
 import { useAuthStore } from "@/modules/auth";
-import { careApi } from "@/services/care";
-import AgendaPage from "@/views/care/AgendaPage.vue";
-import CareExecutionDialog from "@/components/care/CareExecutionDialog.vue";
-import CareEntryDialog from "@/components/care/CareEntryDialog.vue";
-import CareScheduleFields from "@/components/care/CareScheduleFields.vue";
-import ProposalComparison from "@/components/care/ProposalComparison.vue";
+import { careApi } from "@/modules/care/api/care.js";
+import { agendaApi } from "@/modules/agenda/api.js";
+import { useAgendaStore } from "@/modules/agenda/state/agenda.js";
+import AgendaPage from "@/modules/agenda/pages/AgendaPage.vue";
+import CareExecutionDialog from "@/modules/care/components/CareExecutionDialog.vue";
+import CareEntryDialog from "@/modules/care/components/CareEntryDialog.vue";
+import CareScheduleFields from "@/modules/care/components/CareScheduleFields.vue";
+import ProposalComparison from "@/modules/care/components/ProposalComparison.vue";
 const route = vi.hoisted(() => ({ query: {} }));
 vi.mock("vue-router", () => ({
   useRoute: () => route,
   useRouter: () => ({ push: vi.fn() }),
 }));
-vi.mock("@/services/care", () => ({
+vi.mock("@/modules/agenda/api.js", () => ({ agendaApi: { agenda: vi.fn() } }));
+vi.mock("@/modules/care/api/care.js", () => ({
   careApi: {
-    agenda: vi.fn(),
     executeOccurrence: vi.fn(),
     correctOccurrence: vi.fn(),
     cancelOccurrence: vi.fn(),
@@ -57,15 +59,15 @@ beforeEach(() => {
   setActivePinia(createPinia());
   vi.clearAllMocks();
   route.query = {};
-  careApi.agenda.mockResolvedValue(page());
+  agendaApi.agenda.mockResolvedValue(page());
 });
 it("descarta páginas atrasadas e respostas de outro grupo", async () => {
   let first, other;
-  careApi.agenda
+  agendaApi.agenda
     .mockReturnValueOnce(new Promise((resolve) => (first = resolve)))
     .mockResolvedValueOnce(page([{ id: 2 }]))
     .mockReturnValueOnce(new Promise((resolve) => (other = resolve)));
-  const store = useCareStore();
+  const store = useAgendaStore();
   const old = store.loadAgenda({ page: 1 });
   await store.loadAgenda({ page: 2 });
   first(page([{ id: 1 }]));
@@ -154,7 +156,7 @@ const Dialog = defineComponent({
 it("registra vacina e encaminha a correção para a versão exibida no histórico", async () => {
   route.query = { health_entry: "2", date: occurrence.due_at };
   const vaccine = { ...occurrence, kind: "vaccine", title: "Vacina" };
-  careApi.agenda.mockResolvedValue(page([vaccine]));
+  agendaApi.agenda.mockResolvedValue(page([vaccine]));
   careApi.executeOccurrence.mockResolvedValue({});
   careApi.correctOccurrence.mockResolvedValue({});
   const wrapper = mount(AgendaPage, {
@@ -169,7 +171,7 @@ it("registra vacina e encaminha a correção para a versão exibida no históric
     },
   });
   await flushPromises();
-  expect(careApi.agenda).toHaveBeenLastCalledWith(
+  expect(agendaApi.agenda).toHaveBeenLastCalledWith(
     expect.objectContaining({ health_entry: "2", status: "all" }),
   );
   await clickText(wrapper, "Registrar administração");
@@ -183,7 +185,7 @@ it("registra vacina e encaminha a correção para a versão exibida no históric
     occurred_at: "2026-10-01T11:00:00Z",
     recorded_at: "2026-10-01T12:00:00Z",
   };
-  careApi.agenda.mockResolvedValue(
+  agendaApi.agenda.mockResolvedValue(
     page([
       {
         ...vaccine,
@@ -220,7 +222,7 @@ it("registra vacina e encaminha a correção para a versão exibida no históric
   });
 });
 it("apresenta conflitos, conclusão administrativa e ações autorizadas; envia filtros ao servidor", async () => {
-  careApi.agenda.mockResolvedValue(
+  agendaApi.agenda.mockResolvedValue(
     page([
       {
         ...occurrence,
@@ -251,7 +253,7 @@ it("apresenta conflitos, conclusão administrativa e ações autorizadas; envia 
   await wrapper.find("#agenda-kind").setValue("task");
   await wrapper.find("#agenda-status").setValue("executed");
   await flushPromises();
-  expect(careApi.agenda).toHaveBeenLastCalledWith(
+  expect(agendaApi.agenda).toHaveBeenLastCalledWith(
     expect.objectContaining({
       kind: "task",
       status: "executed",
@@ -261,7 +263,7 @@ it("apresenta conflitos, conclusão administrativa e ações autorizadas; envia 
   );
 });
 it("mantém formulário e observação em falha; fecha ao trocar o grupo", async () => {
-  careApi.agenda.mockResolvedValue(page([occurrence]));
+  agendaApi.agenda.mockResolvedValue(page([occurrence]));
   careApi.executeOccurrence.mockRejectedValue(new Error("offline"));
   const auth = useAuthStore();
   auth.organization = { slug: "one" };
@@ -310,7 +312,7 @@ const clickText = async (wrapper, text) => {
   await flushPromises();
 };
 it("abre mês com sete colunas, seleciona o dia e navega entre períodos sem precisar aplicar filtros", async () => {
-  careApi.agenda.mockResolvedValue(page([occurrence]));
+  agendaApi.agenda.mockResolvedValue(page([occurrence]));
   const wrapper = pageWrapper();
   await flushPromises();
   expect(wrapper.findAll(".agenda-date")).toHaveLength(42);
@@ -321,30 +323,30 @@ it("abre mês com sete colunas, seleciona o dia e navega entre períodos sem pre
     "2026-09-28",
   );
   expect(wrapper.find(".agenda-selected-day").text()).toContain("Passeio");
-  const calls = careApi.agenda.mock.calls.length;
+  const calls = agendaApi.agenda.mock.calls.length;
   await wrapper.find('[data-date="2026-10-02"]').trigger("click");
   expect(wrapper.find(".agenda-selected-day").text()).toContain(
     "Nenhum registro neste dia",
   );
-  expect(careApi.agenda.mock.calls).toHaveLength(calls);
+  expect(agendaApi.agenda.mock.calls).toHaveLength(calls);
   await wrapper.find('[aria-label="Próximo período"]').trigger("click");
   await flushPromises();
   expect(wrapper.find(".agenda-period h2").text()).toContain("novembro");
-  expect(careApi.agenda).toHaveBeenLastCalledWith(
+  expect(agendaApi.agenda).toHaveBeenLastCalledWith(
     expect.objectContaining({ from: "2026-10-26", to: "2026-12-06" }),
   );
   await clickText(wrapper, "Hoje");
   expect(wrapper.find(".agenda-period h2").text()).toContain("outubro");
   await clickText(wrapper, "Semana");
   expect(wrapper.findAll(".agenda-week-day")).toHaveLength(7);
-  expect(careApi.agenda).toHaveBeenLastCalledWith(
+  expect(agendaApi.agenda).toHaveBeenLastCalledWith(
     expect.objectContaining({ from: "2026-09-28", to: "2026-10-04" }),
   );
   await clickText(wrapper, "Dia");
   expect(wrapper.find(".agenda-list").text()).toContain("Passeio");
   await clickText(wrapper, "Lista");
   expect(wrapper.find(".agenda-list-range").exists()).toBe(true);
-  expect(careApi.agenda).toHaveBeenLastCalledWith(
+  expect(agendaApi.agenda).toHaveBeenLastCalledWith(
     expect.objectContaining({
       from: "2026-10-01",
       to: "2026-10-31",
@@ -353,7 +355,7 @@ it("abre mês com sete colunas, seleciona o dia e navega entre períodos sem pre
   );
 });
 it("oferece navegação por setas e resumo de dias com muitos cuidados", async () => {
-  careApi.agenda.mockResolvedValue(
+  agendaApi.agenda.mockResolvedValue(
     page(
       Array.from({ length: 5 }, (_, i) => ({
         ...occurrence,
@@ -376,28 +378,28 @@ it("oferece navegação por setas e resumo de dias com muitos cuidados", async (
   ).toBe("true");
 });
 it("reúne todas as páginas do calendário e mantém paginação na lista", async () => {
-  careApi.agenda
+  agendaApi.agenda
     .mockResolvedValueOnce(page([{ id: 1 }], { last_page: 2, total: 2 }))
     .mockResolvedValueOnce(
       page([{ id: 2 }], { current_page: 2, last_page: 2, total: 2 }),
     );
-  const store = useCareStore();
+  const store = useAgendaStore();
   await store.loadAgenda(
     { from: "2026-10-01", to: "2026-10-31", page: 1, per_page: 100 },
     { allPages: true },
   );
   expect(store.agenda.map((row) => row.id)).toEqual([1, 2]);
-  expect(careApi.agenda).toHaveBeenLastCalledWith(
+  expect(agendaApi.agenda).toHaveBeenLastCalledWith(
     expect.objectContaining({ page: 2 }),
   );
-  careApi.agenda.mockClear();
-  careApi.agenda.mockResolvedValue(page([{ id: 1 }], { last_page: 2 }));
+  agendaApi.agenda.mockClear();
+  agendaApi.agenda.mockResolvedValue(page([{ id: 1 }], { last_page: 2 }));
   await store.loadAgenda({ page: 1 });
-  expect(careApi.agenda).toHaveBeenCalledTimes(1);
+  expect(agendaApi.agenda).toHaveBeenCalledTimes(1);
 });
 it("não publica calendário parcial quando outra página falha ou o contexto muda", async () => {
-  const store = useCareStore();
-  careApi.agenda
+  const store = useAgendaStore();
+  agendaApi.agenda
     .mockResolvedValueOnce(page([{ id: 1 }], { last_page: 2 }))
     .mockRejectedValueOnce(new Error("offline"));
   await expect(
@@ -406,7 +408,7 @@ it("não publica calendário parcial quando outra página falha ou o contexto mu
   expect(store.agenda).toEqual([]);
   expect(store.agendaPage).toBeNull();
   let finish;
-  careApi.agenda
+  agendaApi.agenda
     .mockResolvedValueOnce(page([{ id: 1 }], { last_page: 2 }))
     .mockReturnValueOnce(new Promise((resolve) => (finish = resolve)));
   const pending = store.loadAgenda({ page: 1 }, { allPages: true });
@@ -419,7 +421,7 @@ it("não publica calendário parcial quando outra página falha ou o contexto mu
 it("posiciona a ocorrência na data do fuso do grupo e inclui sua continuação no dia seguinte", async () => {
   const auth = useAuthStore();
   auth.organization = { slug: "group", timezone: "America/Sao_Paulo" };
-  careApi.agenda.mockResolvedValue(
+  agendaApi.agenda.mockResolvedValue(
     page([
       {
         ...occurrence,
@@ -437,7 +439,7 @@ it("posiciona a ocorrência na data do fuso do grupo e inclui sua continuação 
 });
 
 it("usa vermelho apenas quando a API sinaliza vencimento sem execução", async () => {
-  careApi.agenda.mockResolvedValue(
+  agendaApi.agenda.mockResolvedValue(
     page([
       {
         ...occurrence,

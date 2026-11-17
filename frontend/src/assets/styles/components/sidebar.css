@@ -217,22 +217,21 @@
 
 .sidebar-item.router-link-exact-active,
 .sidebar-item.router-link-active {
-  color: var(--color-text);
+  color: var(--neutral-0);
 
   font-weight: var(--font-weight-semibold);
 
-  border: 3px solid var(--agenda-green);
+  border: 1px solid var(--agenda-green);
+  border-left-width: 4px;
 
-  background: var(--agenda-lavender-soft);
+  background: #52546b;
 
-  box-shadow:
-    inset 3px 0 0 var(--agenda-green),
-    0 4px 12px rgb(48 49 64 / 0.12);
+  box-shadow: 0 4px 12px rgb(48 49 64 / 0.12);
 }
 
 .sidebar-item.router-link-exact-active .sidebar-item__icon,
 .sidebar-item.router-link-active .sidebar-item__icon {
-  color: var(--color-text);
+  color: currentColor;
 }
 
 /* pequeno detalhe âmbar do item ativo */

@@ -17,7 +17,7 @@ class DecisionCenterTest extends TestCase
         $this->seed();
         $scenario = CareScenario::create('child');
         $peer = CareScenario::member($scenario['group'], 'responsavel');
-        CareScenario::grant($scenario['recipient'], $peer, ['routine', 'health', 'finance', 'documents']);
+        CareScenario::grant($scenario['recipient'], $peer, ['routine', 'health', 'expenses', 'documents']);
         $this->actingAs($scenario['owner'], 'api')->withHeader('X-Tenant', $scenario['group']->slug);
 
         return [...$scenario, 'peer' => $peer, 'path' => '/api/recipients/'.$scenario['recipient']->id];

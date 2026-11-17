@@ -1,10 +1,10 @@
 import { afterEach, expect, it, vi } from "vitest";
 import { mount, flushPromises } from "@vue/test-utils";
 import { reactive } from "vue";
-import CarePaymentDialog from "@/components/care/CarePaymentDialog.vue";
+import CarePaymentDialog from "@/modules/expenses/components/CarePaymentDialog.vue";
 import { AppFileUpload } from "@/components/forms";
 let store, wrapper;
-vi.mock("@/state/care", () => ({ useCareStore: () => store }));
+vi.mock("@/modules/expenses/state/expenses.js", () => ({ useExpensesStore: () => store }));
 afterEach(() => {
   wrapper?.unmount();
   document.body.innerHTML = "";
@@ -22,7 +22,7 @@ function render(value = payment()) {
   store = reactive({
     pending: 0,
     error: "",
-    pay: vi.fn().mockResolvedValue(undefined),
+    pay: vi.fn().mockResolvedValue(true),
   });
   wrapper = mount(CarePaymentDialog, {
     attachTo: document.body,

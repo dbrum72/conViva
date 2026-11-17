@@ -43,7 +43,7 @@ Concessão a observador nunca permite escrita, mesmo se um dado legado contiver 
 | `routine` | `event`, `task`, `journal`, `feeding` |
 | `health` | `medication`, `vaccine` |
 | `documents` | Listagem, upload, download e exclusão de documentos |
-| `finance` | `expense`, rateios e pagamentos declarados |
+| `expenses` | `expense`, rateios e pagamentos declarados |
 
 Uma concessão de documentos não concede rotina. Notificações são filtradas pela área e reautorizadas ao marcar leitura. A agenda atual pertence ao grupo selecionado; a listagem `/api/groups` é agregada e calcula capacidades separadamente.
 

@@ -1,0 +1,40 @@
+<?php
+
+namespace App\Modules\Care\Http\Requests;
+
+use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
+
+class CareEntryRequest extends FormRequest
+{
+    public function authorize(): bool
+    {
+        return true;
+    }
+
+    public function rules(): array
+    {
+        return [
+            'schedule' => 'nullable|array:frequency,timezone,local_start,until,weekdays,duration_minutes,times',
+            'schedule.frequency' => 'required_with:schedule|in:once,daily,weekly',
+            'schedule.timezone' => 'required_with:schedule|timezone:all',
+            'schedule.local_start' => 'required_with:schedule|date_format:Y-m-d\\TH:i',
+            'schedule.until' => 'required_with:schedule|date_format:Y-m-d',
+            'schedule.duration_minutes' => 'required_with:schedule|integer|min:0|max:1440',
+            'schedule.weekdays' => 'sometimes|array|max:7',
+            'schedule.weekdays.*' => 'integer|between:1,7|distinct',
+            'schedule.times' => 'sometimes|array|list|max:24',
+            'schedule.times.*' => 'required|date_format:H:i|distinct',
+            'publish_to_agenda' => 'sometimes|boolean',
+            'revision' => 'sometimes|integer|min:0',
+            'affected_user_ids' => 'sometimes|array|max:50', 'affected_user_ids.*' => 'integer|distinct',
+            'kind' => ['required', Rule::in(['event', 'task', 'journal', 'medication', 'vaccine', 'feeding', 'expense'])],
+            'title' => 'required|string|max:200', 'description' => 'nullable|string|max:10000', 'due_at' => 'nullable|date', 'ends_at' => 'nullable|date|after_or_equal:due_at', 'assigned_user_id' => 'nullable|integer',
+            'amount_cents' => 'nullable|required_if:kind,expense|integer|min:1|max:1000000000',
+            'details' => 'nullable|array:dose,frequency,route,food,quantity,provider,expense_category',
+            'details.expense_category' => 'prohibited_unless:kind,expense|nullable|string|max:100',
+            'details.*' => 'nullable|string|max:500',
+            'shares' => 'nullable|array|max:50', 'shares.*.user_id' => 'required|integer|distinct', 'shares.*.amount_cents' => 'required|integer|min:1',
+        ];
+    }
+}

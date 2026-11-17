@@ -4,7 +4,7 @@ namespace Tests\Feature;
 
 use App\Jobs\GenerateGroupCareOccurrences;
 use App\Models\CareOccurrence;
-use App\Services\Care\GenerateCareOccurrences;
+use App\Modules\Care\Services\GenerateCareOccurrences;
 use App\Support\Tenancy\CurrentOrganization;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;

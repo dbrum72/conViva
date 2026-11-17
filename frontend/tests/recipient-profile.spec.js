@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { mount } from "@vue/test-utils";
-import RecipientProfileFields from "../src/components/care/RecipientProfileFields.vue";
-import RecipientProfileCard from "../src/components/care/RecipientProfileCard.vue";
+import RecipientProfileFields from "@/modules/care/components/RecipientProfileFields.vue";
+import RecipientProfileCard from "@/modules/care/components/RecipientProfileCard.vue";
 const global = {
   stubs: { RouterLink: true, AppCard: { template: "<div><slot /></div>" } },
 };

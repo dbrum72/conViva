@@ -1,7 +1,9 @@
 import { beforeEach, expect, it, vi } from "vitest";
 import { createPinia, setActivePinia } from "pinia";
 import { useAuthStore } from "@/modules/auth";
-import { useCareStore } from "@/state/care.js";
+import { useCareStore } from "@/modules/care/state/care.js";
+import { useAgendaStore } from "@/modules/agenda";
+import { useExpensesStore } from "@/modules/expenses";
 import { context, listCareGroups } from "@/modules/groups/api/groups.js";
 vi.mock("@/modules/groups/api/groups.js", () => ({
   context: vi.fn(),
@@ -42,7 +44,9 @@ it("lista todos os assistidos sem substituir as permissões do grupo atual", asy
 
 it("remove registros e permissões anteriores antes de abrir outro assistido", async () => {
   const auth = useAuthStore(),
-    care = useCareStore();
+    care = useCareStore(),
+    agenda = useAgendaStore(),
+    expenses = useExpensesStore();
   auth.applyContextPayload({
     organization: { id: 1, slug: "a" },
     roles: ["responsavel"],
@@ -50,6 +54,9 @@ it("remove registros e permissões anteriores antes de abrir outro assistido", a
   });
   care.recipient = { id: 10 };
   care.entries = [{ id: 20 }];
+  agenda.agenda = [{ id: 30 }];
+  expenses.expenses = [{ id: 40 }];
+  expenses.expensesSummary = { confirmed_cents: 5000 };
   let finish;
   context.mockReturnValue(
     new Promise((resolve) => {
@@ -60,6 +67,9 @@ it("remove registros e permissões anteriores antes de abrir outro assistido", a
   expect(auth.permissions).toEqual([]);
   expect(care.recipient).toBeNull();
   expect(care.entries).toEqual([]);
+  expect(agenda.agenda).toEqual([]);
+  expect(expenses.expenses).toEqual([]);
+  expect(expenses.expensesSummary).toBeNull();
   finish({
     data: {
       organization: { id: 2, slug: "b" },

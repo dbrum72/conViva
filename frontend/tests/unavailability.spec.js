@@ -1,12 +1,12 @@
 import { beforeEach, expect, it, vi } from "vitest";
 import { createPinia, setActivePinia } from "pinia";
 import { mount, flushPromises } from "@vue/test-utils";
-import { useCareStore } from "@/state/care";
-import { careApi } from "@/services/care";
-import CareUnavailabilityDialog from "@/components/care/CareUnavailabilityDialog.vue";
-import AgendaOccurrence from "@/components/care/agenda/AgendaOccurrence.vue";
+import { useCareStore } from "@/modules/care/state/care.js";
+import { careApi } from "@/modules/care/api/care.js";
+import CareUnavailabilityDialog from "@/modules/agenda/components/CareUnavailabilityDialog.vue";
+import AgendaOccurrence from "@/modules/agenda/components/AgendaOccurrence.vue";
 
-vi.mock("@/services/care", () => ({
+vi.mock("@/modules/care/api/care.js", () => ({
   careApi: {
     unavailabilities: vi.fn(),
     saveUnavailability: vi.fn(),

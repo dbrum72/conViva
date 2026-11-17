@@ -86,6 +86,9 @@ return new class extends Migration
             $t->string('path');
             $t->string('mime_type');
             $t->unsignedBigInteger('size');
+            $t->string('category', 100)->nullable();
+            $t->date('valid_until')->nullable();
+            $t->foreignId('care_entry_id')->nullable()->constrained()->restrictOnDelete();
             $t->timestamps();
         });
         Schema::create('expense_shares', function (Blueprint $t) {

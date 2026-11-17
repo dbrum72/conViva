@@ -245,7 +245,7 @@ class CareIsolationTest extends TestCase
         $admin = $this->member($g);
         $u = $this->member($g, 'cuidador');
         $p = $this->recipient($g, $admin);
-        $this->asMember($u, $g)->putJson('/api/recipients/'.$p->id.'/accesses', ['user_id' => $u->id, 'areas' => ['finance'], 'can_edit' => true])->assertForbidden();
+        $this->asMember($u, $g)->putJson('/api/recipients/'.$p->id.'/accesses', ['user_id' => $u->id, 'areas' => ['expenses'], 'can_edit' => true])->assertForbidden();
     }
 
     public function test_existing_user_can_create_another_isolated_group(): void
@@ -292,7 +292,7 @@ class CareIsolationTest extends TestCase
         $a = $this->member($g);
         $b = $this->member($g);
         $p = $this->recipient($g, $a);
-        CareAccess::create(['care_recipient_id' => $p->id, 'user_id' => $b->id, 'areas' => ['routine', 'health', 'documents', 'finance'], 'can_edit' => true]);
+        CareAccess::create(['care_recipient_id' => $p->id, 'user_id' => $b->id, 'areas' => ['routine', 'health', 'documents', 'expenses'], 'can_edit' => true]);
 
         return [$g, $a, $b, $p];
     }

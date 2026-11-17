@@ -4,7 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\CareEntry;
 use App\Models\CareUnavailability;
-use App\Services\Care\CareAvailability;
+use App\Modules\Care\Services\CareAvailability;
 use App\Support\Tenancy\CurrentOrganization;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\DatabaseTransactions;

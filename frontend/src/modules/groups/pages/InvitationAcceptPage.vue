@@ -261,7 +261,7 @@ import { AppButton, AppCard, AppIcon, AppLogo } from "@/components/ui";
 import { useInvitationAcceptanceStore } from "@/modules/groups/state/invitation-acceptance.js";
 import { storeToRefs } from "pinia";
 
-import { areas as invitationAreaLabels } from "@/utils/care.js";
+import { areas as invitationAreaLabels } from "@/modules/care";
 import { useAuthStore } from "@/modules/auth";
 
 const route = useRoute();

@@ -1,6 +1,6 @@
 import { afterEach, expect, it } from "vitest";
 import { mount } from "@vue/test-utils";
-import CareAccessForm from "@/components/care/CareAccessForm.vue";
+import CareAccessForm from "@/modules/care/components/CareAccessForm.vue";
 import { AppCheckbox } from "@/components/forms";
 
 let wrapper;
@@ -35,7 +35,7 @@ const accesses = [
     can_edit: true,
     expires_at: "2027-02-03T15:45:30.000Z",
   },
-  { user_id: 2, areas: ["finance"], can_edit: false, expires_at: null },
+  { user_id: 2, areas: ["expenses"], can_edit: false, expires_at: null },
 ];
 function setup(ready = true) {
   wrapper = mount(CareAccessForm, {
@@ -66,7 +66,7 @@ it("carrega cada membro e salva os valores vigentes sem alterar a validade", asy
   await wrapper.get("form").trigger("submit");
   expect(wrapper.emitted("save")[0][0]).toEqual(accesses[0]);
   await wrapper.get("select").setValue("2");
-  expect(checked()).toEqual(["access-area-finance"]);
+  expect(checked()).toEqual(["access-area-expenses"]);
   expect(wrapper.get("#access-can-edit").element.checked).toBe(false);
   expect(wrapper.get('input[type="datetime-local"]').element.value).toBe("");
   await wrapper.get("select").setValue("3");
@@ -78,9 +78,9 @@ it("edita uma cópia e sincroniza atualizações e revogações", async () => {
   await wrapper.get("#access-area-routine").setValue(true);
   expect(accesses[0].areas).toEqual(["health", "documents"]);
   await wrapper.setProps({
-    accesses: [{ ...accesses[0], areas: ["finance"] }],
+    accesses: [{ ...accesses[0], areas: ["expenses"] }],
   });
-  expect(checked()).toEqual(["access-area-finance"]);
+  expect(checked()).toEqual(["access-area-expenses"]);
   await wrapper.setProps({ accesses: [] });
   expect(checked()).toEqual([]);
   expect(wrapper.get("#access-can-edit").element.checked).toBe(false);

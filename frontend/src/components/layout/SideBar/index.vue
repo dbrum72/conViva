@@ -45,7 +45,7 @@
 
 <script setup>
 import { computed } from "vue";
-import PersonalRecipientAvatar from "@/components/care/PersonalRecipientAvatar.vue";
+import { PersonalRecipientAvatar } from "@/modules/care/ui.js";
 import convivaSidebarLogo from "@/assets/brand/conviva-sidebar-logo.svg";
 import SideBarNav from "@/components/navigation/SideBarNav/index.vue";
 import { useAuthStore } from "@/modules/auth";

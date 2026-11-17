@@ -54,6 +54,20 @@ Notifications live in `frontend/src/modules/notifications` and
 `backend/app/Modules/Notifications`. The module owns the inbox, unread count,
 reminder preferences and reminder delivery.
 
+Care lives in `frontend/src/modules/care` and `backend/app/Modules/Care`.
+It owns recipients, care records, their authorization, decisions, occurrence
+generation and execution, availability, handover and documents. Import Care's
+routes, stores and shared data through its frontend entry point and shared
+components through `ui.js`. API routes are composed in
+`backend/routes/api.php`. Eloquent models and the queued occurrence job keep
+their application namespaces.
+
+Agenda lives in `frontend/src/modules/agenda` and owns the calendar interface
+and its query state. Care provides the occurrence engine and writes.
+Expenses lives in `frontend/src/modules/expenses` and
+`backend/app/Modules/Expenses`. It owns the financial query, payments and
+receipts. Expense proposals and approvals use Care's record workflow.
+
 Use `frontend/src/modules/http` for Axios clients. Import the authenticated or
 public client from its public entry point. Keep endpoint definitions in the
 domain service that consumes the client.

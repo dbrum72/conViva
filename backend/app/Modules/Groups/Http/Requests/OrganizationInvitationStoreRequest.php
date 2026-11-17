@@ -50,7 +50,7 @@ class OrganizationInvitationStoreRequest extends FormRequest
             'care_accesses' => 'required|array|size:1',
             'care_accesses.*.care_recipient_id' => 'required|integer|distinct',
             'care_accesses.*.areas' => 'required|array|min:1',
-            'care_accesses.*.areas.*' => 'required|in:routine,health,documents,finance',
+            'care_accesses.*.areas.*' => 'required|in:routine,health,documents,expenses',
             'care_accesses.*.can_edit' => 'required|boolean',
             'email' => [
                 'required',

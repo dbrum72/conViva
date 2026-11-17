@@ -2,10 +2,10 @@ import { afterEach, expect, it, vi } from "vitest";
 import { mount, flushPromises } from "@vue/test-utils";
 import { reactive } from "vue";
 import AppDialog from "@/components/ui/AppDialog/index.vue";
-import CareExecutionDialog from "@/components/care/CareExecutionDialog.vue";
+import CareExecutionDialog from "@/modules/care/components/CareExecutionDialog.vue";
 
 let store;
-vi.mock("@/state/care", () => ({ useCareStore: () => store }));
+vi.mock("@/modules/care/state/care.js", () => ({ useCareStore: () => store }));
 let wrapper;
 afterEach(() => {
   wrapper?.unmount();

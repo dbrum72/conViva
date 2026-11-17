@@ -4,7 +4,7 @@
     :class="{
       'router-link-active':
         (item.name === 'settings' && route.path.startsWith('/settings')) ||
-        (item.name === 'finance' && route.path.startsWith('/finance/')),
+        (item.name === 'expenses' && route.path.startsWith('/expenses/')),
     }"
     :to="{ name: item.name }"
   >

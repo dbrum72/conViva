@@ -1,15 +1,15 @@
 import { beforeEach, expect, it, vi } from "vitest";
 import { createPinia, setActivePinia } from "pinia";
 import { flushPromises, mount } from "@vue/test-utils";
-import PersonalRecipientAvatar from "@/components/care/PersonalRecipientAvatar.vue";
-import { useRecipientAvatarStore } from "@/state/recipient-avatar.js";
+import PersonalRecipientAvatar from "@/modules/care/components/PersonalRecipientAvatar.vue";
+import { useRecipientAvatarStore } from "@/modules/care/state/recipient-avatar.js";
 import {
   fetchAvatar,
   uploadAvatar,
   deleteAvatar,
-} from "@/services/recipient-avatar.js";
+} from "@/modules/care/api/recipient-avatar.js";
 
-vi.mock("@/services/recipient-avatar.js", () => ({
+vi.mock("@/modules/care/api/recipient-avatar.js", () => ({
   fetchAvatar: vi.fn(),
   uploadAvatar: vi.fn(),
   deleteAvatar: vi.fn(),

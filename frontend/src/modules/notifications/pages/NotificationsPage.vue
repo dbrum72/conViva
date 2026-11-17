@@ -71,8 +71,8 @@
                         proposal: n.destination.proposal,
                       },
                     }
-                  : n.area === 'finance'
-                    ? { name: 'finance' }
+                  : n.area === 'expenses'
+                    ? { name: 'expenses' }
                     : { name: 'recipient', params: { id: n.care_recipient_id } }
             "
             ><strong>{{ n.message }}</strong></RouterLink
@@ -119,10 +119,10 @@ import { AppForm, AppCheckbox, AppInput } from "@/components/forms";
 import { useId } from "vue";
 const fieldId = useId();
 import { ref, watch } from "vue";
-import CareShell from "@/components/care/CareShell.vue";
+import { CareShell } from "@/modules/care/ui.js";
 import { AppCard, AppButton } from "@/components/ui";
 import { useNotificationsStore } from "../store.js";
-import { dateTime } from "@/utils/care";
+import { dateTime } from "@/modules/care";
 import { useAuthStore } from "@/modules/auth";
 const store = useNotificationsStore();
 const auth = useAuthStore();

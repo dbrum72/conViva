@@ -18,7 +18,7 @@ Ajuste de 28/09/2026: o cartão em Assistido do grupo reutiliza a foto pessoal d
 
 ## Exibição e recorte em 15/11/2026
 
-- `frontend/src/components/care/RecipientAvatar.vue` compartilha a apresentação da foto na sidebar, em Meus assistidos e no cartão de Assistido do grupo. Em Meus assistidos, a alternativa à foto é a primeira letra do nome em maiúscula. A sidebar usa as iniciais do grupo e o cartão Assistido do grupo preserva seu marcador de identificação.
+- `frontend/src/modules/care/components/RecipientAvatar.vue` compartilha a apresentação da foto na sidebar, em Meus assistidos e no cartão de Assistido do grupo. Em Meus assistidos, a alternativa à foto é a primeira letra do nome em maiúscula. A sidebar usa as iniciais do grupo e o cartão Assistido do grupo preserva seu marcador de identificação.
 - Meus assistidos consulta a foto pessoal de cada grupo elegível com o cabeçalho `X-Tenant` daquele grupo. A consulta preserva o grupo selecionado. A rota autenticada aplica a autorização já existente. A lista cancela consultas pendentes e revoga URLs locais ao atualizar os grupos ou sair da tela.
 - O editor `PersonalRecipientAvatar.vue` usa `AppFileUpload` e mantém a imagem escolhida no navegador durante o ajuste. Zoom e posição definem o recorte quadrado. Ao salvar, envia o recorte como PNG de até 512 × 512 pixels pela rota privada existente. Fotos anteriores permanecem disponíveis.
 - Os quatro testes do avatar passaram, incluindo a conversão do enquadramento em PNG. A suíte do frontend chegou a 87 testes após a migração de formulários. O build de produção passou.

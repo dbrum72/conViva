@@ -15,7 +15,7 @@ class ResponsibleProfileRevisionTest extends TestCase
         $this->seed();
         $scenario = CareScenario::create('child');
         $invited = CareScenario::member($scenario['group'], 'responsavel');
-        CareScenario::grant($scenario['recipient'], $invited, ['routine', 'health', 'finance', 'documents']);
+        CareScenario::grant($scenario['recipient'], $invited, ['routine', 'health', 'expenses', 'documents']);
         $this->actingAs($invited, 'api')->withHeader('X-Tenant', $scenario['group']->slug);
 
         return [...$scenario, 'invited' => $invited, 'path' => '/api/recipients/'.$scenario['recipient']->id];

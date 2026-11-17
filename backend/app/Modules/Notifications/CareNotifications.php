@@ -4,7 +4,7 @@ namespace App\Modules\Notifications;
 
 use App\Models\CareNotification;
 use App\Models\User;
-use App\Services\Care\AccessControl;
+use App\Modules\Care\Services\AccessControl;
 use Illuminate\Database\Eloquent\Builder;
 
 class CareNotifications

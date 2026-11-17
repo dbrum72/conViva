@@ -3,9 +3,9 @@ import { notificationApi } from "@/modules/notifications/api.js";
 vi.mock("@/modules/notifications/api.js", () => ({ notificationApi: { read: vi.fn(), unreadCount: vi.fn() } }));
 import {beforeEach,describe,it,expect,vi} from 'vitest'
 import {createPinia,setActivePinia} from 'pinia'
-import {useCareStore} from '@/state/care.js'
-import {careApi} from '@/services/care.js'
-vi.mock('@/services/care.js',()=>({careApi:{recipients:vi.fn(),recipient:vi.fn(),entries:vi.fn(),notifications:vi.fn(),read:vi.fn(),saveEntry:vi.fn(),today:vi.fn()}}))
+import {useCareStore} from '@/modules/care/state/care.js'
+import {careApi} from '@/modules/care/api/care.js'
+vi.mock('@/modules/care/api/care.js',()=>({careApi:{recipients:vi.fn(),recipient:vi.fn(),entries:vi.fn(),notifications:vi.fn(),read:vi.fn(),saveEntry:vi.fn(),today:vi.fn()}}))
 beforeEach(()=>{setActivePinia(createPinia());vi.clearAllMocks()})
 describe('estado dos cuidados',()=>{
  it('descarta a resposta do grupo anterior após limpar o contexto',async()=>{

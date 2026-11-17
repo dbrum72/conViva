@@ -2,8 +2,9 @@ import { computed, ref } from "vue";
 import { listCareGroups, context as contextRequest, createGroup as createGroupRequest } from "../api/groups.js";
 import { getCurrentTenant, removeCurrentTenant, setCurrentTenant } from "../context/tenant.js";
 import { useNotificationsStore } from "@/modules/notifications";
-import { useCareStore } from "@/state/care.js";
-import { useRecipientAvatarStore } from "@/state/recipient-avatar.js";
+import { useCareStore, useRecipientAvatarStore } from "@/modules/care";
+import { useAgendaStore } from "@/modules/agenda";
+import { useExpensesStore } from "@/modules/expenses";
 import { useOrganizationInvitationsStore } from "./organization-invitations.js";
 import { useOrganizationMembersStore } from "./organization-members.js";
 import { useOrganizationRolesStore } from "./organization-roles.js";
@@ -68,6 +69,8 @@ export function useGroupContext({ isAuthenticated, identityVersion, fetchMe }) {
   function clearTenantStores() {
     useRecipientAvatarStore().clear();
     useCareStore().clear();
+    useAgendaStore().clear();
+    useExpensesStore().clear();
     useNotificationsStore().clear();
     useOrganizationMembersStore().clear();
     useOrganizationRolesStore().clear();

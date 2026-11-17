@@ -145,10 +145,10 @@ import { ref, onMounted, watch } from "vue";
 import { useRouter } from "vue-router";
 
 import { AppButton, AppCard, AppIcon, AppLogo } from "@/components/ui";
-import RecipientAvatar from "@/components/care/RecipientAvatar.vue";
+import { RecipientAvatar } from "@/modules/care/ui.js";
 
 import { useAuthStore } from "@/modules/auth";
-import { fetchAvatar } from "@/services/recipient-avatar";
+import { fetchAvatar } from "@/modules/care";
 
 const router = useRouter();
 

@@ -1,6 +1,6 @@
 import { mount } from "@vue/test-utils";
 import { describe, it, expect } from "vitest";
-import CareDecisions from "@/components/care/CareDecisions.vue";
+import CareDecisions from "@/modules/care/components/CareDecisions.vue";
 const entry = {
   id: 1,
   created_by: 1,

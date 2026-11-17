@@ -1,6 +1,6 @@
 # Backend conViva
 
-API Laravel com autenticação JWT, MySQL, isolamento por grupo e autorização por assistido/área. Regras de acesso ficam em `app/Services/Care/AccessControl.php`; registros e rateio em `CareRecords.php`.
+API Laravel com autenticação JWT, MySQL, isolamento por grupo e autorização por assistido/área. No módulo `app/Modules/Care`, `Services/AccessControl.php` controla o acesso e `Services/CareRecords.php` trata registros e rateios.
 
 Execute `composer install`, `php artisan migrate --seed` e `php artisan serve --host=127.0.0.1 --port=8000`.
 

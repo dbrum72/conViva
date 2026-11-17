@@ -36,4 +36,4 @@
    ========================================================================== */
 
 @import "./utilities.css";
-@import "./care.css";
+@import "../../modules/care/styles/care.css";

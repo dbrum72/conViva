@@ -33,7 +33,7 @@ H√° controles nativos em 17 arquivos de telas e componentes de cuidado. A revis√
 | frontend/src/modules/auth/pages/RegisterPage.vue | 2 | 0 | 0 | 0 |
 | frontend/src/views/care/AgendaPage.vue | 4 | 4 | 1 | 6 |
 | frontend/src/views/care/DecisionsPage.vue | 0 | 3 | 0 | 0 |
-| frontend/src/views/care/FinancePage.vue | 2 | 1 | 0 | 0 |
+| frontend/src/modules/expenses/pages/ExpensesPage.vue | 2 | 1 | 0 | 0 |
 | frontend/src/views/care/RecipientListPage.vue | 4 | 1 | 0 | 0 |
 | frontend/src/views/care/RecipientPage.vue | 1 | 0 | 0 | 1 |
 | frontend/src/modules/groups/pages/OrganizationMemberListPage.vue | 2 | 0 | 0 | 0 |

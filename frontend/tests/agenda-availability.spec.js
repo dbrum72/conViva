@@ -2,18 +2,20 @@ import { afterEach, beforeEach, expect, it, vi } from "vitest";
 import { createPinia, setActivePinia } from "pinia";
 import { mount, flushPromises, enableAutoUnmount } from "@vue/test-utils";
 import { useAuthStore } from "@/modules/auth";
-import { useCareStore } from "@/state/care";
-import { careApi } from "@/services/care";
-import AgendaPage from "@/views/care/AgendaPage.vue";
-import CareUnavailabilityDialog from "@/components/care/CareUnavailabilityDialog.vue";
+import { useCareStore } from "@/modules/care/state/care.js";
+import { careApi } from "@/modules/care/api/care.js";
+import { agendaApi } from "@/modules/agenda/api.js";
+import { useAgendaStore } from "@/modules/agenda/state/agenda.js";
+import AgendaPage from "@/modules/agenda/pages/AgendaPage.vue";
+import CareUnavailabilityDialog from "@/modules/agenda/components/CareUnavailabilityDialog.vue";
 
 vi.mock("vue-router", () => ({
   useRoute: () => ({ query: {} }),
   useRouter: () => ({ push: vi.fn() }),
 }));
-vi.mock("@/services/care", () => ({
+vi.mock("@/modules/agenda/api.js", () => ({ agendaApi: { agenda: vi.fn() } }));
+vi.mock("@/modules/care/api/care.js", () => ({
   careApi: {
-    agenda: vi.fn(),
     unavailabilities: vi.fn(),
     saveUnavailability: vi.fn(),
     cancelUnavailability: vi.fn(),
@@ -42,7 +44,7 @@ beforeEach(() => {
     name: "Família",
     timezone: "America/Sao_Paulo",
   };
-  careApi.agenda.mockResolvedValue(response());
+  agendaApi.agenda.mockResolvedValue(response());
   careApi.unavailabilities.mockResolvedValue(periods());
 });
 function page() {
@@ -78,7 +80,7 @@ it("mostra afastamentos em mês, semana, dia e lista sem ações de cuidado, res
       recipient: { name: "Luna" },
     },
   ];
-  careApi.agenda.mockResolvedValue(result);
+  agendaApi.agenda.mockResolvedValue(result);
   const wrapper = page();
   try {
     await flushPromises();
@@ -100,8 +102,12 @@ it("mostra afastamentos em mês, semana, dia e lista sem ações de cuidado, res
     expect(wrapper.find(".agenda-occurrence").text()).toContain(
       "Motivo: Viagem",
     );
-    expect(wrapper.find(".agenda-occurrence-time").text()).toContain("02/10/2026 — 03/10/2026 · Dias completos");
-    expect(wrapper.find('[data-date="2026-10-02"] .agenda-preview-time').text()).toBe("Dia inteiro");
+    expect(wrapper.find(".agenda-occurrence-time").text()).toContain(
+      "02/10/2026 — 03/10/2026 · Dias completos",
+    );
+    expect(
+      wrapper.find('[data-date="2026-10-02"] .agenda-preview-time').text(),
+    ).toBe("Dia inteiro");
     expect(wrapper.find(".agenda-occurrence-actions").exists()).toBe(false);
     for (const label of ["Semana", "Dia", "Lista"]) {
       await wrapper
@@ -138,7 +144,11 @@ it("abre disponibilidade com assistido/grupo e fuso mesmo com agenda vazia e rec
     timezone: "America/Sao_Paulo",
   });
   expect(careApi.unavailabilities).toHaveBeenCalledWith(1, 1);
-  expect(dialog.findAll('input').every((input) => input.attributes('type') === 'date')).toBe(true);
+  expect(
+    dialog
+      .findAll("input")
+      .every((input) => input.attributes("type") === "date"),
+  ).toBe(true);
   await dialog.findAll("input")[0].setValue("2026-10-02");
   await dialog.findAll("input")[1].setValue("2026-10-03");
   careApi.saveUnavailability.mockResolvedValue({ data: { id: 1 } });
@@ -146,9 +156,13 @@ it("abre disponibilidade com assistido/grupo e fuso mesmo com agenda vazia e rec
   await flushPromises();
   expect(careApi.saveUnavailability).toHaveBeenCalledWith(
     1,
-    expect.objectContaining({ starts_at: '2026-10-02', ends_at: '2026-10-03', timezone: "America/Sao_Paulo" }),
+    expect.objectContaining({
+      starts_at: "2026-10-02",
+      ends_at: "2026-10-03",
+      timezone: "America/Sao_Paulo",
+    }),
   );
-  expect(careApi.agenda).toHaveBeenCalledTimes(2);
+  expect(agendaApi.agenda).toHaveBeenCalledTimes(2);
   expect(dialog.props("open")).toBe(true);
 });
 
@@ -156,7 +170,8 @@ it("fecha o modal ao trocar o grupo e não usa os períodos anteriores", async (
   const wrapper = page();
   await open(wrapper);
   useCareStore().clear();
-  careApi.agenda.mockResolvedValue(
+  useAgendaStore().clear();
+  agendaApi.agenda.mockResolvedValue(
     response({ id: 2, name: "Outro assistido", can_manage: true }),
   );
   useAuthStore().organization = {
@@ -181,7 +196,7 @@ it("fecha o modal ao trocar o grupo e não usa os períodos anteriores", async (
 });
 
 it("não oferece o modal sem autorização fornecida pelo servidor", async () => {
-  careApi.agenda.mockResolvedValue(response(null));
+  agendaApi.agenda.mockResolvedValue(response(null));
   const wrapper = page();
   await flushPromises();
   expect(
@@ -219,11 +234,11 @@ it("mantém confirmação de cancelamento e atualiza os avisos da agenda", async
     .trigger("click");
   await flushPromises();
   expect(careApi.cancelUnavailability).toHaveBeenCalledWith(1, 9);
-  expect(careApi.agenda).toHaveBeenCalledTimes(2);
+  expect(agendaApi.agenda).toHaveBeenCalledTimes(2);
 });
 
 it("permite consultar o motivo de outro participante sem oferecer alteração", async () => {
-  careApi.agenda.mockResolvedValue(
+  agendaApi.agenda.mockResolvedValue(
     response({ id: 1, name: "Luna", can_manage: false }),
   );
   careApi.unavailabilities.mockResolvedValue(

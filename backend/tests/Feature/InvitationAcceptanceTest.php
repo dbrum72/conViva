@@ -28,7 +28,7 @@ class InvitationAcceptanceTest extends TestCase
                 'role' => 'responsavel',
                 'care_accesses' => [[
                     'care_recipient_id' => $scenario['recipient']->id,
-                    'areas' => ['routine', 'health', 'documents', 'finance'],
+                    'areas' => ['routine', 'health', 'documents', 'expenses'],
                     'can_edit' => true,
                 ]],
             ])->assertCreated();

@@ -2,11 +2,11 @@ import { beforeEach, expect, it, vi } from "vitest";
 import { createPinia, setActivePinia } from "pinia";
 import { mount, flushPromises } from "@vue/test-utils";
 import { createRouter, createMemoryHistory } from "vue-router";
-import { useCareStore } from "@/state/care";
-import { careApi } from "@/services/care";
-import DecisionsPage from "@/views/care/DecisionsPage.vue";
-import DecisionPage from "@/views/care/DecisionPage.vue";
-vi.mock("@/services/care", () => ({
+import { useCareStore } from "@/modules/care/state/care.js";
+import { careApi } from "@/modules/care/api/care.js";
+import DecisionsPage from "@/modules/care/pages/DecisionsPage.vue";
+import DecisionPage from "@/modules/care/pages/DecisionPage.vue";
+vi.mock("@/modules/care/api/care.js", () => ({
   careApi: {
     decisions: vi.fn(),
     decision: vi.fn(),

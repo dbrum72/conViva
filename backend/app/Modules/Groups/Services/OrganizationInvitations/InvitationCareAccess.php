@@ -7,7 +7,7 @@ use App\Models\CareRecipient;
 use App\Models\Organization;
 use App\Models\OrganizationInvitation;
 use App\Models\User;
-use App\Services\Care\AccessControl;
+use App\Modules\Care\Services\AccessControl;
 use App\Support\Tenancy\CurrentOrganization;
 use Illuminate\Validation\ValidationException;
 

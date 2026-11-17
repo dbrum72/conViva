@@ -1,6 +1,6 @@
 # conViva — pesquisa de referência e cronograma de evolução
 
-Data da pesquisa: 18/09/2026. O cronograma registra as entregas E00 a E07, incluindo a E04A. A E07 foi implementada em 15/11/2026. A próxima etapa é E08 — Despesas e documentos contextualizados. As evidências constam no registro de execução abaixo.
+Data da pesquisa: 18/09/2026. O cronograma registra as entregas E00 a E08, incluindo a E04A. A próxima etapa é E09 — Histórico, exportação e privacidade. As evidências constam no registro de execução abaixo.
 
 Ajuste solicitado antes de E02: sidebar com seleção/criação de grupos somente em Meus assistidos e avatar pessoal do assistido por responsável. Entrega descrita em `docs/AVATAR-PESSOAL.md`, preservada na E02.
 
@@ -54,15 +54,15 @@ Leitura estática do código; os testes existentes foram inspecionados, mas não
 | Saúde | Medicamento e vacina são tipos de `CareEntry`; detalhes têm dose, frequência e via em texto. | Separar programação e execução; texto de frequência não deve gerar doses automaticamente. |
 | Notificações | Registros internos e leitura; consulta limitada aos últimos 100. | Paginação, preferências, filas e lembretes. `routes/console.php` não contém agendamentos de cuidados. |
 | Documentos | Arquivos privados, validação de tipo/tamanho e autorização de download; exclusão pelo autor. | Categorias, vínculos a registros, validade opcional e tratamento consistente de falha na exclusão do arquivo. |
-| Finanças | Valores inteiros em centavos, rateio, aceite e pagamento da própria parcela. | Consulta financeira dedicada, filtros, comprovantes e correções rastreáveis. Consulta básica GET /api/finance e totais no Laravel já disponíveis; operações financeiras unificadas em Despesas. Filtros avançados e paginação continuam pendentes. |
+| Finanças | Valores inteiros em centavos, rateio, aceite e pagamento da própria parcela. | Consulta financeira dedicada, filtros, comprovantes e correções rastreáveis. Consulta básica GET /api/expenses e totais no Laravel já disponíveis; operações financeiras unificadas em Despesas. Filtros avançados e paginação continuam pendentes. |
 | Interface | Vue, Pinia, Axios e componentes próprios; `RecipientPage.vue` reúne múltiplas áreas e formulários. | Dividir componentes por jornada, substituir diálogos nativos e melhorar estados de erro, carregamento e acessibilidade. |
 | Qualidade | `CareIsolationTest.php` e testes de frontend para estado, decisões e grupos. | Acrescentar cenários de concorrência, recorrência, filas e exportação conforme cada entrega. |
 
 ### Arquivos de referência para executar as etapas
 
-- Backend: `backend/routes/api.php`, `backend/routes/console.php`, `backend/app/Services/Care/AccessControl.php`, `backend/app/Services/Care/CareRecords.php` e `backend/app/Services/Organizations/ListCareGroups.php`.
-- Contratos e persistência: `backend/app/Http/Requests/CareEntryRequest.php`, `backend/app/Models/CareEntry.php` e `backend/database/migrations/2026_09_16_100000_create_care_tables.php`.
-- Interface: `frontend/src/views/care/`, `frontend/src/components/care/CareDecisions.vue`, `frontend/src/state/care.js`, `frontend/src/services/care.js` e `frontend/src/state/auth.js`.
+- Backend: `backend/routes/api.php`, `backend/routes/console.php`, `backend/app/Modules/Care/Services/` e `backend/app/Modules/Groups/Services/Organizations/ListCareGroups.php`.
+- Contratos e persistência: `backend/app/Modules/Care/Http/Requests/CareEntryRequest.php`, `backend/app/Models/CareEntry.php` e `backend/database/migrations/2026_09_16_100000_create_care_tables.php`.
+- Interface: `frontend/src/modules/care/` e `frontend/src/modules/auth/`.
 - Testes: `backend/tests/Feature/CareIsolationTest.php`, `frontend/tests/care.spec.js`, `frontend/tests/decisions.spec.js` e `frontend/tests/care-groups.spec.js`.
 
 ## 4. Regras obrigatórias para todas as entregas
@@ -238,14 +238,14 @@ Marcos de entrega:
 
 ### E08 — Despesas e documentos contextualizados
 
-- [ ] Criar consulta financeira dedicada com período, categoria, participante e situação, com totais calculados no Laravel.
-- [ ] Exibir total, parcelas aceitas, pagamentos declarados e saldo, distinguindo declaração de pagamento de confirmação bancária.
+- [x] Criar consulta financeira dedicada com período, categoria, participante e situação, com totais calculados no Laravel.
+- [x] Exibir total, parcelas aceitas, pagamentos declarados e saldo, distinguindo declaração de pagamento de confirmação bancária.
 - [x] Vincular comprovantes privados à despesa e registrar pagamento somente da própria parcela. Antecipado por solicitação do usuário em 27/09/2026; evidências em `docs/COMPROVANTES-PAGAMENTO.md`.
-- [ ] Preservar o bloqueio atual de alteração/cancelamento de despesa paga. Se necessária correção, usar ajuste separado com referência, justificativa e novos aceites.
-- [ ] Organizar documentos por categoria, período e validade opcional; permitir associação a cuidado ou instrução.
-- [ ] Tratar falhas entre banco e armazenamento, incluindo exclusão que não deve ser apresentada como concluída quando o arquivo persistiu.
+- [x] Preservar o bloqueio atual de alteração/cancelamento de despesa paga. Se necessária correção, usar ajuste separado com referência, justificativa e novos aceites.
+- [x] Organizar documentos por categoria, período e validade opcional; permitir associação a cuidado ou instrução.
+- [x] Tratar falhas entre banco e armazenamento, incluindo exclusão que não deve ser apresentada como concluída quando o arquivo persistiu.
 
-**Codificação:** serviço de consulta financeira, endpoints paginados, atualização de `ExpenseShare`, documentos e componentes de `FinancePage.vue`. Continuar com centavos inteiros. Documento vinculado exige autorização tanto ao contexto do registro quanto ao documento; vínculo nunca deve ampliar acesso silenciosamente.
+**Codificação:** serviço de consulta financeira, endpoints paginados, atualização de `ExpenseShare`, documentos e componentes de `ExpensesPage.vue`. Continuar com centavos inteiros. Documento vinculado exige autorização tanto ao contexto do registro quanto ao documento; vínculo nunca deve ampliar acesso silenciosamente.
 
 **Aceite:** totais fecham exatamente em centavos; proposta não aceita não cria dívida; usuário não paga por outro; comprovante não vaza por URL; falha de armazenamento fica recuperável. Sem Pix, cobrança automática ou conciliação bancária nesta entrega.
 
@@ -339,7 +339,7 @@ As metas abaixo são propostas para o piloto, não resultados já obtidos. Instr
 | Arquivo visível numa área pode expor outra | Validar acesso combinado a documento e contexto; testar vínculos e exportação | E08/E09 |
 | Prazo depende da equipe e do piloto | Reestimar ao concluir E00 e cada marco, sem converter estimativa em promessa | Todos |
 
-O escopo da E04A foi implementado em 02/10/2026. Com a E07 implementada, a próxima etapa é E08. O planejamento considera três tipos de assistido, web responsiva, notificações internas e e-mail primeiro, e uma pessoa desenvolvedora como referência de esforço. Equipe disponível, público inicial do piloto e canal externo de notificações dependem de confirmação.
+O planejamento considera três tipos de assistido, web responsiva, notificações internas e e-mail primeiro, e uma pessoa desenvolvedora como referência de esforço. Equipe disponível, público inicial do piloto e canal externo de notificações dependem de confirmação.
 
 ## 10. Registro de execução
 
@@ -348,8 +348,8 @@ Usar as caixas de seleção de cada etapa como tarefas. Para concluir uma etapa,
 | Marco | Status inicial | Evidência necessária |
 | --- | --- | --- |
 | M1 — E00 a E03 | Concluído: E00, E01, E02 e E03 | Fluxo de entrada, decisão e ficha validado |
-| M2 — E04 a E07, incluindo E04A | Implementado. Próxima etapa E08 | Afastamento, recorrência, execução, lembretes e passagem de cuidados testados |
-| M3 — E08 a E10 | Não iniciado | Relatórios, operação e piloto aprovados |
+| M2 — E04 a E07, incluindo E04A | Concluído | Afastamento, recorrência, execução, lembretes e passagem de cuidados testados |
+| M3 — E08 a E10 | E08 concluída. Próxima etapa E09 | Relatórios, operação e piloto aprovados |
 | M4 — E11 | Aguardando piloto | Priorização baseada nas métricas e dificuldades observadas |
 
 ### 18/09/2026 — E00 concluída
@@ -495,3 +495,27 @@ Usar as caixas de seleção de cada etapa como tarefas. Para concluir uma etapa,
 - Cadastro, cuidados e filtros passaram a usar os controles compartilhados. Formulários e grupos de campos usam `AppForm` e `AppFieldset`. A convenção Vue foi registrada em [AGENTS.md](AGENTS.md).
 - Intervalo vertical padrão de 1 rem e ajustes específicos na revisão cadastral, em Meus assistidos, nos filtros da Central, no rateio e no editor de foto.
 - A migração passou em 87 testes do frontend e no build. O ajuste de espaçamento passou no build e no `git diff --check`, com revisão estática. Detalhes em [AUDITORIA-DESIGN-SYSTEM.md](AUDITORIA-DESIGN-SYSTEM.md).
+
+### 17/11/2026 — E08 implementada
+
+- Despesas com consulta paginada, filtros combinados, totais em centavos no Laravel e apresentação de parcelas aceitas e pagamentos declarados.
+- Documentos com categoria, validade, filtro por data de envio e vínculo permanente. Download revalida as permissões de ambas as áreas. Exclusão informa falha quando o arquivo permanece no armazenamento.
+- Campos aplicados exclusivamente em `conviva_db`, preservando os registros existentes. Os 13 testes MySQL específicos passaram com 210 asserções e rollback. Contratos e evidências em [ENTREGA-E08.md](ENTREGA-E08.md).
+
+### Modularização de Care antes da E09
+
+- As páginas, rotas, stores, componentes e clientes de Care foram reunidos em `frontend/src/modules/care`. Controllers, requests e serviços foram reunidos em `backend/app/Modules/Care`.
+- A composição e as permissões das rotas foram preservadas. Os modelos Eloquent e o job enfileirado mantiveram seus namespaces. A mudança dispensa alteração de schema.
+- Conferidas as 72 rotas Laravel e as oito rotas Vue de Care. Passaram 52 testes transacionais MySQL com 654 asserções, 88 testes do frontend e o build de produção.
+
+### Modularização de Agenda e Despesas antes da E09
+
+- Agenda reúne a interface do calendário, a consulta no cliente e o estado de paginação. Care mantém o motor de ocorrências usado também por Saúde, Hoje e Lembretes.
+- Despesas reúne a interface, a consulta financeira, os pagamentos e os comprovantes. Propostas e aceites seguem o fluxo de Care.
+- As rotas e o schema permanecem compatíveis. A troca de grupo ou sessão limpa o estado dos novos módulos.
+- Conferidas as 72 rotas da API. Passaram 47 testes transacionais MySQL com 604 asserções, 88 testes frontend e o build de produção.
+
+### Padronização de Despesas antes da E09
+
+- Identificadores, rotas, links e permissões passaram a usar `expenses`. A consulta retorna `expense_group`.
+- O utilitário `backend/tools/rename-expenses-area.php` atualizou duas concessões, um convite e quatro notificações em `conviva_db`, preservando os registros. Nenhuma chave de resumo precisou de conversão.

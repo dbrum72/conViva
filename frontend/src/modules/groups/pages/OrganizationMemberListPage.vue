@@ -428,8 +428,7 @@ import {
   AppTable,
 } from "@/components/ui";
 
-import { useCareStore } from "@/state/care.js";
-import { areas as invitationAreas } from "@/utils/care.js";
+import { areas as invitationAreas, useCareStore } from "@/modules/care";
 import { useAuthStore } from "@/modules/auth";
 import { useOrganizationInvitationsStore } from "@/modules/groups/state/organization-invitations.js";
 import { useOrganizationMembersStore } from "@/modules/groups/state/organization-members.js";

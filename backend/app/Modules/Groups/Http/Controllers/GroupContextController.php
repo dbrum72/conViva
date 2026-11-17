@@ -3,7 +3,7 @@
 namespace App\Modules\Groups\Http\Controllers;
 
 use App\Http\Controllers\Controller;
-use App\Services\Care\AccessControl;
+use App\Modules\Care\Services\AccessControl;
 use App\Support\Tenancy\CurrentOrganization;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;

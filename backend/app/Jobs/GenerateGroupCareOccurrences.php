@@ -4,7 +4,7 @@ namespace App\Jobs;
 
 use App\Models\CareSchedule;
 use App\Models\Organization;
-use App\Services\Care\GenerateCareOccurrences;
+use App\Modules\Care\Services\GenerateCareOccurrences;
 use App\Support\Tenancy\CurrentOrganization;
 use Carbon\CarbonImmutable;
 use Illuminate\Contracts\Queue\ShouldQueue;
