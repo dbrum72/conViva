@@ -251,11 +251,12 @@ Marcos de entrega:
 
 ### E09 — Histórico, exportação e privacidade
 
-- [ ] Disponibilizar linha do tempo com propostas, decisões, recusas, execução e correções, filtrada por área.
-- [ ] Exportar inicialmente CSV e página própria para impressão; avaliar geração de PDF após validar necessidade e dependências.
-- [ ] Registrar solicitante, filtros, período e instante da exportação; arquivos temporários privados e com expiração.
-- [ ] Definir inventário de dados, finalidade, retenção, encerramento de conta e tratamento de registros compartilhados; submeter políticas aplicáveis à revisão especializada antes do lançamento público.
-- [ ] Separar trilha de auditoria de logs operacionais: logs não devem conter tokens, conteúdo de saúde ou arquivos privados.
+- [x] Disponibilizar linha do tempo com propostas, decisões, recusas, execução e correções, filtrada por área.
+- [x] Exportar o histórico em PDF.
+- [x] Registrar solicitante, filtros, período e instante da exportação; arquivos temporários privados e com expiração.
+- [x] Documentar a proposta de inventário, finalidade, retenção, encerramento de conta e tratamento de registros compartilhados.
+- [x] Separar trilha de auditoria de logs operacionais, com sanitização das exceções da API e do banco.
+- [ ] Submeter as políticas aplicáveis à revisão especializada antes do lançamento público.
 
 **Codificação:** serviço de exportação, job para volume elevado e endpoint de download com nova autorização. Trilhas de alteração anexadas ao histórico existente, com controle de acesso. CSV precisa neutralizar conteúdo interpretável como fórmula por planilhas. Definir descarte de exportações e backups conforme política documentada.
 
@@ -349,7 +350,7 @@ Usar as caixas de seleção de cada etapa como tarefas. Para concluir uma etapa,
 | --- | --- | --- |
 | M1 — E00 a E03 | Concluído: E00, E01, E02 e E03 | Fluxo de entrada, decisão e ficha validado |
 | M2 — E04 a E07, incluindo E04A | Concluído | Afastamento, recorrência, execução, lembretes e passagem de cuidados testados |
-| M3 — E08 a E10 | E08 concluída. Próxima etapa E09 | Relatórios, operação e piloto aprovados |
+| M3 — E08 a E10 | E08 concluída e E09 implementada. Próxima etapa técnica E10 | Relatórios, operação e piloto aprovados |
 | M4 — E11 | Aguardando piloto | Priorização baseada nas métricas e dificuldades observadas |
 
 ### 18/09/2026 — E00 concluída
@@ -519,3 +520,9 @@ Usar as caixas de seleção de cada etapa como tarefas. Para concluir uma etapa,
 
 - Identificadores, rotas, links e permissões passaram a usar `expenses`. A consulta retorna `expense_group`.
 - O utilitário `backend/tools/rename-expenses-area.php` atualizou duas concessões, um convite e quatro notificações em `conviva_db`, preservando os registros. Nenhuma chave de resumo precisou de conversão.
+
+### 18/11/2026 — E09 implementada
+
+- Histórico paginado com filtro de área e período. CSV e HTML para impressão usam dados autorizados, revalidação de acesso, auditoria e arquivos privados com expiração.
+- Migration aplicada isoladamente em `conviva_db`. Passaram 12 testes PHP com 105 asserções e 100% das linhas e métodos do módulo. Passaram 92 testes do frontend e o build, com 100% de instruções, linhas, funções e ramificações do módulo Vue.
+- As políticas de privacidade e encerramento estão documentadas para revisão especializada. [Entrega E09](ENTREGA-E09.md)

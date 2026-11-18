@@ -25,6 +25,7 @@ export default [
     icon: "calendar",
   },
   { id: "expenses", label: "Despesas", name: "expenses", icon: "wallet" },
+  { id: "history", label: "Histórico", name: "history", icon: "calendar" },
   {
     id: "organization-members",
     label: "Grupo e cuidadores",

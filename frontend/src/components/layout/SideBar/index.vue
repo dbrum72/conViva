@@ -63,19 +63,9 @@ const groupInitials = computed(() =>
 </script>
 
 <style scoped>
-.app-sidebar-nav {
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
-  min-height: 100dvh;
-  height: 100%;
-  overflow: hidden;
-}
-
 .sidebar-header {
   display: flex;
   align-items: center;
-  flex: 0 0 auto;
   min-height: var(--header-height);
   padding: 0 1.5rem;
 }
@@ -157,24 +147,16 @@ const groupInitials = computed(() =>
 }
 
 .app-sidebar-nav :deep(.sidebar-nav) {
-  flex: 1 1 auto;
-  min-height: 0;
-  padding-bottom: var(--space-5);
   overflow-x: hidden;
   overflow-y: auto;
   overscroll-behavior: contain;
   scrollbar-width: thin;
+  scrollbar-color: var(--palette-care-lavender) transparent;
 }
 
 .sidebar-footer {
-  position: static;
-  z-index: 2;
-  left: 0;
-  bottom: 0;
   display: flex;
   align-items: center;
-  flex: 0 0 auto;
-  width: var(--sidebar-width);
   min-height: var(--header-height);
   padding: 0 1.5rem;
   background: var(--color-brand-active);

@@ -5,6 +5,7 @@ import { useNotificationsStore } from "@/modules/notifications";
 import { useCareStore, useRecipientAvatarStore } from "@/modules/care";
 import { useAgendaStore } from "@/modules/agenda";
 import { useExpensesStore } from "@/modules/expenses";
+import { useHistoryStore } from "@/modules/history";
 import { useOrganizationInvitationsStore } from "./organization-invitations.js";
 import { useOrganizationMembersStore } from "./organization-members.js";
 import { useOrganizationRolesStore } from "./organization-roles.js";
@@ -71,6 +72,7 @@ export function useGroupContext({ isAuthenticated, identityVersion, fetchMe }) {
     useCareStore().clear();
     useAgendaStore().clear();
     useExpensesStore().clear();
+    useHistoryStore().clear();
     useNotificationsStore().clear();
     useOrganizationMembersStore().clear();
     useOrganizationRolesStore().clear();

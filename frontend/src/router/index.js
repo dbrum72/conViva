@@ -3,6 +3,7 @@ import { authGuard, authRoutes } from "@/modules/auth";
 import { careRoutes } from "@/modules/care";
 import { agendaRoute } from "@/modules/agenda";
 import { expensesRoute } from "@/modules/expenses";
+import { historyRoute } from "@/modules/history";
 import { groupEntryRoutes, groupMemberRoute } from "@/modules/groups";
 import { permissionGuard } from "./guards/permission.js";
 import DefaultLayout from "@/layouts/DefaultLayout.vue";
@@ -24,6 +25,7 @@ const router = createRouter({
         ...careRoutes,
         agendaRoute,
         expensesRoute,
+        historyRoute,
         {
           path: "notifications",
           name: "notifications",

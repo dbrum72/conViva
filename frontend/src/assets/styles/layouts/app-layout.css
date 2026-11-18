@@ -25,8 +25,11 @@
 
 .app-sidebar {
   grid-area: sidebar;
-  min-height: 100dvh;
-  height: 100%;
+  position: sticky;
+  inset-block-start: 0;
+  align-self: start;
+  height: 100dvh;
+  min-height: 0;
 }
 
 .app-header {
@@ -56,9 +59,7 @@
     left: 0;
     z-index: 100;
     width: min(var(--sidebar-width), 85vw);
-    min-height: 0;
     height: calc(100dvh - var(--header-height));
-    overflow-y: auto;
     box-shadow: var(--shadow-lg);
   }
 }

@@ -83,7 +83,9 @@ E06: o módulo Notifications reúne histórico paginado, contador e lembretes in
 
 E07: o painel Hoje reúne próximos cuidados, execuções recentes, registros rápidos e decisões pendentes do grupo ativo. A passagem é filtrada por área no Laravel. A ciência de leitura é individual e específica para a versão exibida.
 
-E08: Despesas tem filtros por período, categoria, participante e situação, com paginação e totais em centavos sobre o resultado inteiro. Documentos têm categoria, validade opcional, filtro por data de envio e vínculo permanente a um registro. Documentos vinculados exigem acesso às duas áreas. Contratos e validação em [ENTREGA-E08.md](ENTREGA-E08.md). A próxima etapa é E09.
+E08: Despesas tem filtros por período, categoria, participante e situação, com paginação e totais em centavos sobre o resultado inteiro. Documentos têm categoria, validade opcional, filtro por data de envio e vínculo permanente a um registro. Documentos vinculados exigem acesso às duas áreas. Contratos e validação em [ENTREGA-E08.md](ENTREGA-E08.md).
+
+E09: Histórico reúne propostas, decisões, retiradas, execuções e correções do grupo ativo com filtro por área e período. Novas exportações são geradas em PDF pela fila. Cada download revalida o acesso às áreas solicitadas. Arquivos privados expiram em 24 horas e a auditoria da solicitação fica por 90 dias. As políticas documentadas de retenção, backup e encerramento de conta aguardam revisão especializada. [Entrega E09](ENTREGA-E09.md)
 
 O item ativo da sidebar usa fundo `#52546B`, texto e ícone claros e contorno em `var(--agenda-green)` com 4 px à esquerda e 1 px nos demais lados. A sidebar, Meus assistidos e o cartão Assistido do grupo compartilham `RecipientAvatar`. O editor salva o recorte escolhido pela rota privada. [Foto pessoal do assistido](AVATAR-PESSOAL.md)
 

@@ -19,6 +19,7 @@ use App\Modules\Groups\Http\Controllers\GroupContextController;
 use App\Modules\Groups\Http\Controllers\OrganizationInvitationController;
 use App\Modules\Groups\Http\Controllers\OrganizationMemberController;
 use App\Modules\Groups\Http\Controllers\OrganizationRoleController;
+use App\Modules\History\HistoryController;
 use App\Modules\Notifications\Http\NotificationsController;
 use Illuminate\Support\Facades\Route;
 
@@ -84,6 +85,10 @@ Route::middleware(['auth:api', VerifyPasswordToken::class, 'tenant'])->group(fun
     Route::post('recipients/{recipient}/care-facts', [CareTodayController::class, 'record']);
     Route::put('recipients/{recipient}/handover/read', [CareTodayController::class, 'acknowledge']);
     Route::get('expenses', [ExpensesController::class, 'index']);
+    Route::get('history', [HistoryController::class, 'index']);
+    Route::post('history/exports', [HistoryController::class, 'store'])->middleware('throttle:6,1');
+    Route::get('history/exports/{export}', [HistoryController::class, 'show'])->whereNumber('export');
+    Route::get('history/exports/{export}/download', [HistoryController::class, 'download'])->whereNumber('export');
     Route::get('notifications/unread-count', [NotificationsController::class, 'unreadCount']);
     Route::get('notifications/preferences', [NotificationsController::class, 'preferences']);
     Route::put('notifications/preferences', [NotificationsController::class, 'savePreferences']);

@@ -2,11 +2,14 @@
 
 use App\Jobs\GenerateGroupCareOccurrences;
 use App\Models\Organization;
+use App\Modules\History\PurgeHistoryExports;
 use App\Modules\Notifications\DeliverReminders;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schedule;
+
+Schedule::call(PurgeHistoryExports::class)->name('history:purge-exports')->hourly()->withoutOverlapping();
 
 Artisan::command('care:generate-occurrences', function () {
     Organization::where('status', 'active')->each(fn ($group) => GenerateGroupCareOccurrences::dispatch($group->id));
